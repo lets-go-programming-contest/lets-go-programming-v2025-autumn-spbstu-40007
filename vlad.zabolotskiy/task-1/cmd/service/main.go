@@ -78,7 +78,7 @@ func calculate(n1, n2 int64, s string) (string, error) {
 		result = fmt.Sprintf("%d", n1*n2)
 	case "/":
 		if n2 == 0 {
-			err = fmt.Errorf("Divisor by zero")
+			err = fmt.Errorf("Division by zero")
 		} else {
 			result = fmt.Sprintf("%d", n1/n2)
 		}
