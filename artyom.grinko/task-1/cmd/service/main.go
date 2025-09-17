@@ -10,7 +10,7 @@ import (
 func die(message string) {
 	fmt.Fprintln(os.Stderr, message)
 
-	os.Exit(1)
+	os.Exit(0)
 }
 
 func read(scanner *bufio.Scanner) string {
