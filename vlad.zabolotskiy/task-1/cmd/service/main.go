@@ -11,9 +11,7 @@ import (
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Println("Enter first operand:")
 	input, _ := reader.ReadString('\n')
-
 	parts := strings.Fields(input)
 	if len(parts) > 1 {
 		fmt.Println("Enter exactly one numbers!")
@@ -30,9 +28,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Enter second operand:")
 	input2, _ := reader.ReadString('\n')
-
 	parts2 := strings.Fields(input2)
 	if len(parts2) > 1 {
 		fmt.Println("Enter exactly one numbers!")
@@ -49,7 +45,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Select operation ('+', '-', '*', ':'): ")
 	opInput, _ := reader.ReadString('\n')
 	sign := strings.TrimSpace(opInput)
 	if len(sign) > 1 {
@@ -67,7 +62,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Result:", result)
+	fmt.Println(result)
 }
 
 func calculate(n1, n2 int64, s string) (string, error) {
@@ -77,20 +72,22 @@ func calculate(n1, n2 int64, s string) (string, error) {
 	switch s {
 	case "+":
 		result = fmt.Sprintf("%d", n1+n2)
-
 	case "-":
 		result = fmt.Sprintf("%d", n1-n2)
-
 	case "*":
 		result = fmt.Sprintf("%d", n1*n2)
-
 	case "/":
 		if n2 == 0 {
 			err = fmt.Errorf("divisor by zero")
 		} else {
 			result = fmt.Sprintf("%d", n1/n2)
 		}
-
+	case ":":
+		if n2 == 0 {
+			err = fmt.Errorf("divisor by zero")
+		} else {
+			result = fmt.Sprintf("%d", n1/n2)
+		}
 	default:
 		err = fmt.Errorf("invalid operation")
 	}
