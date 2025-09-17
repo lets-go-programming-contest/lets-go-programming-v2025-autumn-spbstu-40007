@@ -86,13 +86,13 @@ func calculate(n1, n2 int64, s string) (string, error) {
 
 	case "/":
 		if n2 == 0 {
-			err = fmt.Errorf("Divisor by zero!")
+			err = fmt.Errorf("divisor by zero")
 		} else {
 			result = fmt.Sprintf("%d", n1/n2)
 		}
 
 	default:
-		err = fmt.Errorf("Invalid operation!")
+		err = fmt.Errorf("invalid operation")
 	}
 
 	return result, err
