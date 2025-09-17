@@ -38,7 +38,7 @@ func main() {
 
 	y, err := strconv.ParseInt(read(stdin), 10, 0)
 	if err != nil {
-		die("Invalid first operand")
+		die("Invalid second operand")
 	}
 
 	operation := read(stdin)
