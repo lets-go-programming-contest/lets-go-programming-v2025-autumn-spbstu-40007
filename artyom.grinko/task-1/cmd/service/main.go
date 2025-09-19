@@ -16,7 +16,7 @@ func die(message string) {
 func read(scanner *bufio.Scanner) string {
 	scanner.Scan()
 	if scanner.Err() != nil {
-		die("Quel dommage")
+		die("What a pity")
 	}
 
 	return scanner.Text()
