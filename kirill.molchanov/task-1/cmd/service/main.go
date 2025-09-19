@@ -17,12 +17,12 @@ func increase(a, b int) int {
 	return a * b
 }
 
-func division(a, b int) (int, error) {
+func division(a, b int) int {
 	if b == 0 {
 		fmt.Fprintf(os.Stderr, "division by zero")
-		os.Exit(1)
+		os.Exit(0)
 	}
-	return a / b, nil
+	return a / b
 }
 
 func main() {
@@ -32,19 +32,19 @@ func main() {
 	_, err := fmt.Scanln(&a)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid first operand")
-		os.Exit(1)
+		return
 	}
 
 	_, err = fmt.Scanln(&b)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid second operand")
-		os.Exit(1)
+		return
 	}
 
 	_, err = fmt.Scanf("%s", &index)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "invalid input")
-		os.Exit(1)
+		return
 	}
 
 	if index == "+" {
@@ -57,6 +57,6 @@ func main() {
 		fmt.Println(division(a, b))
 	} else {
 		fmt.Fprintln(os.Stderr, "Invalid operation")
-		os.Exit(1)
+		return
 	}
 }
