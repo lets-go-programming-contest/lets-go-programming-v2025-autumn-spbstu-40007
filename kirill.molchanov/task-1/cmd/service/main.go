@@ -19,7 +19,7 @@ func increase(a, b int) int {
 
 func division(a, b int) int {
 	if b == 0 {
-		fmt.Fprintf(os.Stderr, "division by zero")
+		fmt.Fprintf(os.Stderr, "Division by zero.")
 		os.Exit(0)
 	}
 	return a / b
@@ -31,13 +31,13 @@ func main() {
 
 	_, err := fmt.Scanln(&a)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "invalid first operand")
+		fmt.Fprintf(os.Stderr, "Invalid first operand.")
 		return
 	}
 
 	_, err = fmt.Scanln(&b)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "invalid second operand")
+		fmt.Fprintf(os.Stderr, "Invalid second operand.")
 		return
 	}
 
