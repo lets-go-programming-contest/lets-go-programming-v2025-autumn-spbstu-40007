@@ -41,7 +41,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Scanf("%s", &index)
+	_, err = fmt.Scanf("%s", &index)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid input")
+		os.Exit(1)
+	}
 
 	if index == "+" {
 		fmt.Println(add(a, b))
