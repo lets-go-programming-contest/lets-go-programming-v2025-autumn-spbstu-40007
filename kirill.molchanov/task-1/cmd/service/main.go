@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 func add(a, b int) int {
@@ -17,17 +16,7 @@ func multiply(a, b int) int {
 	return a * b
 }
 
-func checkDivisionByZero(b int) bool {
-	if b == 0 {
-		fmt.Println("Division by zero")
-		os.Exit(0)
-	}
-	return true
-}
-func divide(a, b int) int {
-	checkDivisionByZero(b)
-	return a / b
-}
+func divide(a, b int) int { return a / b }
 
 func main() {
 	var (
@@ -49,7 +38,7 @@ func main() {
 
 	_, err = fmt.Scanln(&operation)
 	if err != nil {
-		fmt.Printf("invalid input")
+		fmt.Println("invalid input")
 		return
 	}
 
@@ -61,6 +50,10 @@ func main() {
 	case "*":
 		fmt.Println(multiply(a, b))
 	case "/":
+		if b == 0 {
+			fmt.Println("Division by zero")
+			return
+		}
 		fmt.Println(divide(a, b))
 	default:
 		fmt.Println("Invalid operation")
