@@ -19,7 +19,7 @@ func multiply(x int, y int) int {
 
 func divide(x int, y int) (int, error) {
 	if y == 0 {
-		return 0, errors.New("1") 
+		return 0, errors.New("1")
 	}
 
 	return x / y, nil
