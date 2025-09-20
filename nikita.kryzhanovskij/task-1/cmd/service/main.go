@@ -3,8 +3,10 @@ package main
 import "fmt"
 
 func main() {
-	var firstOperand, secondOperand int
-	var operation string
+	var (
+		firstOperand, secondOperand int
+		operation                   string
+	)
 
 	if n, err := fmt.Scan(&firstOperand, &secondOperand, &operation); err != nil {
 		switch n {
@@ -34,6 +36,5 @@ func main() {
 		fmt.Println(firstOperand / secondOperand)
 	default:
 		fmt.Println("Invalid operation")
-		return
 	}
 }
