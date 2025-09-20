@@ -33,11 +33,13 @@ func main() {
 
 	if err1 != nil {
 		fmt.Println("Invalid first operand")
+		return
 	}
 
 	_, err2 := fmt.Scanln(&y)
 	if err2 != nil {
 		fmt.Println("Invalid second operand")
+		return
 	}
 
 	var option string
@@ -45,6 +47,7 @@ func main() {
 	_, err3 := fmt.Scanln(&option)
 	if err3 != nil {
 		fmt.Println("Invalid operation")
+		return
 	}
 
 	switch option {
@@ -58,11 +61,13 @@ func main() {
 		result, err := divide(x, y)
 		if err != nil {
 			fmt.Println("Divison by zero")
+			return
 		} else {
 			fmt.Println(result)
 		}
 	default:
 		fmt.Println("Invalid operation")
+		return
 	}
 
 }
