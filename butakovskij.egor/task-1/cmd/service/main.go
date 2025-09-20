@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 func calc(x int, y int, z string) {
@@ -16,7 +15,7 @@ func calc(x int, y int, z string) {
 	case "/":
 		if y == 0 {
 			fmt.Println("Division by zero")
-			os.Exit(1)
+			return
 		} else {
 			fmt.Println(x / y)
 		}
@@ -30,21 +29,21 @@ func main() {
 	_, err := fmt.Scan(&a)
 	if err != nil {
 		fmt.Println("Invalid first operand")
-		os.Exit(1)
+		return
 	}
 	_, err = fmt.Scan(&b)
 	if err != nil {
 		fmt.Println("Invalid second operand")
-		os.Exit(1)
+		return
 	}
 	_, err = fmt.Scan(&c)
 	if err != nil {
 		fmt.Println("Invalid operation")
-		os.Exit(1)
+		return
 	}
 	if c != "+" && c != "-" && c != "*" && c != "/" {
 		fmt.Println("Invalid operation")
-		os.Exit(1)
+		return
 	}
 
 	calc(a, b, c)
