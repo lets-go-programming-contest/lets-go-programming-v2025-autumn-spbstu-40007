@@ -32,7 +32,7 @@ func main() {
 		fmt.Println("Invalid second operand")
 	}
 	fmt.Scan(&c)
-	if c != "+" || c != "-" || c != "*" || c != "/" {
+	if c != "+" && c != "-" && c != "*" && c != "/" {
 		fmt.Println("Invalid operation")
 	}
 
