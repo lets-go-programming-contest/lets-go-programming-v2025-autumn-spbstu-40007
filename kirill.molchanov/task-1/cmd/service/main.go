@@ -9,25 +9,31 @@ func add(a, b int) int {
 	return a + b
 }
 
-func subtraction(a, b int) int {
+func subtract(a, b int) int {
 	return a - b
 }
 
-func increase(a, b int) int {
+func multiply(a, b int) int {
 	return a * b
 }
 
-func division(a, b int) int {
+func checkDivisionByZero(b int) bool {
 	if b == 0 {
 		fmt.Println("Division by zero")
 		os.Exit(0)
 	}
+	return true
+}
+func divide(a, b int) int {
+	checkDivisionByZero(b)
 	return a / b
 }
 
 func main() {
-	var a, b int
-	var index string
+	var (
+		a, b      int
+		operation string
+	)
 
 	_, err := fmt.Scanln(&a)
 	if err != nil {
@@ -41,22 +47,22 @@ func main() {
 		return
 	}
 
-	_, err = fmt.Scanf("%s", &index)
+	_, err = fmt.Scanln(&operation)
 	if err != nil {
-		fmt.Println("invalid input")
+		fmt.Printf("invalid input")
 		return
 	}
 
-	if index == "+" {
+	switch operation {
+	case "+":
 		fmt.Println(add(a, b))
-	} else if index == "-" {
-		fmt.Println(subtraction(a, b))
-	} else if index == "*" {
-		fmt.Println(increase(a, b))
-	} else if index == "/" {
-		fmt.Println(division(a, b))
-	} else {
+	case "-":
+		fmt.Println(subtract(a, b))
+	case "*":
+		fmt.Println(multiply(a, b))
+	case "/":
+		fmt.Println(divide(a, b))
+	default:
 		fmt.Println("Invalid operation")
-		return
 	}
 }
