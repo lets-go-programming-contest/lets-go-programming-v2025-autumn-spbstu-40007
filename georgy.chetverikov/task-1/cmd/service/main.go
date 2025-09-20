@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 )
 
 func substract(x int, y int) int {
@@ -20,7 +19,7 @@ func multiply(x int, y int) int {
 
 func divide(x int, y int) (int, error) {
 	if y == 0 {
-		return 0, errors.New("division by zero")
+		return 0, errors.New("1") 
 	}
 
 	return x / y, nil
@@ -33,19 +32,19 @@ func main() {
 	_, err1 := fmt.Scanln(&x)
 
 	if err1 != nil {
-		log.Fatal(errors.New("Invalid fisrt operand"))
+		fmt.Println("Invalid first operand")
 	}
 
 	_, err2 := fmt.Scanln(&y)
 	if err2 != nil {
-		log.Fatal(errors.New("Invalid second operand"))
+		fmt.Println("Invalid second operand")
 	}
 
 	var option string
 
 	_, err3 := fmt.Scanln(&option)
 	if err3 != nil {
-		log.Fatal(errors.New("Invalid operation"))
+		fmt.Println("Invalid operation")
 	}
 
 	switch option {
@@ -58,11 +57,12 @@ func main() {
 	case "/":
 		result, err := divide(x, y)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Divison by zero")
 		} else {
 			fmt.Println(result)
 		}
 	default:
-		log.Fatal(errors.New("invalid operation"))
+		fmt.Println("Invalid operation")
 	}
+
 }
