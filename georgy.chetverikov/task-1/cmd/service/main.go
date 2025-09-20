@@ -60,7 +60,7 @@ func main() {
 	case "/":
 		result, err := divide(x, y)
 		if err != nil {
-			fmt.Println("Divison by zero")
+			fmt.Println("Division by zero")
 			return
 		} else {
 			fmt.Println(result)
