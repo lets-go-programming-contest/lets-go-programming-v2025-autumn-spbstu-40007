@@ -7,16 +7,16 @@ import (
 	"strconv"
 )
 
-func die(message string) {
-	fmt.Fprintln(os.Stderr, message)
+func die(args ...any) {
+	fmt.Fprintln(os.Stderr, args...)
 
 	os.Exit(0)
 }
 
 func read(scanner *bufio.Scanner) string {
 	scanner.Scan()
-	if scanner.Err() != nil {
-		die("What a pity")
+	if err := scanner.Err(); err != nil {
+		die("What a pity:", err)
 	}
 
 	return scanner.Text()
