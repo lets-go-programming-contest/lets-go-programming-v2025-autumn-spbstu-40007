@@ -26,7 +26,6 @@ func divide(x int, y int) (int, error) {
 }
 
 func main() {
-
 	var x, y int
 
 	_, err1 := fmt.Scanln(&x)
@@ -69,5 +68,4 @@ func main() {
 		fmt.Println("Invalid operation")
 		return
 	}
-
 }
