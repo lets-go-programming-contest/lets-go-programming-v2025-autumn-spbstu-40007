@@ -31,11 +31,10 @@ func main() {
 	if err != nil {
 		fmt.Println("Invalid second operand")
 	}
-	_, err = fmt.Scan(&c)
-	if err != nil {
+	fmt.Scan(&c)
+	if c != "+" || c != "-" || c != "*" || c != "/" {
 		fmt.Println("Invalid operation")
 	}
 
 	calc(a, b, c)
-
 }
