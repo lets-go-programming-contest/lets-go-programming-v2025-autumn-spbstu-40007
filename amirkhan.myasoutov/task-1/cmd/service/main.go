@@ -3,11 +3,11 @@ package main
 import "fmt"
 
 func main() {
-	var first, second int
-	var operation string
-	var err error
-
-	_, err = fmt.Scanln(&first)
+	var (
+		first, second int
+		operation     string
+	)
+	_, err := fmt.Scanln(&first)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
