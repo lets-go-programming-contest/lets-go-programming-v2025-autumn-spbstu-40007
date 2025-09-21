@@ -15,8 +15,8 @@ func calculate(number1 int, number2 int, symbol string) {
 		fmt.Println(number1 * number2)
 	case "/":
 		if number2 == 0 {
-			fmt.Println("Division by zero.")
-			return //чтобы не было panic
+			fmt.Println("Division by zero")
+			return
 		}
 		fmt.Println(number1 / number2)
 	}
@@ -30,28 +30,19 @@ func main() {
 	_, err := fmt.Fscan(os.Stdin, &number1)
 	if err != nil {
 		fmt.Println("Invalid first operand")
-		var clean string
-		fmt.Fscanln(os.Stdin, &clean) //очищаем буфер после каждой ошибки
-		return
 	}
 
 	_, err = fmt.Fscan(os.Stdin, &number2)
 	if err != nil {
 		fmt.Println("Invalid second operand")
-		var clean string
-		fmt.Fscanln(os.Stdin, &clean)
-		return
 	}
 
 	_, err = fmt.Fscan(os.Stdin, &symbol)
 	if err != nil {
-		fmt.Println("Invalid operation") //техническая ошибка
-		var clean string
-		fmt.Fscanln(os.Stdin, &clean)
-		return
+		fmt.Println("Invalid operation")
 	}
 
-	if symbol != "+" && symbol != "-" && symbol != "/" && symbol != "*" { //логическая ошибка
+	if symbol != "+" && symbol != "-" && symbol != "/" && symbol != "*" {
 		fmt.Println("Invalid operation")
 		return
 	}
