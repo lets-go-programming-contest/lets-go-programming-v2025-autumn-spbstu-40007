@@ -17,12 +17,12 @@ func readInput(scanner *bufio.Scanner) string {
 	return scanner.Text()
 }
 
-func showErrors(flag1 *bool, flag2 *bool) bool {
-	if *flag1 {
+func showErrors(flag1 bool, flag2 bool) bool {
+	if flag1 {
 		fmt.Println("Invalid first operand")
 		return true
 	}
-	if *flag2 {
+	if flag2 {
 		fmt.Println("Invalid second operand")
 		return true
 	}
@@ -46,7 +46,7 @@ func main() {
 
 	operand := readInput(reader)
 
-	check := showErrors(&flag1, &flag2)
+	check := showErrors(flag1, flag2)
 	if check {
 		return
 	}
