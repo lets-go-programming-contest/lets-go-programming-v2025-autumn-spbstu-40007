@@ -50,7 +50,6 @@ func main() {
 	heap.Init(&as)
 
 	k, _ := strconv.Atoi(scanner.Read())
-	//nolint:all
 	for range k - 1 {
 		heap.Pop(&as)
 	}
