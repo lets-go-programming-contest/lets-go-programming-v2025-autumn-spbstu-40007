@@ -18,8 +18,7 @@ func NewScanner() *Scanner {
 
 func (scanner *Scanner) Read() string {
 	scanner.Scan()
-	//nolint:all
-	if err := scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil { //nolint:all
 		die.Die(err)
 	}
 
