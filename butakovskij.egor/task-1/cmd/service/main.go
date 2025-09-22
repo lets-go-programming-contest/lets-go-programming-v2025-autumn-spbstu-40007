@@ -16,32 +16,31 @@ func calc(x int, y int, z string) {
 		if y == 0 {
 			fmt.Println("Division by zero")
 			return
-		} else {
-			fmt.Println(x / y)
 		}
+		fmt.Println(x / y)
+	default:
+		fmt.Println("Invalid operation")
 	}
 }
 
 func main() {
-	var a int
-	var b int
+	var a, b int
 	var c string
+
 	_, err := fmt.Scan(&a)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
+
 	_, err = fmt.Scan(&b)
 	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
+
 	_, err = fmt.Scan(&c)
 	if err != nil {
-		fmt.Println("Invalid operation")
-		return
-	}
-	if c != "+" && c != "-" && c != "*" && c != "/" {
 		fmt.Println("Invalid operation")
 		return
 	}
