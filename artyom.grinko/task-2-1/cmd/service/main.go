@@ -37,8 +37,11 @@ func main() {
 			}
 
 			if lowerBoundary > upperBoundary {
-				fmt.Println(-1)
+				for range k - j {
+					fmt.Println(-1)
+				}
 				scanner.SkipNLines(k - j - 1)
+
 				break
 			} else {
 				fmt.Println(lowerBoundary)
