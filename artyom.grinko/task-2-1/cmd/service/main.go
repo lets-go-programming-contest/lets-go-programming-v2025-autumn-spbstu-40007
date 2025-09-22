@@ -16,14 +16,15 @@ const (
 
 func main() {
 	scanner := scanner.NewScanner()
-    //nolint:all
+	//nolint:all
 	n, _ := strconv.Atoi(scanner.Read())
 
 	for range n {
+		//nolint:all
 		k, _ := strconv.Atoi(scanner.Read())
 
 		lowerBoundary, upperBoundary := minLowerBoundary, maxUpperBoundary
-        //nolint:all
+		//nolint:all
 		for j := range k {
 			preferences := scanner.Read()
 			mode, temperature := func() (string, int) {
