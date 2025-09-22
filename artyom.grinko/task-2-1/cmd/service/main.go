@@ -16,7 +16,7 @@ const (
 
 func main() {
 	scanner := scanner.NewScanner()
-	n, _ := strconv.Atoi(scanner.Read()) //nolint:all
+	n, _ := strconv.Atoi(scanner.Read())
 
 	for range n {
 		//nolint:all
