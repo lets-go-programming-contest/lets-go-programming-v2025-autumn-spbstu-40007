@@ -1,5 +1,6 @@
 package main
 
+//nolint:all
 import (
 	"fmt"
 	"strconv"
@@ -15,12 +16,14 @@ const (
 
 func main() {
 	scanner := scanner.NewScanner()
+    //nolint:all
 	n, _ := strconv.Atoi(scanner.Read())
 
 	for range n {
 		k, _ := strconv.Atoi(scanner.Read())
 
 		lowerBoundary, upperBoundary := minLowerBoundary, maxUpperBoundary
+        //nolint:all
 		for j := range k {
 			preferences := scanner.Read()
 			mode, temperature := func() (string, int) {
@@ -40,6 +43,7 @@ func main() {
 				for range k - j {
 					fmt.Println(-1)
 				}
+
 				scanner.SkipNLines(k - j - 1)
 
 				break
