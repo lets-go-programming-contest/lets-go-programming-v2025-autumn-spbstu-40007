@@ -11,7 +11,7 @@ import (
 	"task-2-2/internal/scanner"
 )
 
-type IntMaxPriorityQueue []int
+type IntMaxPriorityQueue []int //nolint:all
 
 func (priorityQueue IntMaxPriorityQueue) Len() int {
 	return len(priorityQueue)
@@ -26,7 +26,7 @@ func (priorityQueue IntMaxPriorityQueue) Swap(i, j int) {
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Push(x any) {
-	*priorityQueue = append(*priorityQueue, x.(int))
+	*priorityQueue = append(*priorityQueue, x.(int)) //nolint:all
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Pop() any {
@@ -39,7 +39,7 @@ func (priorityQueue *IntMaxPriorityQueue) Pop() any {
 func main() {
 	scanner := scanner.NewScanner()
 	scanner.SkipNLines(1)
-	as := (IntMaxPriorityQueue)(functional.Map(
+	as := (IntMaxPriorityQueue)(functional.Map( //nolint:all
 		strings.Fields(scanner.Read()),
 		func(x string) int {
 			y, _ := strconv.Atoi(x)
@@ -48,8 +48,9 @@ func main() {
 		}),
 	)
 	heap.Init(&as)
-	k, _ := strconv.Atoi(scanner.Read())
-	for range k - 1 {
+
+	k, _ := strconv.Atoi(scanner.Read()) //nolint:all
+	for range k - 1 {                    //nolint:all
 		heap.Pop(&as)
 	}
 
