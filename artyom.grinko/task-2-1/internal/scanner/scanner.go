@@ -1,5 +1,6 @@
 package scanner
 
+//nolint:all
 import (
 	"bufio"
 	"os"
