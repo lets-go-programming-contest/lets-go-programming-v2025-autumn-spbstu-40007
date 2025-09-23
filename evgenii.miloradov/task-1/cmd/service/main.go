@@ -5,40 +5,39 @@ import (
 )
 
 func main() {
-	var a int
-	var b int
+	var fOperand, sOperand int
 	var operator string
 
-	_, err1 := fmt.Scan(&a)
-	if err1 != nil {
+	_, err := fmt.Scan(&fOperand)
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	_, err2 := fmt.Scan(&b)
-	if err2 != nil {
+	_, err = fmt.Scan(&sOperand)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	_, err3 := fmt.Scan(&operator)
-	if err3 != nil {
+	_, err = fmt.Scan(&operator)
+	if err != nil {
 		fmt.Println("Invalid operator")
 		return
 	}
 
 	switch operator {
 	case "+":
-		fmt.Println(a + b)
+		fmt.Println(fOperand + sOperand)
 	case "-":
-		fmt.Println(a - b)
+		fmt.Println(fOperand - sOperand)
 	case "*":
-		fmt.Println(a * b)
+		fmt.Println(fOperand * sOperand)
 	case "/":
-		if b == 0 {
+		if sOperand == 0 {
 			fmt.Println("Division by zero")
 		} else {
-			fmt.Println(a / b)
+			fmt.Println(fOperand / sOperand)
 		}
 	default:
 		fmt.Println("Invalid operation")
