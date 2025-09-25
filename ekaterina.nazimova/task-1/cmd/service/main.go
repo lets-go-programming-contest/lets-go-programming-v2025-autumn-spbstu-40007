@@ -26,6 +26,7 @@ func main() {
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if _, err := fmt.Scanln(&op); err != nil {
 		fmt.Println("Invalid operation")
 		return
@@ -41,6 +42,12 @@ func main() {
 	case "/":
 =======
 	fmt.Scanln(&op)
+=======
+	if _, err := fmt.Scanln(&op); err != nil {
+		fmt.Println("Invalid option")
+		return
+	}
+>>>>>>> 00fdeae ([TASK-1] fix error)
 
 	if op == "+" {
 		fmt.Println(num1 + num2)
