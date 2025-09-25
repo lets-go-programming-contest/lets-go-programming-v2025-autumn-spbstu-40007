@@ -18,7 +18,10 @@ func main() {
 		return
 	}
 
-	fmt.Scanln(&op)
+	if _, err := fmt.Scanln(&op); err != nil {
+		fmt.Println("Invalid option")
+		return
+	}
 
 	if op == "+" {
 		fmt.Println(num1 + num2)
