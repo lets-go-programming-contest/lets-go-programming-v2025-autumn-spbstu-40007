@@ -31,6 +31,63 @@ func parseBorder(border string) (string, int, error) {
 	return fields[0], temp, nil
 }
 
+func processEmployees(employees int) {
+	minTemp := 15
+	maxTemp := 30
+	impossibleCondition := false
+
+	for range employees {
+		var (
+			oper string
+			temp string
+		)
+
+		_, err := fmt.Scan(&oper, &temp)
+		if err != nil {
+			fmt.Println("Error reading operator and temperature:", err)
+			fmt.Println(-1)
+
+			impossibleCondition = true
+
+			continue
+		}
+
+		tempBorder := fmt.Sprintf("%s %s", oper, temp)
+		operation, temperature, err := parseBorder(tempBorder)
+		if err != nil {
+			fmt.Println("Error has occurred:", err)
+			fmt.Println(-1)
+
+			impossibleCondition = true
+
+			continue
+		}
+
+		if impossibleCondition {
+			fmt.Println(-1)
+
+			continue
+		}
+
+		switch operation {
+		case ">=":
+			minTemp = max(minTemp, temperature)
+		case "<=":
+			maxTemp = min(maxTemp, temperature)
+		}
+
+		if minTemp > maxTemp {
+			fmt.Println(-1)
+
+			impossibleCondition = true
+
+			continue
+		}
+
+		fmt.Println(minTemp)
+	}
+}
+
 func main() {
 	var departments int
 
@@ -48,55 +105,9 @@ func main() {
 		if err != nil {
 			fmt.Println("Error reading number of employees:", err)
 
-			continue
+			return
 		}
 
-		minTemp := 15
-		maxTemp := 30
-		impossibleCondition := false
-
-		for range employees {
-			var (
-				oper string
-				temp string
-			)
-
-			_, err := fmt.Scan(&oper, &temp)
-			if err != nil {
-				fmt.Println("Error reading operator and temperature:", err)
-
-				continue
-			}
-
-			tempBorder := fmt.Sprintf("%s %s", oper, temp)
-
-			operation, temperature, err := parseBorder(tempBorder)
-
-			if err != nil {
-				fmt.Println("Error has occurred:", err)
-
-				continue
-			}
-
-			if impossibleCondition {
-				fmt.Println(-1)
-
-				continue
-			}
-
-			switch operation {
-			case ">=":
-				minTemp = max(minTemp, temperature)
-			case "<=":
-				maxTemp = min(maxTemp, temperature)
-			}
-
-			if minTemp > maxTemp {
-				fmt.Println(-1)
-				impossibleCondition = true
-			}
-
-			fmt.Println(minTemp)
-		}
+		processEmployees(employees)
 	}
 }
