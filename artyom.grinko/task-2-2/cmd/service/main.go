@@ -1,6 +1,7 @@
 package main
 
-//nolint:all
+// Newline for separation std packages from others seems crazy to linter.
+//nolint:gofumpt
 import (
 	"container/heap"
 	"fmt"
@@ -39,7 +40,7 @@ func (priorityQueue *IntMaxPriorityQueue) Pop() any {
 func main() {
 	scanner := scanner.NewScanner()
 	scanner.SkipNLines(1)
-	as := (IntMaxPriorityQueue)(functional.Map( //nolint:all
+	as := (IntMaxPriorityQueue)(functional.Map(
 		strings.Fields(scanner.Read()),
 		func(x string) int {
 			y, _ := strconv.Atoi(x)

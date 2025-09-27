@@ -1,6 +1,7 @@
 package scanner
 
-//nolint:all
+// Newline for separation std packages from others seems crazy to linter.
+//nolint:gofumpt
 import (
 	"bufio"
 	"os"
@@ -18,7 +19,8 @@ func NewScanner() *Scanner {
 
 func (scanner *Scanner) Read() string {
 	scanner.Scan()
-	if err := scanner.Err(); err != nil { //nolint:all
+    // Even Rust established if let.
+	if err := scanner.Err(); err != nil {
 		die.Die(err)
 	}
 
