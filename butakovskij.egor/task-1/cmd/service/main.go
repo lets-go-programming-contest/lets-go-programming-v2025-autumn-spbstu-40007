@@ -24,8 +24,10 @@ func calc(x int, y int, z string) {
 }
 
 func main() {
-	var a, b int
-	var c string
+	var (
+		a, b int
+		c    string
+	)
 
 	_, err := fmt.Scan(&a)
 	if err != nil {
