@@ -43,6 +43,7 @@ func processEmployees(employees int) {
 		)
 
 		_, err := fmt.Scan(&oper, &temp)
+
 		if err != nil {
 			fmt.Println("Error reading operator and temperature:", err)
 			fmt.Println(-1)
@@ -54,6 +55,7 @@ func processEmployees(employees int) {
 
 		tempBorder := fmt.Sprintf("%s %s", oper, temp)
 		operation, temperature, err := parseBorder(tempBorder)
+
 		if err != nil {
 			fmt.Println("Error has occurred:", err)
 			fmt.Println(-1)
