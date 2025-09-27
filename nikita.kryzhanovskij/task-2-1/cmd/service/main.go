@@ -43,6 +43,7 @@ func main() {
 
 	for range departments {
 		var employees int
+
 		_, err := fmt.Scan(&employees)
 		if err != nil {
 			fmt.Println("Error reading number of employees:", err)
@@ -85,8 +86,6 @@ func main() {
 
 			if minTemp > maxTemp {
 				fmt.Println(-1)
-
-				break
 			}
 
 			fmt.Println(minTemp)
