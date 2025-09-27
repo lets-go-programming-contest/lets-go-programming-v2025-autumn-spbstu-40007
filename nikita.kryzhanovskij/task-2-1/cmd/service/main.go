@@ -1,57 +1,79 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+)
+
+var (
+	ErrInvalidOperator    = errors.New("invalid operator")
+	ErrInvalidTemperature = errors.New("invalid temperature")
 )
 
 func parseBorder(border string) (string, int, error) {
 	fields := strings.Fields(border)
 
 	if fields[0] != "<=" && fields[0] != ">=" {
-		return "", 0, fmt.Errorf("invalid operator")
+		return "", 0, ErrInvalidOperator
 	}
 
 	temp, err := strconv.Atoi(fields[1])
 	if err != nil {
-		return "", 0, fmt.Errorf("invalid temperature")
+		return "", 0, ErrInvalidTemperature
 	}
 
 	if temp > 30 || temp < 15 {
-		return "", 0, fmt.Errorf("invalid temperature")
+		return "", 0, ErrInvalidTemperature
 	}
 
 	return fields[0], temp, nil
 }
 
 func main() {
-	var n int
+	var departments int
 
-	fmt.Scan(&n)
+	_, err := fmt.Scan(&departments)
+	if err != nil {
+		fmt.Println("Error reading number of departments:", err)
 
-	for i := 0; i < n; i++ {
-		var k int
-		fmt.Scan(&k)
+		return
+	}
+
+	for range departments {
+		var employees int
+		_, err := fmt.Scan(&employees)
+		if err != nil {
+			fmt.Println("Error reading number of employees:", err)
+
+			continue
+		}
 
 		minTemp := 15
 		maxTemp := 30
 
-		for j := 0; j < k; j++ {
+		for range employees {
 			var (
-				op   string
+				oper string
 				temp string
 			)
 
-			fmt.Scan(&op, &temp)
+			_, err := fmt.Scan(&oper, &temp)
+			if err != nil {
+				fmt.Println("Error reading operator and temperature:", err)
 
-			tempBorder := fmt.Sprintf("%s %s", op, temp)
+				break
+			}
+
+			tempBorder := fmt.Sprintf("%s %s", oper, temp)
 
 			operation, temperature, err := parseBorder(tempBorder)
 
 			if err != nil {
 				fmt.Println("Error has occurred:", err)
-				return
+
+				break
 			}
 
 			switch operation {
@@ -63,6 +85,7 @@ func main() {
 
 			if minTemp > maxTemp {
 				fmt.Println(-1)
+
 				break
 			}
 
