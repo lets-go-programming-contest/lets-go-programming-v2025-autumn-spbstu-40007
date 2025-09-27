@@ -1,6 +1,7 @@
 package main
 
-//nolint:all
+// Newline for separation std packages from others seems crazy to linter.
+//nolint:gofumpt
 import (
 	"fmt"
 	"strconv"
@@ -19,7 +20,6 @@ func main() {
 	n, _ := strconv.Atoi(scanner.Read())
 
 	for range n {
-		//nolint:all
 		k, _ := strconv.Atoi(scanner.Read())
 
 		lowerBoundary, upperBoundary := minLowerBoundary, maxUpperBoundary
