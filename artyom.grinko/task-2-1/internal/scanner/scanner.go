@@ -19,7 +19,8 @@ func NewScanner() *Scanner {
 
 func (scanner *Scanner) Read() string {
 	scanner.Scan()
-	if err := scanner.Err(); err != nil {
+    // Even Rust established if let.
+	if err := scanner.Err(); err != nil { //nolint:wsl
 		die.Die(err)
 	}
 
