@@ -17,39 +17,23 @@ func readInput(scanner *bufio.Scanner) string {
 	return scanner.Text()
 }
 
-func showErrors(flag1 bool, flag2 bool) bool {
-	if flag1 {
-		fmt.Println("Invalid first operand")
-		return true
-	}
-	if flag2 {
-		fmt.Println("Invalid second operand")
-		return true
-	}
-	return false
-}
-
 func main() {
-	var flag1, flag2 bool
 
 	reader := bufio.NewScanner(os.Stdin)
 
 	firstNumber, err := strconv.Atoi(readInput(reader))
 	if err != nil {
-		flag1 = true
+		fmt.Println("Invalid first operand")
+		return
 	}
 
 	secondNumber, err := strconv.Atoi(readInput(reader))
 	if err != nil {
-		flag2 = true
+		fmt.Println("Invalid second operand")
+		return
 	}
 
 	operand := readInput(reader)
-
-	check := showErrors(flag1, flag2)
-	if check {
-		return
-	}
 
 	switch operand {
 	case "+":
