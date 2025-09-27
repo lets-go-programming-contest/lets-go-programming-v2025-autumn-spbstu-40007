@@ -1,5 +1,6 @@
 package scanner
 
+//nolint:gofumpt
 import (
 	"bufio"
 	"os"
