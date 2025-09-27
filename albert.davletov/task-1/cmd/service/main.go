@@ -18,7 +18,6 @@ func readInput(scanner *bufio.Scanner) string {
 }
 
 func main() {
-
 	reader := bufio.NewScanner(os.Stdin)
 
 	firstNumber, err := strconv.Atoi(readInput(reader))
