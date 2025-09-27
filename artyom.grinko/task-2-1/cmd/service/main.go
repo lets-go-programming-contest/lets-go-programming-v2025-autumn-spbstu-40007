@@ -20,11 +20,12 @@ func main() {
 	n, _ := strconv.Atoi(scanner.Read())
 
 	for range n {
-		k, _ := strconv.Atoi(scanner.Read())
+		// Variable has same name as in task.
+		k, _ := strconv.Atoi(scanner.Read()) //nolint:varnamelen
 
 		lowerBoundary, upperBoundary := minLowerBoundary, maxUpperBoundary
-		//nolint:all
-		for j := range k {
+		// Variable has same name as in task.
+		for j := range k { //nolint:varnamelen
 			preferences := scanner.Read()
 			mode, temperature := func() (string, int) {
 				temporary := strings.Fields(preferences)
