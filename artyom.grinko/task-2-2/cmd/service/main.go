@@ -40,7 +40,8 @@ func (priorityQueue *IntMaxPriorityQueue) Pop() any {
 func main() {
 	scanner := scanner.NewScanner()
 	scanner.SkipNLines(1)
-	as := (IntMaxPriorityQueue)(functional.Map(
+    // Variable has same name as in task.
+	as := (IntMaxPriorityQueue)(functional.Map( //nolint:varnamelen
 		strings.Fields(scanner.Read()),
 		func(x string) int {
 			y, _ := strconv.Atoi(x)

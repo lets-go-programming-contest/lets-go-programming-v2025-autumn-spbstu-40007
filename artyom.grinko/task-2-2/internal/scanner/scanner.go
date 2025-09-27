@@ -19,7 +19,7 @@ func NewScanner() *Scanner {
 
 func (scanner *Scanner) Read() string {
 	scanner.Scan()
-    // Even Rust established if let.
+	// Even Rust established if let.
 	if err := scanner.Err(); err != nil {
 		die.Die(err)
 	}
