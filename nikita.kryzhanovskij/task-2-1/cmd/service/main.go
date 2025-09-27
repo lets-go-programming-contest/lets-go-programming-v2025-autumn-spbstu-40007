@@ -53,6 +53,7 @@ func main() {
 
 		minTemp := 15
 		maxTemp := 30
+		impossibleCondition := false
 
 		for range employees {
 			var (
@@ -64,7 +65,7 @@ func main() {
 			if err != nil {
 				fmt.Println("Error reading operator and temperature:", err)
 
-				break
+				continue
 			}
 
 			tempBorder := fmt.Sprintf("%s %s", oper, temp)
@@ -74,7 +75,13 @@ func main() {
 			if err != nil {
 				fmt.Println("Error has occurred:", err)
 
-				break
+				continue
+			}
+
+			if impossibleCondition {
+				fmt.Println(-1)
+
+				continue
 			}
 
 			switch operation {
@@ -86,6 +93,7 @@ func main() {
 
 			if minTemp > maxTemp {
 				fmt.Println(-1)
+				impossibleCondition = true
 			}
 
 			fmt.Println(minTemp)
