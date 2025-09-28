@@ -12,7 +12,8 @@ import (
 	"task-2-2/internal/scanner"
 )
 
-type IntMaxPriorityQueue []int
+// Linter doesn't really like code snippet from https://pkg.go.dev/container/heap.
+type IntMaxPriorityQueue []int //nolint:recvcheck
 
 func (priorityQueue IntMaxPriorityQueue) Len() int {
 	return len(priorityQueue)
@@ -27,7 +28,8 @@ func (priorityQueue IntMaxPriorityQueue) Swap(i, j int) {
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Push(x any) {
-	*priorityQueue = append(*priorityQueue, x.(int))
+	// Type checking where only one type used is redundant.
+	*priorityQueue = append(*priorityQueue, x.(int)) //nolint:forcetypeassert
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Pop() any {
