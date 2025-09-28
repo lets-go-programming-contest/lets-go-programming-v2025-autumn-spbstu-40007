@@ -12,7 +12,7 @@ import (
 	"task-2-2/internal/scanner"
 )
 
-type IntMaxPriorityQueue []int //nolint:all
+type IntMaxPriorityQueue []int
 
 func (priorityQueue IntMaxPriorityQueue) Len() int {
 	return len(priorityQueue)
@@ -27,7 +27,7 @@ func (priorityQueue IntMaxPriorityQueue) Swap(i, j int) {
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Push(x any) {
-	*priorityQueue = append(*priorityQueue, x.(int)) //nolint:all
+	*priorityQueue = append(*priorityQueue, x.(int))
 }
 
 func (priorityQueue *IntMaxPriorityQueue) Pop() any {
