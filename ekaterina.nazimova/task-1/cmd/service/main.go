@@ -5,8 +5,10 @@ import (
 )
 
 func main() {
-	var num1, num2 int
-	var op string
+	var (
+		num1, num2 int
+		op         string
+	)
 
 	if _, err := fmt.Scanln(&num1); err != nil {
 		fmt.Println("Invalid first operand")
@@ -19,23 +21,24 @@ func main() {
 	}
 
 	if _, err := fmt.Scanln(&op); err != nil {
-		fmt.Println("Invalid option")
+		fmt.Println("Invalid operation")
 		return
 	}
 
-	if op == "+" {
+	switch op {
+	case "+":
 		fmt.Println(num1 + num2)
-	} else if op == "-" {
+	case "-":
 		fmt.Println(num1 - num2)
-	} else if op == "*" {
+	case "*":
 		fmt.Println(num1 * num2)
-	} else if op == "/" {
+	case "/":
 		if num2 == 0 {
 			fmt.Println("Division by zero")
 		} else {
 			fmt.Println(num1 / num2)
 		}
-	} else {
+	default:
 		fmt.Println("Invalid operation")
 	}
 }
