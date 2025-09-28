@@ -48,9 +48,9 @@ func main() {
 				scanner.SkipNLines(k - j - 1)
 
 				break
-			} else {
-				fmt.Println(lowerBoundary)
 			}
+
+			fmt.Println(lowerBoundary)
 		}
 	}
 }
