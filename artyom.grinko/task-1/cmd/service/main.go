@@ -1,54 +1,42 @@
 package main
 
+// Newline for separation std packages from others seems crazy to linter.
+//nolint:gofumpt
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
+
+	"task-1/internal/die"
+	"task-1/internal/scanner"
 )
 
-func die(args ...any) {
-	fmt.Fprintln(os.Stderr, args...)
-
-	os.Exit(0)
-}
-
-func read(scanner *bufio.Scanner) string {
-	scanner.Scan()
-	if err := scanner.Err(); err != nil {
-		die("What a pity:", err)
-	}
-
-	return scanner.Text()
-}
-
-var operations = map[string]func(int64, int64) int64{
-	"+": func(x, y int64) int64 { return x + y },
-	"-": func(x, y int64) int64 { return x - y },
-	"*": func(x, y int64) int64 { return x * y },
-	"/": func(x, y int64) int64 { return x / y },
+var operations = map[string]func(int, int) int{
+	"+": func(x, y int) int { return x + y },
+	"-": func(x, y int) int { return x - y },
+	"*": func(x, y int) int { return x * y },
+	"/": func(x, y int) int { return x / y },
 }
 
 func main() {
-	stdin := bufio.NewScanner(os.Stdin)
-	x, err := strconv.ParseInt(read(stdin), 10, 0)
+	scanner := scanner.NewScanner()
+	x, err := strconv.Atoi(scanner.Read())
 	if err != nil {
-		die("Invalid first operand")
+		die.Die("Invalid first operand")
 	}
 
-	y, err := strconv.ParseInt(read(stdin), 10, 0)
+	y, err := strconv.Atoi(scanner.Read())
 	if err != nil {
-		die("Invalid second operand")
+		die.Die("Invalid second operand")
 	}
 
-	operation := read(stdin)
+	operation := scanner.Read()
 	if y == 0 && operation == "/" {
-		die("Division by zero")
+		die.Die("Division by zero")
 	}
 
 	if f, ok := operations[operation]; ok {
 		fmt.Println(f(x, y))
 	} else {
-		die("Invalid operation")
+		die.Die("Invalid operation")
 	}
 }
