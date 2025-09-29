@@ -18,7 +18,12 @@ func (h *IntHeap) Len() int           { return len(*h) }
 func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
 func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
-func (h *IntHeap) Push(x interface{}) { *h = append(*h, x.(int)) }
+func (h *IntHeap) Push(x interface{}) {
+	if value, ok := x.(int); ok {
+		*h = append(*h, value)
+	}
+}
+
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
@@ -61,7 +66,9 @@ func main() {
 
 	chosen := 0
 	for range preferred {
-		chosen = heap.Pop(dishes).(int)
+		if value, ok := heap.Pop(dishes).(int); ok {
+			chosen = value
+		}
 	}
 
 	fmt.Println(chosen)
