@@ -19,7 +19,7 @@ func multiply(x int, y int) int {
 
 func divide(x int, y int) (int, error) {
 	if y == 0 {
-		return 0, errors.New("1")
+		return 0, errors.New("Division by zero")
 	}
 
 	return x / y, nil
@@ -28,23 +28,23 @@ func divide(x int, y int) (int, error) {
 func main() {
 	var x, y int
 
-	_, err1 := fmt.Scanln(&x)
+	_, err := fmt.Scanln(&x)
 
-	if err1 != nil {
+	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	_, err2 := fmt.Scanln(&y)
-	if err2 != nil {
+	_, err = fmt.Scanln(&y)
+	if err != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
 	var option string
 
-	_, err3 := fmt.Scanln(&option)
-	if err3 != nil {
+	_, err = fmt.Scanln(&option)
+	if err != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
@@ -59,13 +59,11 @@ func main() {
 	case "/":
 		result, err := divide(x, y)
 		if err != nil {
-			fmt.Println("Division by zero")
+			fmt.Println(err)
 			return
-		} else {
-			fmt.Println(result)
 		}
+		fmt.Println(result)
 	default:
 		fmt.Println("Invalid operation")
-		return
 	}
 }
