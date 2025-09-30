@@ -64,7 +64,8 @@ func main() {
 		return
 	}
 
-	chosen := 0
+	var chosen int
+
 	for range preferred {
 		if value, ok := heap.Pop(dishes).(int); ok {
 			chosen = value
