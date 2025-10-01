@@ -19,13 +19,16 @@ func calculate(number1 int, number2 int, symbol string) {
 			return
 		}
 		fmt.Println(number1 / number2)
+	default:
+		fmt.Println("Invalid operation")
 	}
 }
 
 func main() {
-	var number1 int
-	var number2 int
-	var symbol string
+	var (
+		number1, number2 int
+		symbol           string
+	)
 
 	_, err := fmt.Fscan(os.Stdin, &number1)
 	if err != nil {
@@ -41,11 +44,6 @@ func main() {
 
 	_, err = fmt.Fscan(os.Stdin, &symbol)
 	if err != nil {
-		fmt.Println("Invalid operation")
-		return
-	}
-
-	if symbol != "+" && symbol != "-" && symbol != "/" && symbol != "*" {
 		fmt.Println("Invalid operation")
 		return
 	}
