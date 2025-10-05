@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -12,23 +11,22 @@ var (
 	ErrInvalidTemperature = errors.New("invalid temperature")
 )
 
-func parseBorder(border string) (string, int, error) {
-	fields := strings.Fields(border)
+func checkBorder(operation string, tempStr string) (string, int, error) {
 
-	if fields[0] != "<=" && fields[0] != ">=" {
+	if operation != "<=" && operation != ">=" {
 		return "", 0, ErrInvalidOperator
 	}
 
-	temp, err := strconv.Atoi(fields[1])
+	tempInt, err := strconv.Atoi(tempStr)
 	if err != nil {
 		return "", 0, ErrInvalidTemperature
 	}
 
-	if temp > 30 || temp < 15 {
+	if tempInt > 30 || tempInt < 15 {
 		return "", 0, ErrInvalidTemperature
 	}
 
-	return fields[0], temp, nil
+	return operation, tempInt, nil
 }
 
 func processEmployees(employees int) {
@@ -52,9 +50,7 @@ func processEmployees(employees int) {
 			continue
 		}
 
-		tempBorder := fmt.Sprintf("%s %s", oper, temp)
-
-		operation, temperature, err := parseBorder(tempBorder)
+		operation, temperature, err := checkBorder(oper, temp)
 		if err != nil {
 			fmt.Println("Error has occurred:", err)
 			fmt.Println(-1)
