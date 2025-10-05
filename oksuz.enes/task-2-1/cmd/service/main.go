@@ -1,45 +1,48 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 )
 
 func main() {
-	var room, workers, minTemp, maxTemp int
+	in := bufio.NewReader(os.Stdin)
 
-	if _, err := fmt.Scanln(&room, &workers); err != nil {
-		fmt.Println("Error reading input:", err)
+	var room, workers int
+	if _, err := fmt.Fscan(in, &room, &workers); err != nil {
+
 		return
 	}
 
+	minTemp := 15
+	maxTemp := 30
+
 	for i := 0; i < workers; i++ {
-		var (
-			operator string
-			temp     int
-		)
+		var op string
+		var t int
 
-		if _, err := fmt.Scanln(&operator); err != nil {
-			fmt.Println("Error reading operator:", err)
+		if _, err := fmt.Fscan(in, &op, &t); err != nil {
+
 			return
 		}
 
-		if _, err := fmt.Scanln(&temp); err != nil {
-			fmt.Println("Error reading temp:", err)
-			return
+		if op == ">=" {
+			if t > minTemp {
+				minTemp = t
+			}
+		} else if op == "<=" {
+			if t < maxTemp {
+				maxTemp = t
+			}
 		}
-		if operator == ">=" {
-			minTemp = max(minTemp, temp)
-
-		} else if operator == "<=" {
-			maxTemp = min(maxTemp, temp)
-		}
-
 	}
 
 	if minTemp > maxTemp {
 		fmt.Println(-1)
-	} else {
-		fmt.Println(minTemp)
+
+		return
 	}
 
+	fmt.Println(minTemp)
 }
