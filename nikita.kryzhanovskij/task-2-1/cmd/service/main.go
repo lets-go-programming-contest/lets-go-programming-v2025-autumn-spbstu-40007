@@ -12,7 +12,6 @@ var (
 )
 
 func checkBorder(operation string, tempStr string) (string, int, error) {
-
 	if operation != "<=" && operation != ">=" {
 		return "", 0, ErrInvalidOperator
 	}
