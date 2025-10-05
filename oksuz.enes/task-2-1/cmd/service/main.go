@@ -7,42 +7,38 @@ import (
 )
 
 func main() {
-	in := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin)
 
 	var room, workers int
-	if _, err := fmt.Fscan(in, &room, &workers); err != nil {
-
+	if _, err := fmt.Fscan(reader, &room, &workers); err != nil {
 		return
 	}
 
 	minTemp := 15
 	maxTemp := 30
 
-	for i := 0; i < workers; i++ {
-		var op string
-		var t int
+	for range workers {
+		var operator string
+		var temp int
 
-		if _, err := fmt.Fscan(in, &op, &t); err != nil {
-
+		if _, err := fmt.Fscan(reader, &operator, &temp); err != nil {
 			return
 		}
 
-		if op == ">=" {
-			if t > minTemp {
-				minTemp = t
+		if operator == ">=" {
+			if temp > minTemp {
+				minTemp = temp
 			}
-		} else if op == "<=" {
-			if t < maxTemp {
-				maxTemp = t
+		} else if operator == "<=" {
+			if temp < maxTemp {
+				maxTemp = temp
 			}
 		}
 	}
 
 	if minTemp > maxTemp {
 		fmt.Println(-1)
-
-		return
+	} else {
+		fmt.Println(minTemp)
 	}
-
-	fmt.Println(minTemp)
 }
