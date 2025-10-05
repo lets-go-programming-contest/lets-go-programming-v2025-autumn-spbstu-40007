@@ -7,7 +7,10 @@ import (
 func main() {
 	var room, workers, minTemp, maxTemp int
 
-	fmt.Scanln(&room, &workers)
+	if _, err := fmt.Scanln(&room, &workers); err != nil {
+		fmt.Println("Error reading input:", err)
+		return
+	}
 
 	for i := 0; i < workers; i++ {
 		var (
@@ -15,9 +18,15 @@ func main() {
 			temp     int
 		)
 
-		fmt.Scanln(&operator)
-		fmt.Scanln(&temp)
+		if _, err := fmt.Scanln(&operator); err != nil {
+			fmt.Println("Error reading operator:", err)
+			return
+		}
 
+		if _, err := fmt.Scanln(&temp); err != nil {
+			fmt.Println("Error reading temp:", err)
+			return
+		}
 		if operator == ">=" {
 			minTemp = max(minTemp, temp)
 
