@@ -13,13 +13,13 @@ func getTemperature(k int) { //nolint:varnamelen
 	)
 
 	for range k {
-		_, err := fmt.Scanf("%s, %d", &sign, &temperature)
+		_, err := fmt.Scanln(&sign, &temperature)
 		if err != nil {
 			fmt.Println(-1)
 		}
 
 		if !(15 <= temperature && temperature <= 30) {
-			fmt.Println(-1)
+			return
 		}
 
 		switch sign {
@@ -32,7 +32,7 @@ func getTemperature(k int) { //nolint:varnamelen
 				lowBorder = temperature
 			}
 		default:
-			fmt.Println(-1)
+			return
 		}
 
 		if highBorder <= lowBorder {
