@@ -10,26 +10,25 @@ func getRecomendedTemperature(K int) {
 	recTemp = 15
 	highBorder = 30
 	lowBorder = 15
+
 	for j := 0; j < K; j++ {
 		_, err := fmt.Scanf("%s %d", &sign, &temp)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		if temp < lowBorder && sign == "<=" || temp > highBorder && sign == ">=" {
-			recTemp = -1
-		}
-		if sign == ">=" && temp <= highBorder && temp >= lowBorder {
-			recTemp = temp
-			lowBorder = temp
+		if sign == ">=" {
+			lowBorder = max(lowBorder, temp)
 		}
 
-		if sign == "<=" && temp <= highBorder && temp >= lowBorder {
-			highBorder = temp
+		if sign == "<=" {
+			highBorder = min(highBorder, temp)
 		}
 
-		if sign == "<=" && recTemp > temp {
+		if lowBorder > highBorder {
 			recTemp = -1
+		} else {
+			recTemp = lowBorder
 		}
 
 		fmt.Println(recTemp)
