@@ -7,52 +7,52 @@ import (
 
 type IntMaxHeap []int
 
-func (h IntMaxHeap) Len() int {
-	return len(h)
+func (myHeap IntMaxHeap) Len() int {
+	return len(myHeap)
 }
-func (h IntMaxHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (myHeap IntMaxHeap) Less(i, j int) bool {
+	return myHeap[i] > myHeap[j]
 }
-func (h IntMaxHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (myHeap IntMaxHeap) Swap(i, j int) {
+	myHeap[i], myHeap[j] = myHeap[j], myHeap[i]
 }
-func (h *IntMaxHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+func (myHeap *IntMaxHeap) Push(x interface{}) {
+	*myHeap = append(*myHeap, x.(int))
 }
-func (h *IntMaxHeap) Pop() interface{} {
-	old := *h
+func (myHeap *IntMaxHeap) Pop() interface{} {
+	old := *myHeap
 	n := len(old)
 	x := old[n-1]
-	*h = old[0 : n-1]
+	*myHeap = old[0 : n-1]
 	return x
 }
 
 func main() {
-	var N, ai, k int
+	var count, value, numberOfDish int
 
 	h := &IntMaxHeap{}
 
-	_, err := fmt.Scan(&N)
+	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 0; i < N; i++ {
-		_, err = fmt.Scan(&ai)
+	for i := 0; i < count; i++ {
+		_, err = fmt.Scan(&value)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		heap.Push(h, ai)
+		heap.Push(h, value)
 	}
 	heap.Init(h)
 
-	_, err = fmt.Scan(&k)
+	_, err = fmt.Scan(&numberOfDish)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 1; i < k; i++ {
+	for i := 1; i < numberOfDish; i++ {
 		heap.Pop(h)
 	}
 
