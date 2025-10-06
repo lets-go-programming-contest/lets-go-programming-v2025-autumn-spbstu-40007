@@ -44,9 +44,7 @@ func getTemperature(k int) { //nolint:varnamelen
 }
 
 func main() {
-	var (
-		n, k int //nolint:varnamelen
-	)
+	var n, k int //nolint:varnamelen
 
 	_, err := fmt.Scan(&n)
 	if err != nil {
