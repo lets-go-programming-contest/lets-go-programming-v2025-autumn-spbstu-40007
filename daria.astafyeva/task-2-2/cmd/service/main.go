@@ -19,14 +19,14 @@ func (h *DishHeap) Push(x any) {
 
 func (h *DishHeap) Pop() any {
 	heapArr := *h
-	lenght := len(heapArr)
+	length := len(heapArr)
 
-	if lenght == 0 {
+	if length == 0 {
 		return nil
 	}
 
-	last := heapArr[lenght-1]
-	*h = heapArr[:lenght-1]
+	last := heapArr[length-1]
+	*h = heapArr[:length-1]
 
 	return last
 }
