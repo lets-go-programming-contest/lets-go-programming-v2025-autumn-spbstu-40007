@@ -7,9 +7,9 @@ import (
 
 type DishHeap []int
 
-func (h DishHeap) Len() int           { return len(h) }
-func (h DishHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h DishHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *DishHeap) Len() int           { return len(*h) }
+func (h *DishHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
+func (h *DishHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *DishHeap) Push(x any) {
 	if val, ok := x.(int); ok {
@@ -19,14 +19,14 @@ func (h *DishHeap) Push(x any) {
 
 func (h *DishHeap) Pop() any {
 	heapArr := *h
-	n := len(heapArr)
+	lenght := len(heapArr)
 
-	if n == 0 {
+	if lenght == 0 {
 		return nil
 	}
 
-	last := heapArr[n-1]
-	*h = heapArr[:n-1]
+	last := heapArr[lenght-1]
+	*h = heapArr[:lenght-1]
 
 	return last
 }
@@ -50,6 +50,7 @@ func main() {
 
 	if _, err := fmt.Scan(&preferenceRank); err != nil || preferenceRank < 1 || preferenceRank > numDishes {
 		fmt.Println("Invalid input")
+
 		return
 	}
 
