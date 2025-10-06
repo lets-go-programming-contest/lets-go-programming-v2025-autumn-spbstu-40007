@@ -9,6 +9,7 @@ import (
 
 func readInput(scanner *bufio.Scanner) string {
 	scanner.Scan()
+
 	err := scanner.Err()
 	if err != nil {
 		fmt.Println("Error reading input")
