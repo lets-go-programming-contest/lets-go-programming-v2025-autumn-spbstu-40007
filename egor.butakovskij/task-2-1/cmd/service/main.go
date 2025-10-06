@@ -36,7 +36,6 @@ func getRecommendedTemperature(employeesCount int) {
 }
 
 func main() {
-	
 	var (
 		departmentsCount, employeesCount int
 	)
