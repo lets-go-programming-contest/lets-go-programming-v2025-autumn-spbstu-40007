@@ -7,6 +7,7 @@ func getRecommendedTemperature(employeesCount int) {
 		temp, recTemp, highBorder, lowBorder int
 		sign                                 string
 	)
+
 	highBorder = 30
 	lowBorder = 15
 
@@ -49,6 +50,8 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
+
 		getRecommendedTemperature(employeesCount)
+		
 	}
 }
