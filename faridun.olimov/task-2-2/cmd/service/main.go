@@ -22,21 +22,21 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[:n-1]
+
 	return x
 }
 
 func main() {
 	var count, kValue int
-	var err error
 
-	_, err = fmt.Scan(&count)
+	_, err := fmt.Scan(&count)
 	if err != nil {
 		return
 	}
 
 	numbers := make([]int, count)
 
-	for i := 0; i < count; i++ {
+	for i := range count {
 		_, err = fmt.Scan(&numbers[i])
 		if err != nil {
 			return
@@ -55,7 +55,7 @@ func main() {
 		heap.Push(intHeap, num)
 	}
 
-	for i := 0; i < kValue-1; i++ {
+	for i := 1; i < kValue; i++ {
 		heap.Pop(intHeap)
 	}
 
