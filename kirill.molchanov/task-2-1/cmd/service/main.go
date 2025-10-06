@@ -42,8 +42,8 @@ func getTemperature(k int) { //nolint:varnamelen
 		}
 	}
 }
-func main() {
 
+func main() {
 	var (
 		n, k int //nolint:varnamelen
 	)
