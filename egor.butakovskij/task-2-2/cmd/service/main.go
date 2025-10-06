@@ -24,37 +24,39 @@ func (myHeap *IntMaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*myHeap = old[0 : n-1]
+
 	return x
 }
 
 func main() {
 	var count, value, numberOfDish int
 
-	h := &IntMaxHeap{}
+	myHeap := &IntMaxHeap{}
 
 	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 0; i < count; i++ {
+	for range count {
 		_, err = fmt.Scan(&value)
 		if err != nil {
 			fmt.Println(err)
 		}
 
-		heap.Push(h, value)
+		heap.Push(myHeap, value)
 	}
-	heap.Init(h)
+	
+	heap.Init(myHeap)
 
 	_, err = fmt.Scan(&numberOfDish)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 1; i < numberOfDish; i++ {
-		heap.Pop(h)
+	for range numberOfDish {
+		heap.Pop(myHeap)
 	}
 
-	fmt.Println(heap.Pop(h))
+	fmt.Println(heap.Pop(myHeap))
 }
