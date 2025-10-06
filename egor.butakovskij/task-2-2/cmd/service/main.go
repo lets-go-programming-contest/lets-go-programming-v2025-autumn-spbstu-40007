@@ -7,18 +7,26 @@ import (
 
 type IntMaxHeap []int
 
-func (myHeap IntMaxHeap) Len() int {
-	return len(myHeap)
+func (myHeap *IntMaxHeap) Len() int {
+	return len(*myHeap)
 }
-func (myHeap IntMaxHeap) Less(i, j int) bool {
-	return myHeap[i] > myHeap[j]
+
+func (myHeap *IntMaxHeap) Less(i, j int) bool {
+	return (*myHeap)[i] > (*myHeap)[j]
 }
-func (myHeap IntMaxHeap) Swap(i, j int) {
-	myHeap[i], myHeap[j] = myHeap[j], myHeap[i]
+
+func (myHeap *IntMaxHeap) Swap(i, j int) {
+	(*myHeap)[i], (*myHeap)[j] = (*myHeap)[j], (*myHeap)[i]
 }
+
 func (myHeap *IntMaxHeap) Push(x interface{}) {
-	*myHeap = append(*myHeap, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*myHeap = append(*myHeap, value)
 }
+
 func (myHeap *IntMaxHeap) Pop() interface{} {
 	old := *myHeap
 	n := len(old)
@@ -46,7 +54,7 @@ func main() {
 
 		heap.Push(myHeap, value)
 	}
-	
+
 	heap.Init(myHeap)
 
 	_, err = fmt.Scan(&numberOfDish)
@@ -54,7 +62,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	for range numberOfDish {
+	for i := 1; i < numberOfDish; i++ {
 		heap.Pop(myHeap)
 	}
 
