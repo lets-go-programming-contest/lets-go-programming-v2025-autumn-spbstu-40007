@@ -2,16 +2,15 @@ package main
 
 import "fmt"
 
-func getRecomendedTemperature(K int) {
+func getRecommendedTemperature(employeesCount int) {
 	var (
 		temp, recTemp, highBorder, lowBorder int
 		sign                                 string
 	)
-	recTemp = 15
 	highBorder = 30
 	lowBorder = 15
 
-	for j := 0; j < K; j++ {
+	for range employeesCount {
 		_, err := fmt.Scanf("%s %d", &sign, &temp)
 		if err != nil {
 			fmt.Println(err)
@@ -37,19 +36,19 @@ func getRecomendedTemperature(K int) {
 
 func main() {
 	var (
-		N, K int
+		departmentsCount, employeesCount int
 	)
 
-	_, err := fmt.Scan(&N)
+	_, err := fmt.Scan(&departmentsCount)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 0; i < N; i++ {
-		_, err := fmt.Scan(&K)
+	for range departmentsCount {
+		_, err := fmt.Scan(&employeesCount)
 		if err != nil {
 			fmt.Println(err)
 		}
-		getRecomendedTemperature(K)
+		getRecommendedTemperature(employeesCount)
 	}
 }
