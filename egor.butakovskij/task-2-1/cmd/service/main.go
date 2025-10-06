@@ -31,7 +31,6 @@ func getRecomendedTemperature(K int) {
 
 		if sign == "<=" && recTemp > temp {
 			fmt.Println("-1")
-			return
 		}
 
 		fmt.Println(recTemp)
