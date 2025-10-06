@@ -36,9 +36,7 @@ func getRecommendedTemperature(employeesCount int) {
 }
 
 func main() {
-	var (
-		departmentsCount, employeesCount int
-	)
+	var departmentsCount, employeesCount int
 
 	_, err := fmt.Scan(&departmentsCount)
 	if err != nil {
