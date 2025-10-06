@@ -52,6 +52,5 @@ func main() {
 		}
 
 		getRecommendedTemperature(employeesCount)
-		
 	}
 }
