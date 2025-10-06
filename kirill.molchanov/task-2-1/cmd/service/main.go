@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func getTemperature(k int) {
+func getTemperature(k int) { //nolint:varnamelen
 	var (
 		temperature int
 		sign        string
@@ -13,7 +13,10 @@ func getTemperature(k int) {
 	)
 
 	for range k {
-		fmt.Scanln(&sign, &temperature)
+		_, err := fmt.Scanf("%s, %d", &sign, &temperature)
+		if err != nil {
+			fmt.Println(-1)
+		}
 
 		if !(15 <= temperature && temperature <= 30) {
 			fmt.Println(-1)
@@ -40,22 +43,22 @@ func getTemperature(k int) {
 	}
 }
 func main() {
+
 	var (
-		n, k int
+		n, k int //nolint:varnamelen
 	)
 
-	fmt.Scanln(&n)
-
-	if !(1 <= n && n <= 1000) {
-		fmt.Println(-1)
+	_, err := fmt.Scan(&n)
+	if err != nil {
+		return
 	}
 
 	for range n {
-		fmt.Scanln(&k)
-
-		if !(1 <= k && k <= 1000) {
-			fmt.Println(-1)
+		_, err := fmt.Scan(&k)
+		if err != nil {
+			return
 		}
+
 		getTemperature(k)
 	}
 }
