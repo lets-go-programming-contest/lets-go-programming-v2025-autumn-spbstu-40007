@@ -14,19 +14,20 @@ func readInput(scanner *bufio.Scanner) string {
 		fmt.Println("Error reading input")
 		os.Exit(0)
 	}
+
 	return scanner.Text()
 }
 
 func main() {
-	var minTemperature int = 15
-	var maxTemperature int = 30
+	minTemperature := 15
+	maxTemperature := 30
 
 	reader := bufio.NewScanner(os.Stdin)
-	numberDepartments, _ := strconv.Atoi(readInput(reader))
 
-	for i := 0; i < numberDepartments; i++ {
+	numberDepartments, _ := strconv.Atoi(readInput(reader))
+	for range numberDepartments {
 		numberEmployees, _ := strconv.Atoi(readInput(reader))
-		for v := 0; v < numberEmployees; v++ {
+		for range numberEmployees {
 			preferences := readInput(reader)
 			operand := preferences[0]
 			temperature, _ := strconv.Atoi(preferences[3:])
@@ -46,6 +47,5 @@ func main() {
 
 		minTemperature = 15
 		maxTemperature = 30
-
 	}
 }
