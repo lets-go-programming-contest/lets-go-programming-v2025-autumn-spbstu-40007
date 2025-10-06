@@ -24,6 +24,7 @@ func (myHeap *IntMaxHeap) Push(x interface{}) {
 	if !ok {
 		return
 	}
+	
 	*myHeap = append(*myHeap, value)
 }
 
