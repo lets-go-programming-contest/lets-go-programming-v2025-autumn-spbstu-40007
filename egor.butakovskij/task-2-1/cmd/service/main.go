@@ -18,7 +18,6 @@ func getRecomendedTemperature(K int) {
 
 		if temp < lowBorder && sign == "<=" || temp > highBorder && sign == ">=" {
 			fmt.Println("-1")
-			return
 		}
 		if sign == ">=" && temp <= highBorder && temp >= lowBorder {
 			recTemp = temp
