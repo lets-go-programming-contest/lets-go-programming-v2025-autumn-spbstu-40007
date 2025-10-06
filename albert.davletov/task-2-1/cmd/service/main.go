@@ -23,24 +23,29 @@ func main() {
 
 	reader := bufio.NewScanner(os.Stdin)
 	numberDepartments, _ := strconv.Atoi(readInput(reader))
+
 	for i := 0; i < numberDepartments; i++ {
 		numberEmployees, _ := strconv.Atoi(readInput(reader))
 		for v := 0; v < numberEmployees; v++ {
 			preferences := readInput(reader)
 			operand := preferences[0]
 			temperature, _ := strconv.Atoi(preferences[3:])
+
 			if operand == '<' {
 				maxTemperature = min(maxTemperature, temperature)
 			} else {
-				if temperature > maxTemperature {
-					fmt.Println(-1)
-					break
-				}
 				minTemperature = max(temperature, minTemperature)
 			}
-			fmt.Println(minTemperature)
+
+			if minTemperature > maxTemperature {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(minTemperature)
+			}
 		}
+
 		minTemperature = 15
 		maxTemperature = 30
+
 	}
 }
