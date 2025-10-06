@@ -56,7 +56,6 @@ func main() {
 		if !(1 <= k && k <= 1000) {
 			fmt.Println(-1)
 		}
-
 		getTemperature(k)
 	}
 }
