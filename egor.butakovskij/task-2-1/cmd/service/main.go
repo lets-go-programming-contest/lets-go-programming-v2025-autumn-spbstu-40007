@@ -13,7 +13,7 @@ func getRecomendedTemperature(K int) {
 	for j := 0; j < K; j++ {
 		_, err := fmt.Scanf("%s %d", &sign, &temp)
 		if err != nil {
-			fmt.Println("Error:", err)
+			fmt.Println(err)
 		}
 
 		if temp < lowBorder && sign == "<=" || temp > highBorder && sign == ">=" {
@@ -44,13 +44,13 @@ func main() {
 
 	_, err := fmt.Scan(&N)
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println(err)
 	}
 
 	for i := 0; i < N; i++ {
 		_, err := fmt.Scan(&K)
 		if err != nil {
-			fmt.Println("Error:", err)
+			fmt.Println(err)
 		}
 		getRecomendedTemperature(K)
 	}
