@@ -4,22 +4,31 @@ import "fmt"
 
 func main() {
 	var departmentAmount int
-	fmt.Scan(&departmentAmount)
+	_, err := fmt.Scan(&departmentAmount)
+	if err != nil {
+		return
+	}
 
-	for i := 0; i < departmentAmount; i++ {
+	for range departmentAmount {
 		maximumTemp := 30
 		minimumTemp := 15
 
 		var employeeAmount int
-		fmt.Scan(&employeeAmount)
+		_, err = fmt.Scan(&employeeAmount)
+		if err != nil {
+			return
+		}
 
-		for j := 0; j < employeeAmount; j++ {
+		for range employeeAmount {
 			var (
 				operand     string
 				temperature int
 			)
 
-			fmt.Scan(&operand, &temperature)
+			_, err = fmt.Scan(&operand, &temperature)
+			if err != nil {
+				return
+			}
 
 			if operand == "<=" && temperature < maximumTemp {
 				maximumTemp = temperature
