@@ -34,6 +34,7 @@ func main() {
 			if operator == ">=" && tempValue > minTemp {
 				minTemp = tempValue
 			}
+
 			if operator == "<=" && tempValue < maxTemp {
 				maxTemp = tempValue
 			}
