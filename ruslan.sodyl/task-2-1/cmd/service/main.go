@@ -1,15 +1,15 @@
 package main
+
 import "fmt"
 
 func process(emploeesNumb uint16) {
-	
 	var (
-		temp uint8
+		temp 	uint8
+		sign 	string
 		minTemp uint8 = 15 
 		maxTemp uint8 = 30
-		sign string
+		
 	)
-	
 	const (
 		minConstTemp = 15
 		maxConstTemp = 30
@@ -18,7 +18,6 @@ func process(emploeesNumb uint16) {
 	)
 
 	for range emploeesNumb {
-		
 		_, err := fmt.Scan(&sign,&temp)
 		if err != nil || sign != lessSign && sign != moreSign || 
 		temp > maxConstTemp || temp < minConstTemp {
@@ -40,9 +39,7 @@ func process(emploeesNumb uint16) {
 		}
 	}
 }
-
 func main() {
-
 	var(
 		departNumb,emploeesNumb uint16
 	)
