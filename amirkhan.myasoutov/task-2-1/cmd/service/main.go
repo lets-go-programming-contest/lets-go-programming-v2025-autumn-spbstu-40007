@@ -4,9 +4,10 @@ import "fmt"
 
 func main() {
 	var departmentAmount int
+
 	_, err := fmt.Scan(&departmentAmount)
 	if err != nil {
-		return
+		fmt.Println(err)
 	}
 
 	for range departmentAmount {
@@ -14,9 +15,10 @@ func main() {
 		minimumTemp := 15
 
 		var employeeAmount int
+
 		_, err = fmt.Scan(&employeeAmount)
 		if err != nil {
-			return
+			fmt.Println(err)
 		}
 
 		for range employeeAmount {
@@ -27,7 +29,7 @@ func main() {
 
 			_, err = fmt.Scan(&operand, &temperature)
 			if err != nil {
-				return
+				fmt.Println(err)
 			}
 
 			if operand == "<=" && temperature < maximumTemp {
