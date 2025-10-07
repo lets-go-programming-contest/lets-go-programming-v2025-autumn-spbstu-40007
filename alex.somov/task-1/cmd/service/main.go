@@ -59,7 +59,7 @@ func main() {
 		result = divide(firstOperand, secondOperand)
 
 	default:
-		fmt.Println("Invald operation")
+		fmt.Println("Invalid operation")
 		return
 	}
 
