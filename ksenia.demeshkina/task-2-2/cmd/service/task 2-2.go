@@ -8,14 +8,13 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
 	value, ok := x.(int)
 	if !ok {
-
 		return
 	}
 
@@ -50,7 +49,7 @@ func main() {
 	dishesHeap := &IntHeap{}
 	heap.Init(dishesHeap)
 
-	for _ = range make([]int, count) {
+	for range count {
 		var dishes int
 		_, err = fmt.Scan(&dishes)
 
