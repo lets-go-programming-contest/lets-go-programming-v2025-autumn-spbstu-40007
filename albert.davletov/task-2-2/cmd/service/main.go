@@ -40,6 +40,7 @@ func (ownHeap *IntHeap) Push(x interface{}) {
 	if !err {
 		return
 	}
+
 	*ownHeap = append(*ownHeap, intX)
 }
 
@@ -57,6 +58,7 @@ func main() {
 
 	var dishesCount int
 	_, err := fmt.Scanln(&dishesCount)
+
 	if err != nil {
 		fmt.Println(err)
 
@@ -77,8 +79,9 @@ func main() {
 		return
 	}
 
-	numberOfPreferedDish, _ := strconv.Atoi(readInput(reader))
 	heap.Init(dishesHeap)
+
+	numberOfPreferedDish, _ := strconv.Atoi(readInput(reader))
 	for range numberOfPreferedDish - 1 {
 		heap.Pop(dishesHeap)
 	}
