@@ -36,7 +36,11 @@ func main() {
 		return
 	}
 
-	fmt.Scanln(&operator)
+	_, err = fmt.Scanln(&operator)
+	if err != nil {
+		fmt.Println("Invalid operation")
+		return
+	}
 
 	var result int
 
@@ -64,5 +68,4 @@ func main() {
 	}
 
 	fmt.Println(result)
-
 }
