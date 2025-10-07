@@ -12,7 +12,6 @@ func main() {
 	}
 
 	for range departmentsCount {
-
 		var employeesCount int
 
 		if _, err := fmt.Scan(&employeesCount); err != nil {
@@ -23,7 +22,6 @@ func main() {
 		maxTemp := 30
 
 		for range employeesCount {
-
 			var (
 				operator  string
 				tempValue int
