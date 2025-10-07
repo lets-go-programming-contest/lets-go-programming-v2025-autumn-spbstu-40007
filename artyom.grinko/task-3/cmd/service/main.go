@@ -1,5 +1,6 @@
 package main
 
+//nolint:gofumpt
 import (
 	"cmp"
 	"flag"
@@ -33,7 +34,7 @@ func main() {
 		return cmp.Compare(y.Value, x.Value)
 	})
 
-	if err = rate.ToJSONFile(config.OutputFile); err != nil {
+	if err = rate.ToJSONFile(config.OutputFile); err != nil { //nolint:noinlineerr
 		die.Die(err)
 	}
 }

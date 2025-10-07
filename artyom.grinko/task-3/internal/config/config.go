@@ -1,5 +1,6 @@
 package config
 
+//nolint:gofumpt,gci
 import (
 	"errors"
 	"os"
@@ -19,17 +20,19 @@ type Config struct {
 func FromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
+
 	defer func() {
-		if err = file.Close(); err != nil {
+		if err = file.Close(); err != nil { //nolint:noinlineerr
 			die.Die(err)
 		}
 	}()
 
 	result := &Config{} //nolint:exhaustruct
 	decoder := yaml.NewDecoder(file)
-	if err = decoder.Decode(result); err != nil {
+
+	if err = decoder.Decode(result); err != nil { //nolint:noinlineerr
 		return nil, errDidNotFindExpectedKey
 	}
 

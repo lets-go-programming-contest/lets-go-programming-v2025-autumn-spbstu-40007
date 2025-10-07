@@ -1,5 +1,6 @@
 package exchangeRate
 
+//nolint:gofumpt,gci
 import (
 	"encoding/json"
 	"encoding/xml"
@@ -17,14 +18,15 @@ type RussianFloat float64
 
 func (russianFloat *RussianFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	content := ""
-	if err := decoder.DecodeElement(&content, &start); err != nil {
-		return err
+	if err := decoder.DecodeElement(&content, &start); err != nil { //nolint:noinlineerr
+		return err //nolint:wrapcheck
 	}
 
 	content = strings.ReplaceAll(content, ",", ".")
+
 	result, err := strconv.ParseFloat(content, 64)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	*russianFloat = RussianFloat(result)
@@ -33,9 +35,9 @@ func (russianFloat *RussianFloat) UnmarshalXML(decoder *xml.Decoder, start xml.S
 }
 
 type Currency struct {
-	NumCode  int          `xml:"NumCode" json:"num_code"`
-	CharCode string       `xml:"CharCode" json:"char_code"`
-	Value    RussianFloat `xml:"Value" json:"value"`
+	NumCode  int          `json:"num_code"  xml:"NumCode"`
+	CharCode string       `json:"char_code" xml:"CharCode"`
+	Value    RussianFloat `json:"value"     xml:"Value"`
 }
 
 type ExchangeRate struct {
@@ -45,20 +47,22 @@ type ExchangeRate struct {
 func FromXMLFile(path string) (*ExchangeRate, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	defer func() {
-		if err = file.Close(); err != nil {
+		if err = file.Close(); err != nil { //nolint:noinlineerr
 			die.Die(err)
 		}
 	}()
 
 	result := &ExchangeRate{} //nolint:exhaustruct
+
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
-	if err = decoder.Decode(result); err != nil {
-		return nil, err
+
+	if err = decoder.Decode(result); err != nil { //nolint:noinlineerr
+		return nil, err //nolint:wrapcheck
 	}
 
 	return result, nil
@@ -67,24 +71,25 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	err := file.CreateIfNotExists(path)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
-	file, err := os.OpenFile(path, os.O_WRONLY, 0755)
+	file, err := os.OpenFile(path, os.O_WRONLY, 0o600)
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	defer func() {
-		if err = file.Close(); err != nil {
+		if err = file.Close(); err != nil { //nolint:noinlineerr
 			die.Die(err)
 		}
 	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	if err = encoder.Encode(exchangeRate.Currencies); err != nil {
-		return err
+
+	if err = encoder.Encode(exchangeRate.Currencies); err != nil { //nolint:noinlineerr
+		return err //nolint:wrapcheck
 	}
 
 	return nil
