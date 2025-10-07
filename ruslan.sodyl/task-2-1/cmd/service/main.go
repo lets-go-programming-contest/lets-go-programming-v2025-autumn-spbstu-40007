@@ -1,7 +1,7 @@
 package main
 import ("fmt")
 
-func process(K uint16){
+func process(emploeesNumb uint16){
 	var(
 		temp uint8
 		minTemp uint8 = 15 
@@ -15,7 +15,7 @@ func process(K uint16){
 		lessSign = "<="
 	)
 	
-	for range K {
+	for range emploeesNumb {
 		_, err := fmt.Scan(&sign,&temp)
 		if err != nil || sign != lessSign && sign != moreSign || 
 		temp > maxConstTemp || temp < minConstTemp {
