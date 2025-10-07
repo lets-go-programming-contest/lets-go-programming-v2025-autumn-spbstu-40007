@@ -69,8 +69,8 @@ func main() {
 	preferedDishes := readInput(reader)
 
 	for _, v := range strings.Fields(preferedDishes) {
-		intV, _ := strconv.Atoi(v)
-		dishesHeap.Push(intV)
+		intv, _ := strconv.Atoi(v)
+		dishesHeap.Push(intv)
 	}
 
 	if dishesHeap.Len() != dishesCount {
