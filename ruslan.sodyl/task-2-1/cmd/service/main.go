@@ -9,18 +9,13 @@ func process(emploeesNumb uint16) {
 		minTemp uint8 = 15
 		maxTemp uint8 = 30
 	)
-	const (
-		minConstTemp = 15
-		maxConstTemp = 30
-		moreSign     = ">="
-		lessSign     = "<="
-	)
 
 	for range emploeesNumb {
 		_, err := fmt.Scan(&sign, &temp)
-		if err != nil || sign != lessSign && sign != moreSign ||
-			temp > maxConstTemp || temp < minConstTemp {
+		if err != nil || sign != "<=" && sign != ">=" ||
+			temp > 30 || temp < 15 {
 			fmt.Println("Invalid temperature")
+
 			continue
 		}
 
@@ -54,7 +49,6 @@ func main() {
 	}
 
 	for range departNumb {
-
 		_, err = fmt.Scan(&emploeesNumb)
 		if err != nil || emploeesNumb > 1000 || emploeesNumb < 1 {
 			fmt.Println("Invalid number of emploees")
