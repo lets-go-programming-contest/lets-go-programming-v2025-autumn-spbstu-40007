@@ -78,11 +78,10 @@ func main() {
 	}
 
 	numberOfPreferedDish, _ := strconv.Atoi(readInput(reader))
+	heap.Init(dishesHeap)
 	for range numberOfPreferedDish - 1 {
 		heap.Pop(dishesHeap)
 	}
-
-	heap.Init(dishesHeap)
 
 	out := heap.Pop(dishesHeap)
 	fmt.Println(out)
