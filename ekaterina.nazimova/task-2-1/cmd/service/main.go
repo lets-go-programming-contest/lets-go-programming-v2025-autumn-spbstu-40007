@@ -1,51 +1,54 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
 	var departmentsCount int
 
-	if _, err := fmt.Scan(&departmentsCount); err != nil {
-		return
+	_, err := fmt.Scan(&departmentsCount)
+
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	for i := 0; i < departmentsCount; i++ {
+	for range departmentsCount {
+		maximumTemp := 30
+		minimumTemp := 15
 
 		var employeesCount int
 
-		if _, err := fmt.Scan(&employeesCount); err != nil {
-			return
+		_, err = fmt.Scan(&employeesCount)
+
+		if err != nil {
+			fmt.Println(err)
 		}
 
-		minTemp := 15
-		maxTemp := 30
-
-		for j := 0; j < employeesCount; j++ {
-
+		for range employeesCount {
 			var (
 				operator  string
 				tempValue int
 			)
 
-			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
-				return
+			_, err = fmt.Scan(&operator, &tempValue)
+
+			if err != nil {
+				fmt.Println(err)
 			}
 
-			if operator == ">=" && tempValue > minTemp {
-				minTemp = tempValue
+			if operator == "<=" && tempValue < maximumTemp {
+				maximumTemp = tempValue
 			}
 
-			if operator == "<=" && tempValue < maxTemp {
-				maxTemp = tempValue
+			if operator == ">=" && tempValue > minimumTemp {
+				minimumTemp = tempValue
 			}
 
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
+			if minimumTemp <= maximumTemp {
+				fmt.Println(minimumTemp)
 			} else {
 				fmt.Println(-1)
 			}
+
 		}
 	}
 }
