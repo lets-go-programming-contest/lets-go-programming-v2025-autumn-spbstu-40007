@@ -7,46 +7,45 @@ import (
 
 type MinHeap []int
 
-func (heap MinHeap) Len() int {
-	return len(heap)
+func (myHeap *MinHeap) Len() int {
+	return len(*myHeap)
 }
 
-func (heap MinHeap) Less(i, j int) bool {
-	return (heap[i] < heap[j])
+func (myHeap *MinHeap) Less(i, j int) bool {
+	return (*myHeap)[i] < (*myHeap)[j]
 }
 
-func (heap MinHeap) Swap(i, j int) {
-	heap[i], heap[j] = heap[j], heap[i]
-
+func (myHeap *MinHeap) Swap(i, j int) {
+	(*myHeap)[i], (*myHeap)[j] = (*myHeap)[j], (*myHeap)[i]
 }
 
-func (heap *MinHeap) Push(x interface{}) {
+func (myHeap *MinHeap) Push(x interface{}) {
 	value, ok := x.(int)
 	if !ok {
 		return
 	}
 
-	*heap = append(*heap, value)
+	*myHeap = append(*myHeap, value)
 }
 
-func (heap *MinHeap) Pop() interface{} {
-	old := *heap
+func (myHeap *MinHeap) Pop() interface{} {
+	old := *myHeap
 	n := len(old)
 	x := old[n-1]
-	*heap = old[0 : n-1]
+	*myHeap = old[0 : n-1]
 
 	return x
 }
 
 func main() {
-	var n, k int
+	var count, value int
 
-	_, err := fmt.Scan(&n)
+	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	prefer := make([]int, n)
+	prefer := make([]int, count)
 	for i := range prefer {
 		_, err = fmt.Scan(&prefer[i])
 		if err != nil {
@@ -54,23 +53,23 @@ func main() {
 		}
 	}
 
-	_, err = fmt.Scan(&k)
+	_, err = fmt.Scan(&value)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	myHeap := &MinHeap{}
-	heap.Init(myHeap)
+	minHeap := &MinHeap{}
+	heap.Init(minHeap)
 
 	for _, pref := range prefer {
-		if myHeap.Len() < k {
-			heap.Push(myHeap, pref)
-		} else if pref > (*myHeap)[0] {
-			heap.Pop(myHeap)
-			heap.Push(myHeap, pref)
+		if minHeap.Len() < value {
+			heap.Push(minHeap, pref)
+		} else if pref > (*minHeap)[0] {
+			heap.Pop(minHeap)
+			heap.Push(minHeap, pref)
 		}
 	}
 
-	fmt.Println((*myHeap)[0])
+	fmt.Println((*minHeap)[0])
 
 }
