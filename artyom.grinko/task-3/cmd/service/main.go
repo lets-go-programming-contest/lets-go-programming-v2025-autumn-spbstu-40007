@@ -1,7 +1,10 @@
 package main
 
 import (
+	"cmp"
 	"flag"
+	"slices"
+	"sort"
 
 	"task-3/internal/config"
 	"task-3/internal/die"
@@ -22,12 +25,16 @@ func main() {
 		die.Die(err)
 	}
 
-	exchangeRate, err := exchangeRate.FromXMLFile(config.InputFile)
+	rate, err := exchangeRate.FromXMLFile(config.InputFile)
 	if err != nil {
 		die.Die(err)
 	}
 
-	if err = exchangeRate.ToJSONFile(config.OutputFile); err != nil {
+	slices.SortFunc(rate.Currencies, func(x, y exchangeRate.Currency) int {
+		return cmp.Compare(x.Value, y.Value)
+	})
+
+	if err = rate.ToJSONFile(config.OutputFile); err != nil {
 		die.Die(err)
 	}
 }
