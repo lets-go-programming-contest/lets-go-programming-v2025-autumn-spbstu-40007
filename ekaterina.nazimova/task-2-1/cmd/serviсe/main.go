@@ -11,6 +11,7 @@ func main() {
 	}
 
 	for _ = range make([]struct{}, departmentsCount) {
+
 		var employeesCount int
 		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
@@ -20,8 +21,12 @@ func main() {
 		maxTemp := 30
 
 		for _ = range make([]struct{}, employeesCount) {
-			var operator string
-			var tempValue int
+
+			var (
+				operator  string
+				tempValue int
+			)
+
 			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				return
 			}
