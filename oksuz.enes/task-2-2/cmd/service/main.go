@@ -71,5 +71,4 @@ func main() {
 	}
 
 	fmt.Println((*minHeap)[0])
-
 }
