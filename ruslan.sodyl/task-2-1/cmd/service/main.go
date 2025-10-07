@@ -1,56 +1,66 @@
 package main
-import ("fmt")
+import "fmt"
 
-func process(emploeesNumb uint16){
-	var(
+func process(emploeesNumb uint16) {
+	
+	var (
 		temp uint8
 		minTemp uint8 = 15 
 		maxTemp uint8 = 30
 		sign string
 	)
-	const(
+	
+	const (
 		minConstTemp = 15
 		maxConstTemp = 30
 		moreSign = ">="
 		lessSign = "<="
 	)
-	
+
 	for range emploeesNumb {
+		
 		_, err := fmt.Scan(&sign,&temp)
 		if err != nil || sign != lessSign && sign != moreSign || 
 		temp > maxConstTemp || temp < minConstTemp {
 			fmt.Println("Invalid temperature")
-			return
+			continue 
 		}
+
 		switch sign {
 		case ">=":
 			if minTemp < temp {minTemp = temp}
 		case "<=":
 			if maxTemp > temp {maxTemp = temp}
 		}
-		if minTemp <= maxTemp{
+
+		if minTemp <= maxTemp {
 			fmt.Println(minTemp)
 		}else{
 			fmt.Println(-1)
 		}
 	}
 }
-func main(){
+
+func main() {
+
 	var(
-		N,K uint16
+		departNumb,emploeesNumb uint16
 	)
 	
-	_, err := fmt.Scan(&N)
-	if err != nil || N > 1000 || N < 1{
-		fmt.Println("Invalid number of departmens")
+	_, err := fmt.Scan(&departNumb)
+	if err != nil || departNumb > 1000 || departNumb < 1 {
+		fmt.Println("Invalid number of departments")
 		return
 	}
-	for range N {
-		_, err = fmt.Scan(&K)
-		if err != nil || K > 1000 || K < 1{
+
+	for range departNumb {
+
+		_, err = fmt.Scan(&emploeesNumb)
+		if err != nil || emploeesNumb > 1000 || emploeesNumb < 1 {
 			fmt.Println("Invalid number of emploees")
 			return
 		}
-		process(K)
+
+		process(emploeesNumb)
 	}
 }
