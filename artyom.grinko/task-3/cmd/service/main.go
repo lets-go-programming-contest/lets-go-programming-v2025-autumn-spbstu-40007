@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"flag"
 	"slices"
-	"sort"
 
 	"task-3/internal/config"
 	"task-3/internal/die"
