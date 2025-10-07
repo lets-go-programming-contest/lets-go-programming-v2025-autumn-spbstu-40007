@@ -47,8 +47,11 @@ func main() {
 	}
 
 	prefer := make([]int, n)
-	for i := 0; i < n; i++ {
-		fmt.Scan(&prefer[i])
+	for i := range prefer {
+		_, err = fmt.Scan(&prefer[i])
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	_, err = fmt.Scan(&k)
