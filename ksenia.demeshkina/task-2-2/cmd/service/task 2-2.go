@@ -45,13 +45,13 @@ func main() {
 
 		return
 	}
+
 	dishesHeap := &IntHeap{}
 	heap.Init(dishesHeap)
 
 	for range count {
 		var dishes int
 		_, err = fmt.Scan(&dishes)
-
 		if err != nil {
 			fmt.Println("Ошибка ввода последовательности")
 
@@ -63,12 +63,12 @@ func main() {
 
 			return
 		}
+
 		heap.Push(dishesHeap, dishes)
 	}
 
 	var favorite int
 	_, err = fmt.Scan(&favorite)
-
 	if err != nil {
 		fmt.Println("Ошибка ввода favorite")
 
@@ -80,6 +80,7 @@ func main() {
 
 		return
 	}
+
 	slice := []int(*dishesHeap)
 
 	sort.Sort(sort.Reverse(sort.IntSlice(slice)))
