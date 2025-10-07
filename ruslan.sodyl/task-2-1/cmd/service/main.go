@@ -42,14 +42,14 @@ func process(emploeesNumb uint16) {
 		}
 	}
 }
+
 func main() {
-	var (
-		departNumb, emploeesNumb uint16
-	)
+	var departNumb, emploeesNumb uint16
 
 	_, err := fmt.Scan(&departNumb)
 	if err != nil || departNumb > 1000 || departNumb < 1 {
 		fmt.Println("Invalid number of departments")
+
 		return
 	}
 
@@ -58,6 +58,7 @@ func main() {
 		_, err = fmt.Scan(&emploeesNumb)
 		if err != nil || emploeesNumb > 1000 || emploeesNumb < 1 {
 			fmt.Println("Invalid number of emploees")
+
 			return
 		}
 
