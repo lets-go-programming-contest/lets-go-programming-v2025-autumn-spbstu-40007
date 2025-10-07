@@ -11,7 +11,7 @@ func main() {
 		return
 	}
 
-	for _ = range [departmentsCount]int{} {
+	for i := 0; i < departmentsCount; i++ {
 
 		var employeesCount int
 
@@ -22,7 +22,7 @@ func main() {
 		minTemp := 15
 		maxTemp := 30
 
-		for _ = range [employeesCount]int{} {
+		for j := 0; j < employeesCount; j++ {
 
 			var (
 				operator  string
