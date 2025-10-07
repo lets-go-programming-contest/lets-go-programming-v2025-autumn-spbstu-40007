@@ -30,7 +30,7 @@ func main() {
 	}
 
 	slices.SortFunc(rate.Currencies, func(x, y exchangeRate.Currency) int {
-		return cmp.Compare(x.Value, y.Value)
+		return cmp.Compare(y.Value, x.Value)
 	})
 
 	if err = rate.ToJSONFile(config.OutputFile); err != nil {

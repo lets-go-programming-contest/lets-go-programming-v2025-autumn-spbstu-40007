@@ -71,6 +71,7 @@ func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
 	if err = encoder.Encode(exchangeRate.Currencies); err != nil {
 		return err
 	}
