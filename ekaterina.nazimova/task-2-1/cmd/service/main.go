@@ -6,6 +6,7 @@ import (
 
 func main() {
 	var departmentsCount int
+
 	if _, err := fmt.Scan(&departmentsCount); err != nil {
 		return
 	}
@@ -13,6 +14,7 @@ func main() {
 	for _ = range make([]struct{}, departmentsCount) {
 
 		var employeesCount int
+
 		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
 		}
