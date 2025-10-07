@@ -52,6 +52,7 @@ func main() {
 	for range count {
 		var dishes int
 		_, err = fmt.Scan(&dishes)
+		
 		if err != nil {
 			fmt.Println("Ошибка ввода последовательности")
 
@@ -69,6 +70,7 @@ func main() {
 
 	var favorite int
 	_, err = fmt.Scan(&favorite)
+
 	if err != nil {
 		fmt.Println("Ошибка ввода favorite")
 
