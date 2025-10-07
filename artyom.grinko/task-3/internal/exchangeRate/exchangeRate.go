@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"task-3/internal/die"
 	"task-3/internal/file"
 
 	"golang.org/x/net/html/charset"
@@ -46,9 +47,14 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	result := &ExchangeRate{}
+	defer func() {
+		if err = file.Close(); err != nil {
+			die.Die(err)
+		}
+	}()
+
+	result := &ExchangeRate{} //nolint:exhaustruct
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 	if err = decoder.Decode(result); err != nil {
@@ -68,7 +74,12 @@ func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	defer func() {
+		if err = file.Close(); err != nil {
+			die.Die(err)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
