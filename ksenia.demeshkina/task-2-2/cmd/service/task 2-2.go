@@ -45,7 +45,6 @@ func main() {
 
 		return
 	}
-
 	dishesHeap := &IntHeap{}
 	heap.Init(dishesHeap)
 
@@ -64,7 +63,6 @@ func main() {
 
 			return
 		}
-
 		heap.Push(dishesHeap, dishes)
 	}
 
@@ -82,12 +80,10 @@ func main() {
 
 		return
 	}
-
 	slice := []int(*dishesHeap)
 
 	sort.Sort(sort.Reverse(sort.IntSlice(slice)))
 
 	result := slice[favorite-1]
 	fmt.Println(result)
-
 }
