@@ -31,25 +31,6 @@ func (h *DishHeap) Pop() any {
 	return last
 }
 
-func validateInput(numDishes, preferenceRank int, scores []int) error {
-	if numDishes < 1 || numDishes > 10000 {
-
-		return fmt.Errorf("invalid number of dishes")
-	}
-	if preferenceRank < 1 || preferenceRank > numDishes {
-
-		return fmt.Errorf("invalid preference rank")
-	}
-	for _, rating := range scores {
-		if rating < -10000 || rating > 10000 {
-
-			return fmt.Errorf("invalid dish rating")
-		}
-	}
-
-	return nil
-}
-
 func main() {
 	var numDishes, preferenceRank int
 	if _, err := fmt.Scan(&numDishes); err != nil {
@@ -68,12 +49,6 @@ func main() {
 	}
 
 	if _, err := fmt.Scan(&preferenceRank); err != nil {
-		fmt.Println("Invalid input")
-
-		return
-	}
-
-	if err := validateInput(numDishes, preferenceRank, scores); err != nil {
 		fmt.Println("Invalid input")
 
 		return
