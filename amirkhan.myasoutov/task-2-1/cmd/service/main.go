@@ -33,6 +33,7 @@ func main() {
 			if operand == "<=" && temperature < maximumTemp {
 				maximumTemp = temperature
 			}
+
 			if operand == ">=" && temperature > minimumTemp {
 				minimumTemp = temperature
 			}
@@ -44,5 +45,4 @@ func main() {
 			}
 		}
 	}
-
 }
