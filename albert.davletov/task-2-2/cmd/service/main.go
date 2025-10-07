@@ -23,37 +23,43 @@ func readInput(scanner *bufio.Scanner) string {
 
 type IntHeap []int
 
-func (h IntHeap) Len() int {
-	return len(h)
+func (ownHeap *IntHeap) Len() int {
+	return len(*ownHeap)
 }
 
-func (h IntHeap) Less(i, j int) bool {
-	return h[i] > h[j]
+func (ownHeap *IntHeap) Less(i, j int) bool {
+	return (*ownHeap)[i] > (*ownHeap)[j]
 }
 
-func (h IntHeap) Swap(i, j int) {
-	h[i], h[j] = h[j], h[i]
+func (ownHeap *IntHeap) Swap(i, j int) {
+	(*ownHeap)[i], (*ownHeap)[j] = (*ownHeap)[j], (*ownHeap)[i]
 }
 
-func (h *IntHeap) Push(x interface{}) {
-	*h = append(*h, x.(int))
+func (ownHeap *IntHeap) Push(x interface{}) {
+	intX, err := x.(int)
+	if !err {
+		return
+	}
+	*ownHeap = append(*ownHeap, intX)
 }
 
-func (h *IntHeap) Pop() interface{} {
-	old := *h
+func (ownHeap *IntHeap) Pop() interface{} {
+	old := *ownHeap
 	n := len(old)
 	x := old[n-1]
-	*h = old[0 : n-1]
+	*ownHeap = old[0 : n-1]
+
 	return x
 }
 
 func main() {
-	h := &IntHeap{}
+	dishesHeap := &IntHeap{}
 
 	var dishesCount int
 	_, err := fmt.Scanln(&dishesCount)
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
@@ -62,20 +68,22 @@ func main() {
 
 	for _, v := range strings.Fields(preferedDishes) {
 		intV, _ := strconv.Atoi(v)
-		h.Push(intV)
+		dishesHeap.Push(intV)
 	}
 
-	if h.Len() != dishesCount {
+	if dishesHeap.Len() != dishesCount {
 		fmt.Println("Wrong number of dishes")
+
+		return
 	}
 
 	numberOfPreferedDish, _ := strconv.Atoi(readInput(reader))
-	heap.Init(h)
-
 	for range numberOfPreferedDish - 1 {
-		heap.Pop(h)
+		heap.Pop(dishesHeap)
 	}
 
-	out := heap.Pop(h)
+	heap.Init(dishesHeap)
+
+	out := heap.Pop(dishesHeap)
 	fmt.Println(out)
 }
