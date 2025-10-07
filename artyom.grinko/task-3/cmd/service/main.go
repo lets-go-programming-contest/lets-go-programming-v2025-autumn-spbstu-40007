@@ -8,7 +8,7 @@ import (
 
 	"task-3/internal/config"
 	"task-3/internal/die"
-	"task-3/internal/exchangeRate"
+	"task-3/internal/exchangerate"
 )
 
 func main() {
@@ -25,12 +25,12 @@ func main() {
 		die.Die(err)
 	}
 
-	rate, err := exchangeRate.FromXMLFile(config.InputFile)
+	rate, err := exchangerate.FromXMLFile(config.InputFile)
 	if err != nil {
 		die.Die(err)
 	}
 
-	slices.SortFunc(rate.Currencies, func(x, y exchangeRate.Currency) int {
+	slices.SortFunc(rate.Currencies, func(x, y exchangerate.Currency) int {
 		return cmp.Compare(y.Value, x.Value)
 	})
 

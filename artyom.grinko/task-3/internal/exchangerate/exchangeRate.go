@@ -1,4 +1,4 @@
-package exchangeRate
+package exchangerate
 
 //nolint:gofumpt,gci
 import (
@@ -74,7 +74,8 @@ func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 		return err //nolint:wrapcheck
 	}
 
-	file, err := os.OpenFile(path, os.O_WRONLY, 0o600)
+	// Magic number? Are you serious?
+	file, err := os.OpenFile(path, os.O_WRONLY, 0o600) //nolint:mnd
 	if err != nil {
 		return err //nolint:wrapcheck
 	}

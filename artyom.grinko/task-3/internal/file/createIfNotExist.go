@@ -7,7 +7,9 @@ import (
 
 func CreateIfNotExists(path string) error {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:noinlineerr
+
+	// Magic number? Are you serious?
+	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:noinlineerr,mnd
 		return err //nolint:wrapcheck
 	}
 
