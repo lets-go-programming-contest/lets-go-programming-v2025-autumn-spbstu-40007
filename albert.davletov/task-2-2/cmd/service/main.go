@@ -57,6 +57,7 @@ func main() {
 	dishesHeap := &IntHeap{}
 
 	var dishesCount int
+
 	_, err := fmt.Scanln(&dishesCount)
 	if err != nil {
 		fmt.Println(err)
