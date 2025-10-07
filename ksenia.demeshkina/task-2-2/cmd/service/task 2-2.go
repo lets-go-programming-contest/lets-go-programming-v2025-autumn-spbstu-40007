@@ -21,59 +21,68 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+	
 	return x
 }
 
 func main() {
-	var N int
-	_, err := fmt.Scan(&N)
+	var count int
+	_, err := fmt.Scan(&count)
+
 	if err != nil {
-		fmt.Println("Ошибка ввода N")
+		fmt.Println("Ошибка ввода count")
+
 		return
 	}
 
-	if N < 1 || N > 10000 {
+	if count < 1 || count > 10000 {
 		fmt.Println("Блюда должны быть от 1 до 10000")
+
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
+	dishesHeap := &IntHeap{}
+	heap.Init(dishesHeap)
 
-	for i := 0; i < N; i++ {
-		var ai int
-		_, err = fmt.Scan(&ai)
+	for _ = range make([]int, count) {
+		var dishes int
+		_, err = fmt.Scan(&dishes)
+
 		if err != nil {
 			fmt.Println("Ошибка ввода последовательности")
+
 			return
 		}
 
-		if ai < -10000 || ai > 10000 {
+		if dishes < -10000 || dishes > 10000 {
 			fmt.Println("Последовательность в диапазоне от -10000 до 10000")
+
 			return
 		}
 
-		heap.Push(h, ai)
+		heap.Push(dishesHeap, dishes)
 	}
 
-	var k int
-	_, err = fmt.Scan(&k)
+	var favorite int
+	_, err = fmt.Scan(&favorite)
+
 	if err != nil {
-		fmt.Println("Ошибка ввода k")
+		fmt.Println("Ошибка ввода favorite")
+
 		return
 	}
 
-	if k < 1 || k > N {
-		fmt.Printf("K должно быть от 1 до %d\n", N)
+	if favorite < 1 || favorite > count {
+		fmt.Printf("favorite должно быть от 1 до %d\n", count)
+
 		return
 	}
 
-	slice := []int(*h)
+	slice := []int(*dishesHeap)
 
 	sort.Sort(sort.Reverse(sort.IntSlice(slice)))
 
-	result := slice[k-1]
-	fmt.Println(slice)
+	result := slice[favorite-1]
 	fmt.Println(result)
 
 }
