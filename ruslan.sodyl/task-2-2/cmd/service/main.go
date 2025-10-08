@@ -35,6 +35,7 @@ func process(dishes uint16) {
 
 	kucha := &IntHeap{}
 	heap.Init(kucha)
+
 	for range dishes {
 		_, err := fmt.Scan(&numb)
 		if err != nil {
@@ -52,8 +53,7 @@ func process(dishes uint16) {
 
 		return
 	}
-	sort.Slice(*kucha, func(i, j int) bool {
-		return (*kucha)[i] < (*kucha)[j]})
+	sort.Slice(*kucha, func(i, j int) bool {return (*kucha)[i] < (*kucha)[j]})
 
 	key = dishes - key
 	fmt.Println((*kucha)[key])
