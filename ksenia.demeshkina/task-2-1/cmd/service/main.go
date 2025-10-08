@@ -64,7 +64,6 @@ func main() {
 	}
 
 	for range department {
-
 		_, err = fmt.Scan(&workers)
 		if err != nil {
 			fmt.Println("Error")
@@ -75,7 +74,7 @@ func main() {
 
 			return
 		}
-		temperature(workers)
 
+		temperature(workers)
 	}
 }
