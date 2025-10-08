@@ -4,7 +4,7 @@ import "fmt"
 
 func main() {
 	var (
-		first, second int
+		first, second int16
 		operation     string
 	)
 
@@ -43,4 +43,3 @@ func main() {
 		fmt.Println("Invalid operation")
 	}
 }
-
