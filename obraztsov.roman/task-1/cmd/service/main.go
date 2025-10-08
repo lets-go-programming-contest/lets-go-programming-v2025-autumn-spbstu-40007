@@ -8,28 +8,24 @@ func main() {
 		operation     string
 	)
 
-	// Чтение первого числа
 	_, err1 := fmt.Scanln(&first)
 	if err1 != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
 
-	// Чтение второго числа
 	_, err2 := fmt.Scanln(&second)
 	if err2 != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
 
-	// Чтение операции
 	_, err3 := fmt.Scanln(&operation)
 	if err3 != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
 
-	// Обработка операций
 	switch operation {
 	case "+":
 		fmt.Println(first + second)
