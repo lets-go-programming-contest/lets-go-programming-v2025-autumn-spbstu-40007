@@ -52,13 +52,13 @@ func main() {
 	for range count {
 		var dishes int
 		_, err = fmt.Scan(&dishes)
-		
+
 		if err != nil {
 			fmt.Println("Ошибка ввода последовательности")
 
 			return
 		}
-
+		
 		if dishes < -10000 || dishes > 10000 {
 			fmt.Println("Последовательность в диапазоне от -10000 до 10000")
 
