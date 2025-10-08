@@ -32,8 +32,8 @@ func (h *IntHeap) Pop() any {
 
 func main() {
 	var count int
-	_, err := fmt.Scan(&count)
 
+	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println("Ошибка ввода count")
 
@@ -51,8 +51,8 @@ func main() {
 
 	for range count {
 		var dishes int
-		_, err = fmt.Scan(&dishes)
 
+		_, err = fmt.Scan(&dishes)
 		if err != nil {
 			fmt.Println("Ошибка ввода последовательности")
 
@@ -69,8 +69,8 @@ func main() {
 	}
 
 	var favorite int
-	_, err = fmt.Scan(&favorite)
 
+	_, err = fmt.Scan(&favorite)
 	if err != nil {
 		fmt.Println("Ошибка ввода favorite")
 
