@@ -20,15 +20,16 @@ func (h *IntHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
 func main() {
 	var dishAmount int
 	_, err := fmt.Scan(&dishAmount)
-
 	if err != nil {
 		fmt.Println(err)
+
 		return
 	}
 
@@ -38,9 +39,9 @@ func main() {
 	for range make([]int, dishAmount) {
 		var dish int
 		_, err = fmt.Scan(&dish)
-
 		if err != nil {
 			fmt.Println(err)
+
 			return
 		}
 
@@ -49,13 +50,13 @@ func main() {
 
 	var dishNumber int
 	_, err = fmt.Scan(&dishNumber)
-
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	var kthDish int
+
 	for range make([]int, dishNumber) {
 		val, ok := heap.Pop(dishHeap).(int)
 
