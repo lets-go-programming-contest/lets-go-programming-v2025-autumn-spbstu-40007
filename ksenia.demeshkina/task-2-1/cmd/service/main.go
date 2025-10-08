@@ -26,6 +26,7 @@ func temperature(K int) {
 
 			for j := i + 1; j < K; j++ {
 				fmt.Scan(&operator, &value)
+				fmt.Println(-1)
 			}
 			return
 		} else {
