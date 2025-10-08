@@ -37,8 +37,7 @@ func process(dishes uint16) {
 	heap.Init(kucha)
 
 	for range dishes {
-		_, err := fmt.Scan(&numb)
-		if err != nil {
+		if _, err := fmt.Scan(&numb); err != nil {
 			fmt.Println("Invalid number")
 
 			continue
@@ -47,8 +46,7 @@ func process(dishes uint16) {
 		heap.Push(kucha, numb)
 	}
 
-	_, err := fmt.Scan(&key)
-	if err != nil || key < 1 || key > 10000 {
+	if _, err := fmt.Scan(&key); err != nil || key < 1 || key > 10000 {
 		fmt.Println("Invalid k-number")
 
 		return
