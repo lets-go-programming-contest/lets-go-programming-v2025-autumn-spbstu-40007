@@ -7,21 +7,18 @@ func main() {
 		first, second int16
 		operation     string
 	)
-
-	_, err := fmt.Scanln(&first)
-	if err != nil {
+	_, err1 := fmt.Scanln(&first)
+	if err1 != nil {
 		fmt.Println("Invalid first operand")
 		return
 	}
-
-	_, err := fmt.Scanln(&second)
-	if err != nil {
+	_, err2 := fmt.Scanln(&second)
+	if err2 != nil {
 		fmt.Println("Invalid second operand")
 		return
 	}
-
-	_, err := fmt.Scanln(&operation)
-	if err != nil {
+	_, err3 := fmt.Scanln(&operation)
+	if err3 != nil {
 		fmt.Println("Invalid operation")
 		return
 	}
@@ -42,4 +39,3 @@ func main() {
 		fmt.Println("Invalid operation")
 	}
 }
-
