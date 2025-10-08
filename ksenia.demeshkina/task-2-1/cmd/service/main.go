@@ -9,10 +9,11 @@ func temperature(workers int) {
 	for iterator := range workers {
 		var operator string
 		var value int
-		_, err := fmt.Scan(&operator, &value)
 		
+		_, err := fmt.Scan(&operator, &value)
 		if err != nil {
 			fmt.Println("Ошибка ввода")
+
 			return
 		}
 
@@ -30,7 +31,13 @@ func temperature(workers int) {
 			fmt.Println(-1)
 
 			for j := iterator + 1; j < workers; j++ {
-				fmt.Scan(&operator, &value)
+				_, err := fmt.Scan(&operator, &value)
+				
+				if err != nil {
+					fmt.Println("Ошибка ввода")
+
+					return
+				}
 				fmt.Println(-1)
 			}
 
