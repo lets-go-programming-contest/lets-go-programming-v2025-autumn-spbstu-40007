@@ -1,10 +1,8 @@
 package main
 
 import (
-
-    "container/heap"
-    "fmt"
-    
+	"container/heap"
+	"fmt"
 )
 
 type IntHeap []int
@@ -14,52 +12,52 @@ func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
 func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
-    *h = append(*h, x.(int))
+	*h = append(*h, x.(int))
 }
 
 func (h *IntHeap) Pop() interface{} {
-    old := *h
-    n := len(old)
-    x := old[n-1]
-    *h = old[0 : n-1]
-	
-    return x
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+
+	return x
 }
 
 func main() {
-    var dishAmount int
-    _, err := fmt.Scan(&dishAmount)
+	var dishAmount int
+	_, err := fmt.Scan(&dishAmount)
 
-    if err != nil {
-        fmt.Println(err)
+	if err != nil {
+		fmt.Println(err)
 
-        return
-    }
+		return
+	}
 
-    h := &IntHeap{}
-    heap.Init(h)
+	h := &IntHeap{}
+	heap.Init(h)
 
-    for range make([]int, dishAmount) {
-        var dish int
-        _, err = fmt.Scan(&dish)
+	for range make([]int, dishAmount) {
+		var dish int
+		_, err = fmt.Scan(&dish)
 
-        if err != nil {
-            fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
 
-            return
-        }
+			return
+		}
 
-        heap.Push(h, dish)
-    }
+		heap.Push(h, dish)
+	}
 
-    var dishNumber int
-    _, err = fmt.Scan(&dishNumber)
+	var dishNumber int
+	_, err = fmt.Scan(&dishNumber)
 
-    if err != nil {
-        fmt.Println(err)
+	if err != nil {
+		fmt.Println(err)
 
-        return
-    }
+		return
+	}
 
 	var kthDish int
 	for _ = range make([]int, dishNumber) {
@@ -74,5 +72,5 @@ func main() {
 		kthDish = val
 	}
 
-    fmt.Println(kthDish)
+	fmt.Println(kthDish)
 }
