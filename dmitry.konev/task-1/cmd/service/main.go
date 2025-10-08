@@ -11,7 +11,6 @@ import (
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Println("Enter the first operand:")
 	if !scanner.Scan() {
 		fmt.Println("Invalid first operand")
 		return
@@ -23,7 +22,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Enter second operand:")
 	if !scanner.Scan() {
 		fmt.Println("Invalid second operand")
 		return
@@ -35,7 +33,6 @@ func main() {
 		return
 	}
 
-	fmt.Println("Enter operation (+, -, *, /):")
 	if !scanner.Scan() {
 		fmt.Println("Invalid operation")
 		return
