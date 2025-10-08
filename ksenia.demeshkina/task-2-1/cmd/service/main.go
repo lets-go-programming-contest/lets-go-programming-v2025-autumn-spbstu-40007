@@ -6,12 +6,13 @@ func temperature(workers int) {
 	minTemp := 15
 	maxTemp := 30
 
-	for i := range workers {
-		var operator string;
-		var value int;
+	for iterator := range workers {
+		var operator string
+		var value int
 		_, err := fmt.Scan(&operator, &value)
 		
 		if err != nil {
+			fmt.Println("Ошибка ввода")
 			return
 		}
 
@@ -28,7 +29,7 @@ func temperature(workers int) {
 		if minTemp > maxTemp {
 			fmt.Println(-1)
 
-			for j := i + 1; j < workers; j++ {
+			for j := iterator + 1; j < workers; j++ {
 				fmt.Scan(&operator, &value)
 				fmt.Println(-1)
 			}
