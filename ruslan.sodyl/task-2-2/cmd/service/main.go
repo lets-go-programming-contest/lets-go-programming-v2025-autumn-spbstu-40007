@@ -53,7 +53,8 @@ func process(dishes uint16) {
 
 		return
 	}
-	sort.Slice(*kucha, func(i, j int) bool {return (*kucha)[i] < (*kucha)[j]})
+
+	sort.Slice(*kucha, func(i, j int) bool { return (*kucha)[i] < (*kucha)[j] })
 
 	key = dishes - key
 	fmt.Println((*kucha)[key])
@@ -71,3 +72,5 @@ func main() {
 
 	process(dishes)
 }
+
+//go run task_2_2/cmd/service/main.go
