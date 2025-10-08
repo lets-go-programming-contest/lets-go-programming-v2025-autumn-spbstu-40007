@@ -25,7 +25,6 @@ func main() {
 		fmt.Println("Invalid operation")
 		return
 	}
-
 	switch operation {
 	case "+":
 		fmt.Println(first + second)
@@ -43,4 +42,3 @@ func main() {
 		fmt.Println("Invalid operation")
 	}
 }
-
