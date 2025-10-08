@@ -8,12 +8,14 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *IntHeap) Len() int           { return len(*h) }
+func (h *IntHeap) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	if val, ok := x.(int); ok {
+		*h = append(*h, val)
+	}
 }
 
 func (h *IntHeap) Pop() any {
@@ -21,6 +23,7 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -30,8 +33,8 @@ func process(dishes uint16) {
 		key  uint16
 	)
 
-	h := &IntHeap{}
-	heap.Init(h)
+	kucha := &IntHeap{}
+	heap.Init(kucha)
 	for range dishes {
 		_, err := fmt.Scan(&numb)
 		if err != nil {
@@ -40,7 +43,7 @@ func process(dishes uint16) {
 			continue
 		}
 
-		heap.Push(h, numb)
+		heap.Push(kucha, numb)
 	}
 
 	_, err := fmt.Scan(&key)
@@ -49,13 +52,11 @@ func process(dishes uint16) {
 
 		return
 	}
+	sort.Slice(*kucha, func(i, j int) bool {
+		return (*kucha)[i] < (*kucha)[j]})
 
-	sort.Slice(*h, func(i, j int) bool {
-		return (*h)[i] < (*h)[j]
-	})
-	
 	key = dishes - key
-	fmt.Println((*h)[key])
+	fmt.Println((*kucha)[key])
 }
 
 func main() {
