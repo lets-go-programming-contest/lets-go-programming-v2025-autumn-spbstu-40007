@@ -1,43 +1,63 @@
 package main
 
 import (
-	"fmt"
-	"sort"
+    "container/heap"
+    "fmt"
 )
 
+type IntHeap []int
+
+func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *IntHeap) Push(x interface{}) {
+    *h = append(*h, x.(int))
+}
+
+func (h *IntHeap) Pop() interface{} {
+    old := *h
+    n := len(old)
+    x := old[n-1]
+    *h = old[0 : n-1]
+    return x
+}
+
 func main() {
-	var dishAmount int
-	_, err := fmt.Scan(&dishAmount)
+    var dishAmount int
+    _, err := fmt.Scan(&dishAmount)
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
 
-	dishes := make([]int, dishAmount)
+    h := &IntHeap{}
+    heap.Init(h)
 
-	for i := range dishes {
-		_, err = fmt.Scan(&dishes[i])
+    for _ = range make([]int, dishAmount) {
+    var dish int
+    _, err = fmt.Scan(&dish)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		heap.Push(h, dish)
 	}
 
-	var dishNumber int
-	_, err = fmt.Scan(&dishNumber)
+    var dishNumber int
+    _, err = fmt.Scan(&dishNumber)
+	
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+    var kthDish int
+    for i := 0; i < dishNumber; i++ {
+        kthDish = heap.Pop(h).(int)
+    }
 
-	sort.Sort(sort.Reverse(sort.IntSlice(dishes)))
-
-	if dishNumber >= 1 && dishNumber <= dishAmount {
-		fmt.Println(dishes[dishNumber-1])
-	} else {
-		fmt.Println("Incorrect dish number")
-	}
+    fmt.Println(kthDish)
 }
