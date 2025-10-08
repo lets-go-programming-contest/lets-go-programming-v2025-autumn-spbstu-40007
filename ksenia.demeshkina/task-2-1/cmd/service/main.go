@@ -2,14 +2,15 @@ package main
 
 import "fmt"
 
-func temperature(k int) {
+func temperature(workers int) {
 	minTemp := 15
 	maxTemp := 30
 
-	for i := range k {
+	for i := range workers {
 		var operator string;
 		var value int;
 		_, err := fmt.Scan(&operator, &value)
+		
 		if err != nil {
 			return
 		}
@@ -27,7 +28,7 @@ func temperature(k int) {
 		if minTemp > maxTemp {
 			fmt.Println(-1)
 
-			for j := i + 1; j < k; j++ {
+			for j := i + 1; j < workers; j++ {
 				fmt.Scan(&operator, &value)
 				fmt.Println(-1)
 			}
@@ -40,31 +41,33 @@ func temperature(k int) {
 }
 
 func main() {
-	var N, k int
-	_, err := fmt.Scan(&N)
+	var department, workers int
+	_, err := fmt.Scan(&department)
+
 	if err != nil {
 		fmt.Println("Error")
 	}
 
-	if N < 1 || N > 1000 {
+	if department < 1 || department > 1000 {
 		fmt.Println("Количество отделов в диапазоне от 1 до 1000")
 
 		return
 	}
 
-	for range N {
-		_, err = fmt.Scan(&k)
+	for range department {
+		_, err = fmt.Scan(&workers)
+
 		if err != nil {
 			fmt.Println("Error")
 	}
 
-		if k < 1 || k > 1000 {
+		if workers < 1 || workers > 1000 {
 			fmt.Println("Количество сотрудников от 1 до 1000")
 
 			return
 	}
 
-	temperature(k)
+	temperature(workers)
 
 	}
 }
