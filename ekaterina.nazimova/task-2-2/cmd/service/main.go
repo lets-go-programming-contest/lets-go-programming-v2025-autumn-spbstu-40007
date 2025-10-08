@@ -15,14 +15,14 @@ func main() {
 	}
 
 	dishes := make([]int, dishAmount)
-	for i := 0; i < dishAmount; i++ {
+
+	for i := range dishes {
 		_, err = fmt.Scan(&dishes[i])
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
 	}
 
 	var dishNumber int
