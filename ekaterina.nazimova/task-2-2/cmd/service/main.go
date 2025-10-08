@@ -27,27 +27,25 @@ func (h *IntHeap) Pop() interface{} {
 func main() {
 	var dishAmount int
 	_, err := fmt.Scan(&dishAmount)
-
 	if err != nil {
 		fmt.Println(err)
 
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
+	dishHeap := &IntHeap{}
+	heap.Init(dishHeap)
 
 	for range make([]int, dishAmount) {
 		var dish int
 		_, err = fmt.Scan(&dish)
-
 		if err != nil {
 			fmt.Println(err)
 
 			return
 		}
 
-		heap.Push(h, dish)
+		heap.Push(dishHeap, dish)
 	}
 
 	var dishNumber int
@@ -60,8 +58,8 @@ func main() {
 	}
 
 	var kthDish int
-	for _ = range make([]int, dishNumber) {
-		val, ok := heap.Pop(h).(int)
+	for range make([]int, dishNumber) {
+		val, ok := heap.Pop(dishHeap).(int)
 
 		if !ok {
 			fmt.Println("Unexpected type")
