@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 func main() {
 	var N, K int
-	fmt.Scan(&N)
-	fmt.Scan(&K)
+
+	if _, err := fmt.Fscan(os.Stdin, &N, &K); err != nil {
+		return
+	}
 
 	for i := 0; i < N; i++ {
 		minTemp := 15
@@ -16,7 +19,10 @@ func main() {
 		for j := 0; j < K; j++ {
 			var sign string
 			var t int
-			fmt.Scan(&sign, &t)
+
+			if _, err := fmt.Fscan(os.Stdin, &sign, &t); err != nil {
+				return
+			}
 
 			if sign == ">=" {
 				if t > minTemp {
@@ -27,12 +33,13 @@ func main() {
 					maxTemp = t
 				}
 			}
-		}
 
-		if minTemp <= maxTemp {
-			fmt.Println(minTemp)
-		} else {
-			fmt.Println(-1)
+			if minTemp > maxTemp {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(minTemp)
+			}
 		}
+		fmt.Println()
 	}
 }
