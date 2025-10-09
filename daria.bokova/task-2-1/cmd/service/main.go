@@ -55,21 +55,6 @@ func main() {
 				continue
 			}
 
-			switch operation {
-			case ">=":
-				if temperature > maxTemp {
-					isValid = false
-				} else if temperature > minTemp {
-					minTemp = temperature
-				}
-			case "<=":
-				if temperature < minTemp {
-					isValid = false
-				} else if temperature < maxTemp {
-					maxTemp = temperature
-				}
-			}
-
 			minTemp, maxTemp, isValid = processEmployeeConstraint(operation, temperature, minTemp, maxTemp)
 
 			if isValid {
