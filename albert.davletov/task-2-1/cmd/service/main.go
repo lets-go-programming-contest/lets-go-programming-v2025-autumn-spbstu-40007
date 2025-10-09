@@ -30,10 +30,10 @@ func main() {
 		numberEmployees, _ := strconv.Atoi(readInput(reader))
 		for range numberEmployees {
 			preferences := readInput(reader)
-			operand := preferences[0]
+			operand := preferences[:2]
 			temperature, _ := strconv.Atoi(preferences[3:])
 
-			if operand == '<' {
+			if operand == "<=" {
 				maxTemperature = min(maxTemperature, temperature)
 			} else {
 				minTemperature = max(temperature, minTemperature)
