@@ -15,27 +15,33 @@ func main() {
 		return
 	}
 
-	for range departmentsCount {
+	for i := 0; i < departmentsCount; i++ {
 		minTemperature := 15
 		maxTemperature := 30
+		valid := true
 
-		for range employeesCount {
+		for j := 0; j < employeesCount; j++ {
 			if _, err := fmt.Fscan(os.Stdin, &sign, &temperatureValue); err != nil {
 				return
 			}
 
-			if sign == ">=" {
-				if temperatureValue > minTemperature {
-					minTemperature = temperatureValue
+			if valid {
+				if sign == ">=" {
+					if temperatureValue > minTemperature {
+						minTemperature = temperatureValue
+					}
+				} else if sign == "<=" {
+					if temperatureValue < maxTemperature {
+						maxTemperature = temperatureValue
+					}
 				}
-			} else if sign == "<=" {
-				if temperatureValue < maxTemperature {
-					maxTemperature = temperatureValue
-				}
-			}
 
-			if minTemperature <= maxTemperature {
-				fmt.Println(minTemperature)
+				if minTemperature <= maxTemperature {
+					fmt.Println(minTemperature)
+				} else {
+					fmt.Println(-1)
+					valid = false
+				}
 			} else {
 				fmt.Println(-1)
 			}
