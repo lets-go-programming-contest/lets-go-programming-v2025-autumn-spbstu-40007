@@ -9,18 +9,20 @@ type MaxHeap struct {
 	elements []int
 }
 
-func (h MaxHeap) Len() int { return len(h.elements) }
+func (h *MaxHeap) Len() int { return len(h.elements) }
 
-func (h MaxHeap) Less(i, j int) bool {
+func (h *MaxHeap) Less(i, j int) bool {
 	return h.elements[i] > h.elements[j]
 }
 
-func (h MaxHeap) Swap(i, j int) {
+func (h *MaxHeap) Swap(i, j int) {
 	h.elements[i], h.elements[j] = h.elements[j], h.elements[i]
 }
 
 func (h *MaxHeap) Push(x interface{}) {
-	h.elements = append(h.elements, x.(int))
+	if val, ok := x.(int); ok {
+		h.elements = append(h.elements, val)
+	}
 }
 
 func (h *MaxHeap) Pop() interface{} {
@@ -28,6 +30,7 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	item := old[n-1]
 	h.elements = old[0 : n-1]
+
 	return item
 }
 
@@ -43,7 +46,7 @@ func main() {
 	}
 
 	numberSequence := make([]int, totalNumbers)
-	for idx := 0; idx < totalNumbers; idx++ {
+	for idx := range totalNumbers {
 		if _, scanErr := fmt.Scan(&numberSequence[idx]); scanErr != nil {
 			return
 		}
@@ -53,7 +56,7 @@ func main() {
 		return
 	}
 
-	numHeap := &MaxHeap{}
+	numHeap := &MaxHeap{elements: []int{}}
 	heap.Init(numHeap)
 
 	for _, value := range numberSequence {
