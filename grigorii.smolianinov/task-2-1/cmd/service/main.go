@@ -7,43 +7,42 @@ import (
 
 func main() {
 	var (
-		departmentsCount, employeesCount, temperatureValue int
-		sign                                               string
+		departmentsCount, employeesCount int
 	)
-
 	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
 		return
 	}
 
-	for i := 0; i < departmentsCount; i++ {
-		minTemperature := 15
-		maxTemperature := 30
-		valid := true
+	for range departmentsCount {
+		minTemp, maxTemp := 15, 30
+		rangeValid := true
 
-		for j := 0; j < employeesCount; j++ {
-			if _, err := fmt.Fscan(os.Stdin, &sign, &temperatureValue); err != nil {
+		for range employeesCount {
+			var (
+				sign string
+				temp int
+			)
+
+			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
 				return
 			}
 
-			if valid {
-				if sign == ">=" {
-					if temperatureValue > minTemperature {
-						minTemperature = temperatureValue
-					}
-				} else if sign == "<=" {
-					if temperatureValue < maxTemperature {
-						maxTemperature = temperatureValue
-					}
-				}
+			if !rangeValid {
+				fmt.Println(-1)
+				continue
+			}
 
-				if minTemperature <= maxTemperature {
-					fmt.Println(minTemperature)
-				} else {
-					fmt.Println(-1)
-					valid = false
-				}
+			if sign == ">=" && temp > minTemp {
+				minTemp = temp
+			} else if sign == "<=" && temp < maxTemp {
+				maxTemp = temp
+			}
+
+			if minTemp <= maxTemp {
+				fmt.Println(minTemp)
 			} else {
 				fmt.Println(-1)
+				rangeValid = false
 			}
 		}
 	}
