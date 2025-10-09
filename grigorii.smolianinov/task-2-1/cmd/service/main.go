@@ -7,6 +7,7 @@ import (
 
 func main() {
 	var departmentsCount, employeesCount int
+
 	minTemp, maxTemp := 15, 30
 	rangeValid := true
 
@@ -15,7 +16,6 @@ func main() {
 	}
 
 	for range departmentsCount {
-
 		for range employeesCount {
 			var (
 				sign string
