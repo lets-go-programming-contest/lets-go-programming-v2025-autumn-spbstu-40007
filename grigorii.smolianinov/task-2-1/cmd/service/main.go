@@ -6,40 +6,39 @@ import (
 )
 
 func main() {
-	var N, K int
+	var departmentsCount, employeesCount int
 
-	if _, err := fmt.Fscan(os.Stdin, &N, &K); err != nil {
+	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
 		return
 	}
 
-	for i := 0; i < N; i++ {
-		minTemp := 15
-		maxTemp := 30
+	for departmentIndex := 0; departmentIndex < departmentsCount; departmentIndex++ {
+		minTemperature := 15
+		maxTemperature := 30
 
-		for j := 0; j < K; j++ {
+		for employeeIndex := 0; employeeIndex < employeesCount; employeeIndex++ {
 			var sign string
-			var t int
+			var temperature int
 
-			if _, err := fmt.Fscan(os.Stdin, &sign, &t); err != nil {
+			if _, err := fmt.Fscan(os.Stdin, &sign, &temperature); err != nil {
 				return
 			}
 
 			if sign == ">=" {
-				if t > minTemp {
-					minTemp = t
+				if temperature > minTemperature {
+					minTemperature = temperature
 				}
 			} else if sign == "<=" {
-				if t < maxTemp {
-					maxTemp = t
+				if temperature < maxTemperature {
+					maxTemperature = temperature
 				}
 			}
 
-			if minTemp > maxTemp {
-				fmt.Println(-1)
+			if minTemperature <= maxTemperature {
+				fmt.Println(minTemperature)
 			} else {
-				fmt.Println(minTemp)
+				fmt.Println(-1)
 			}
 		}
-		fmt.Println()
 	}
 }
