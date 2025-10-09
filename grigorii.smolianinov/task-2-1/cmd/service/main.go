@@ -22,9 +22,7 @@ func main() {
 				temp int
 			)
 
-			_, err := fmt.Fscan(os.Stdin, &sign, &temp)
-
-			if err != nil {
+			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
 				return
 			}
 
