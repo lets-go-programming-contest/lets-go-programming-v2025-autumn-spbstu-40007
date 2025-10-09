@@ -10,17 +10,17 @@ func main() {
     operation string
   )
 
-  if _, error := fmt.Scanln(&s1); error != nil {
+  if _, err := fmt.Scanln(&s1); err != nil {
     fmt.Println("Invalid first operand")
     return
   }
 
-  if _, error := fmt.Scanln(&s2); error != nil {
+  if _, err := fmt.Scanln(&s2); err != nil {
     fmt.Println("Invalid second operand")
     return
   }
 
-  if _, error := fmt.Scanln(&operation); error != nil {
+  if _, err := fmt.Scanln(&operation); err != nil {
     fmt.Println("Invalid operation")
     return
   }
