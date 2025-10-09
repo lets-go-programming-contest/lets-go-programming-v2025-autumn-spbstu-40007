@@ -6,9 +6,8 @@ import (
 )
 
 func main() {
-	var (
-		departmentsCount, employeesCount int
-	)
+	var departmentsCount, employeesCount int
+
 	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
 		return
 	}
@@ -22,7 +21,6 @@ func main() {
 				sign string
 				temp int
 			)
-
 			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
 				return
 			}
@@ -34,7 +32,9 @@ func main() {
 
 			if sign == ">=" && temp > minTemp {
 				minTemp = temp
-			} else if sign == "<=" && temp < maxTemp {
+			}
+
+			if sign == "<=" && temp < maxTemp {
 				maxTemp = temp
 			}
 
