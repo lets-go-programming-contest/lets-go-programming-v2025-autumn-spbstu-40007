@@ -26,25 +26,29 @@ func main() {
 			}
 
 			if !isValid {
+				fmt.Println(-1)
 				continue
 			}
 
 			switch operation {
 			case ">=":
-				if temperature > minTemp {
+				if temperature > maxTemp {
+					isValid = false
+				} else if temperature > minTemp {
 					minTemp = temperature
 				}
 			case "<=":
-				if temperature < maxTemp {
+				if temperature < minTemp {
+					isValid = false
+				} else if temperature < maxTemp {
 					maxTemp = temperature
 				}
 			}
 
-			if minTemp <= maxTemp {
+			if isValid {
 				fmt.Println(minTemp)
 			} else {
 				fmt.Println(-1)
-				isValid = false
 			}
 		}
 	}
