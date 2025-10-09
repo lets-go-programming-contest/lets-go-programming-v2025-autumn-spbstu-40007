@@ -8,7 +8,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for range departments {
 		var employees int
 		if _, err := fmt.Scan(&employees); err != nil {
 			return
@@ -18,15 +18,17 @@ func main() {
 		maxTemp := 30
 		isValid := true
 
-		for j := 0; j < employees; j++ {
+		for range employees {
 			var operation string
 			var temperature int
+
 			if _, err := fmt.Scan(&operation, &temperature); err != nil {
 				return
 			}
 
 			if !isValid {
 				fmt.Println(-1)
+
 				continue
 			}
 
