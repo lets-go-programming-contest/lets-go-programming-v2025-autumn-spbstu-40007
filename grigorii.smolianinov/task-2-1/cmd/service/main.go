@@ -21,7 +21,9 @@ func main() {
 				sign string
 				temp int
 			)
+
 			_, err := fmt.Fscan(os.Stdin, &sign, &temp)
+
 			if err != nil {
 				return
 			}
