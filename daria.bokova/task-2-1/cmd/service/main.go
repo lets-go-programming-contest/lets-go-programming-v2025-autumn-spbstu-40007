@@ -2,6 +2,27 @@ package main
 
 import "fmt"
 
+func processEmployeeConstraint(operation string, temperature, minTemp, maxTemp int) (int, int, bool) {
+	isValid := true
+
+	switch operation {
+	case ">=":
+		if temperature > maxTemp {
+			isValid = false
+		} else if temperature > minTemp {
+			minTemp = temperature
+		}
+	case "<=":
+		if temperature < minTemp {
+			isValid = false
+		} else if temperature < maxTemp {
+			maxTemp = temperature
+		}
+	}
+
+	return minTemp, maxTemp, isValid
+}
+
 func main() {
 	var departments int
 	if _, err := fmt.Scan(&departments); err != nil {
@@ -19,8 +40,10 @@ func main() {
 		isValid := true
 
 		for range employees {
-			var operation string
-			var temperature int
+			var (
+				operation   string
+				temperature int
+			)
 
 			if _, err := fmt.Scan(&operation, &temperature); err != nil {
 				return
@@ -46,6 +69,8 @@ func main() {
 					maxTemp = temperature
 				}
 			}
+
+			minTemp, maxTemp, isValid = processEmployeeConstraint(operation, temperature, minTemp, maxTemp)
 
 			if isValid {
 				fmt.Println(minTemp)
