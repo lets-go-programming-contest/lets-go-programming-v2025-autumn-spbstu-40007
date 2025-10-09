@@ -9,45 +9,66 @@ import (
 )
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+	var (
+		departures, employees int
+		settings  string
+	)
+
+	const (
+		lowerBoundary = 15
+		upperBoundary = 30
+	)
 	
-	departuresTemp, _ := reader.ReadString('\n')
+	reader := bufio.NewReader(os.Stdin)
+
+	departuresTemp, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(-1)
+		return 
+	}
 	departuresTemp = strings.TrimSpace(departuresTemp)
-	departures, _ := strconv.Atoi(departuresTemp)
-
-	for i := 0; i < departures; i++ {
-		employeesTemp, _ := reader.ReadString('\n')
+	departures, err = strconv.Atoi(departuresTemp) 
+	if err != nil {
+		fmt.Println(-1)
+		return
+	}
+	
+	for range departures {
+		var employeesTemp string
+		employeesTemp, err = reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(-1)
+			return
+		}
 		employeesTemp = strings.TrimSpace(employeesTemp)
-		employees, _ := strconv.Atoi(employeesTemp)
+		employees, err = strconv.Atoi(employeesTemp)
+		if err != nil {
+			fmt.Println(-1)
+			return
+		}
 
-		lowerBorder, upperBorder := 15, 30
+		lowerBorder, upperBorder := lowerBoundary, upperBoundary
 
-		for j := 0; j < employees; j++ {
-			settings, _ := reader.ReadString('\n')
-			settings = strings.TrimSpace(settings)
-			
-			parts := strings.Fields(settings)
-			if len(parts) < 2 {
-				if lowerBorder <= upperBorder {
-					fmt.Println(lowerBorder)
-				} else {
-					fmt.Println(-1)
-				}
-				continue
+		for range employees {
+			settings, err = reader.ReadString('\n')
+			if err != nil {
+				fmt.Println(-1)
+				return
 			}
-			
+			settings = strings.TrimSpace(settings)
+			parts := strings.Fields(settings)
 			sign := parts[0]
-			number, _ := strconv.Atoi(parts[1])
+			temperature, _ := strconv.Atoi(parts[1])
 
+			if temperature < lowerBorder || temperature > upperBorder {
+				fmt.Println(-1)
+				return
+			}
 			switch sign {
 			case ">=":
-				if number > lowerBorder {
-					lowerBorder = number
-				}
+				lowerBorder = max(lowerBorder, temperature)
 			case "<=":
-				if number < upperBorder {
-					upperBorder = number
-				}
+				upperBorder = min(upperBorder, temperature) 
 			default:
 				if lowerBorder <= upperBorder {
 					fmt.Println(lowerBorder)
@@ -57,14 +78,6 @@ func main() {
 				continue
 			}
 
-			if lowerBorder > upperBorder {
-				fmt.Println(-1)
-				for k := j + 1; k < employees; k++ {
-					reader.ReadString('\n')
-				}
-				break
-			}
-			
 			fmt.Println(lowerBorder)
 		}
 	}
