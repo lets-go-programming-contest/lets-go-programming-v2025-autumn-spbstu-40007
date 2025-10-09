@@ -8,14 +8,18 @@ import (
 func main() {
 	var departmentsCount, employeesCount int
 
-	minTemp, maxTemp := 15, 30
-	rangeValid := true
-
-	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
+	if _, err := fmt.Fscan(os.Stdin, &departmentsCount); err != nil {
 		return
 	}
 
 	for range departmentsCount {
+		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
+			return
+		}
+
+		minTemp, maxTemp := 15, 30
+		rangeValid := true
+
 		for range employeesCount {
 			var (
 				sign string
