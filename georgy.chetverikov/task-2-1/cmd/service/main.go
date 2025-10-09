@@ -11,49 +11,50 @@ import (
 func main() {
 	var (
 		departures, employees int
-		settings  string
+		settings              string
 	)
 
 	const (
 		lowerBoundary = 15
 		upperBoundary = 30
 	)
-	
+
 	reader := bufio.NewReader(os.Stdin)
 
 	departuresTemp, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(-1)
-		return 
+		return
 	}
 	departuresTemp = strings.TrimSpace(departuresTemp)
-	departures, err = strconv.Atoi(departuresTemp) 
+	departures, err = strconv.Atoi(departuresTemp)
 	if err != nil {
 		fmt.Println(-1)
 		return
 	}
-	
+
 	for range departures {
 		var employeesTemp string
 		employeesTemp, err = reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(-1)
-			return
+			continue
 		}
 		employeesTemp = strings.TrimSpace(employeesTemp)
 		employees, err = strconv.Atoi(employeesTemp)
 		if err != nil {
 			fmt.Println(-1)
-			return
+			continue
 		}
 
 		lowerBorder, upperBorder := lowerBoundary, upperBoundary
+		hasError := false
 
 		for range employees {
 			settings, err = reader.ReadString('\n')
 			if err != nil {
-				fmt.Println(-1)
-				return
+				hasError = true
+				continue
 			}
 			settings = strings.TrimSpace(settings)
 			parts := strings.Fields(settings)
@@ -61,24 +62,31 @@ func main() {
 			temperature, _ := strconv.Atoi(parts[1])
 
 			if temperature < lowerBorder || temperature > upperBorder {
-				fmt.Println(-1)
-				return
+				hasError = true
+				continue
 			}
 			switch sign {
 			case ">=":
 				lowerBorder = max(lowerBorder, temperature)
 			case "<=":
-				upperBorder = min(upperBorder, temperature) 
+				upperBorder = min(upperBorder, temperature)
 			default:
-				if lowerBorder <= upperBorder {
-					fmt.Println(lowerBorder)
-				} else {
-					fmt.Println(-1)
-				}
+				hasError = true
 				continue
 			}
 
+			if lowerBorder > upperBorder {
+				hasError = true
+				continue
+			}
+		}
+
+		if hasError || lowerBorder > upperBorder {
+			fmt.Println(-1)
+		} else {
 			fmt.Println(lowerBorder)
 		}
 	}
 }
+
+
