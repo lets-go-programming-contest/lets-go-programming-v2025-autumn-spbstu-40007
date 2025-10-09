@@ -7,14 +7,14 @@ import (
 
 func main() {
 	var departmentsCount, employeesCount int
+	minTemp, maxTemp := 15, 30
+	rangeValid := true
 
 	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
 		return
 	}
 
 	for range departmentsCount {
-		minTemp, maxTemp := 15, 30
-		rangeValid := true
 
 		for range employeesCount {
 			var (
