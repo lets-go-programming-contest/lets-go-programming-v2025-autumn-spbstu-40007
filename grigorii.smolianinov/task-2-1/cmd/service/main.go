@@ -6,8 +6,10 @@ import (
 )
 
 func main() {
-	var departmentsCount, employeesCount, temperatureValue int
-	var sign string
+	var (
+		departmentsCount, employeesCount, temperatureValue int
+		sign                                               string
+	)
 
 	if _, err := fmt.Fscan(os.Stdin, &departmentsCount, &employeesCount); err != nil {
 		return
@@ -18,7 +20,6 @@ func main() {
 		maxTemperature := 30
 
 		for range employeesCount {
-
 			if _, err := fmt.Fscan(os.Stdin, &sign, &temperatureValue); err != nil {
 				return
 			}
