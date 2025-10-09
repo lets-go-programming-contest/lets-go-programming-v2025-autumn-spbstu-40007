@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// An IntHeap is a min-heap of ints.
 type DishRating []int
 
 func (h DishRating) Len() int           { return len(h) }
