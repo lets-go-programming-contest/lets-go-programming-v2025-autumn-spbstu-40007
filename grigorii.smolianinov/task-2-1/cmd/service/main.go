@@ -21,12 +21,14 @@ func main() {
 				sign string
 				temp int
 			)
-			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
+			_, err := fmt.Fscan(os.Stdin, &sign, &temp)
+			if err != nil {
 				return
 			}
 
 			if !rangeValid {
 				fmt.Println(-1)
+
 				continue
 			}
 
@@ -42,6 +44,7 @@ func main() {
 				fmt.Println(minTemp)
 			} else {
 				fmt.Println(-1)
+
 				rangeValid = false
 			}
 		}
