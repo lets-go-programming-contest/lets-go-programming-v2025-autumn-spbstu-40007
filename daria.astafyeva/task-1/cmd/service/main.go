@@ -4,13 +4,10 @@ import "fmt"
 
 func main() {
 	var (
-		num1     float64
-		num2     float64
-		operator string
-		err      error
+		num1, num2 float64
 	)
 
-	_, err = fmt.Scanln(&num1)
+	_, err := fmt.Scanln(&num1)
 	if err != nil {
 		fmt.Println("Invalid first operand")
 		return
@@ -22,6 +19,7 @@ func main() {
 		return
 	}
 
+	var operator string
 	_, err = fmt.Scanln(&operator)
 	if err != nil {
 		fmt.Println("Invalid operation")
