@@ -71,4 +71,3 @@ func main() {
 	process(dishes)
 }
 
-//go run task_2_2/cmd/service/main.go
