@@ -19,17 +19,19 @@ func main() {
 		upperBoundary = 30
 	)
 
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(os.Stdin) 
 
 	departuresTemp, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(-1)
+
 		return
 	}
 	departuresTemp = strings.TrimSpace(departuresTemp)
 	departures, err = strconv.Atoi(departuresTemp)
 	if err != nil {
 		fmt.Println(-1)
+
 		return
 	}
 
@@ -38,12 +40,14 @@ func main() {
 		employeesTemp, err = reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 		employeesTemp = strings.TrimSpace(employeesTemp)
 		employees, err = strconv.Atoi(employeesTemp)
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -54,6 +58,7 @@ func main() {
 			settings, err = reader.ReadString('\n')
 			if err != nil {
 				hasError = true
+
 				continue
 			}
 			settings = strings.TrimSpace(settings)
@@ -63,9 +68,10 @@ func main() {
 
 			if temperature < lowerBorder || temperature > upperBorder {
 				hasError = true
+
 				continue
 			}
-			switch sign {
+			switch (sign) {
 			case ">=":
 				lowerBorder = max(lowerBorder, temperature)
 			case "<=":
@@ -75,11 +81,11 @@ func main() {
 				continue
 			}
 
-			if lowerBorder > upperBorder {
+			if (lowerBorder > upperBorder) {
 				hasError = true
 				continue
 			}
-			if hasError {
+			if (hasError) {
 				fmt.Println(-1)
 			} else {
 				fmt.Println(lowerBorder)
