@@ -15,7 +15,8 @@ func getTemperature(k int) { //nolint:varnamelen
 	for range k {
 		_, err := fmt.Scanln(&sign, &temperature)
 		if err != nil {
-			fmt.Println(-1)
+			fmt.Println("Error reading input:", err)
+			return
 		}
 
 		if !(15 <= temperature && temperature <= 30) {
@@ -37,7 +38,8 @@ func getTemperature(k int) { //nolint:varnamelen
 
 		if highBorder <= lowBorder {
 			fmt.Println(highBorder)
-		} else {
+		}
+		if highBorder > lowBorder {
 			fmt.Println(-1)
 		}
 	}
