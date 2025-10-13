@@ -57,7 +57,6 @@ func main() {
 		}
 
 		err = getRecommendedTemperature(employeesCount)
-
 		if err != nil {
 			log.Fatalf("error: %v", err)
 		}
