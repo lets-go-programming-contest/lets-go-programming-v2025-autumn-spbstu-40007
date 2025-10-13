@@ -9,86 +9,96 @@ import (
 )
 
 func main() {
-	var (
-		departures, employees int
-		settings              string
-	)
-
 	const (
 		lowerBoundary = 15
 		upperBoundary = 30
 	)
 
+	var departments int
+
 	reader := bufio.NewReader(os.Stdin)
-
-	departuresTemp, err := reader.ReadString('\n')
+	departmentsTemp, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(-1)
-
-		return
-	}
-	departures, err = strconv.Atoi(strings.TrimSpace(departuresTemp))
-	if err != nil {
-		fmt.Println(-1)
-
 		return
 	}
 
-	for range departures {
-		var employeesTemp string
-		employeesTemp, err = reader.ReadString('\n')
+	departments, err = strconv.Atoi(strings.TrimSpace(departmentsTemp))
+	if err != nil {
+		fmt.Println(-1)
+		return
+	}
+
+	for departmentIndex := 0; departmentIndex < departments; departmentIndex++ {
+		var employees int
+
+		employeesTemp, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println(-1)
-
-			continue
+			return
 		}
+
 		employees, err = strconv.Atoi(strings.TrimSpace(employeesTemp))
 		if err != nil {
 			fmt.Println(-1)
-
-			continue
+			return
 		}
-
+		
 		lowerBorder, upperBorder := lowerBoundary, upperBoundary
 		hasError := false
+		currentEmployee := 0
 
-		for range employees {
-			settings, err = reader.ReadString('\n')
+		for employeeIndex := 0; employeeIndex <= employees; employeeIndex++ {
+			currentEmployee = employeeIndex
+			var settings string
+
+			settingsTemp, err := reader.ReadString('\n')
 			if err != nil {
-				hasError = true
-
-				continue
+				fmt.Println(-1)
+				return
 			}
-			parts := strings.Fields(strings.TrimSpace(settings))
-			sign := parts[0]
-			temperature, _ := strconv.Atoi(parts[1])
 
-			if temperature < lowerBorder || temperature > upperBorder {
+			settings = strings.TrimSpace(settingsTemp)
+
+			sign, temperature := func() (string, int) {
+				parts := strings.Fields(settings)
+				if len(parts) < 2 {
+					return "", 0
+				}
+				temperature, err := strconv.Atoi(parts[1])
+				if err != nil {
+					return "", 0
+				}
+				return parts[0], temperature
+			}()
+
+			if sign == "" {
+				fmt.Println(-1)
 				hasError = true
-
-				continue
+				break
 			}
-			switch sign {
-			case ">=":
+
+			if sign == ">=" {
 				lowerBorder = max(lowerBorder, temperature)
-			case "<=":
+			} else if sign == "<=" {
 				upperBorder = min(upperBorder, temperature)
-			default:
-				hasError = true
-
-				continue
 			}
 
 			if lowerBorder > upperBorder {
-				hasError = true
-
-				continue
-			}
-			if hasError {
 				fmt.Println(-1)
+				hasError = true
+				break
 			} else {
 				fmt.Println(lowerBorder)
 			}
 		}
+		
+		if hasError {
+			remainingEmployees := employees - (currentEmployee + 1)
+			for i := 0; i < remainingEmployees; i++ {
+				reader.ReadString('\n')
+			}
+		}
 	}
 }
+
