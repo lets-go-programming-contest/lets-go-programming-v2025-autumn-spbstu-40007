@@ -54,6 +54,7 @@ func main() {
 	if err != nil {
 		return
 	}
+
 	if count != 1 {
 		fmt.Println("Incorrect number of arguments read.")
 
