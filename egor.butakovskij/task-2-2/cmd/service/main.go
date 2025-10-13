@@ -30,6 +30,7 @@ func (h *IntMaxHeap) Pop() interface{} {
 	if h.Len() == 0 {
 		return nil
 	}
+
 	n := h.Len() - 1
 	x := (*h)[n]
 	*h = (*h)[:n]
