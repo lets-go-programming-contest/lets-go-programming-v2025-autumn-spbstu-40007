@@ -79,14 +79,11 @@ func main() {
 				hasError = true
 				continue
 			}
-		}
-
-		if hasError || lowerBorder > upperBorder {
-			fmt.Println(-1)
-		} else {
-			fmt.Println(lowerBorder)
+			if hasError {
+				fmt.Println(-1)
+			} else {
+				fmt.Println(lowerBorder)
+			}
 		}
 	}
 }
-
-
