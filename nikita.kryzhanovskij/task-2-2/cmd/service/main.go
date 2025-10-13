@@ -51,7 +51,7 @@ func main() {
 
 	var preferred int
 
-	if _, err := fmt.Scan(&preferred); err != nil || dishes.Len() < preferred {
+	if _, err := fmt.Scan(&preferred); err != nil || dishes.Len() < preferred || preferred <= 0 {
 		fmt.Println("Invalid number")
 
 		return
