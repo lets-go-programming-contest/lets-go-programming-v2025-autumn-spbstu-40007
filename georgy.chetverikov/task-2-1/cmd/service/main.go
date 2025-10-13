@@ -14,70 +14,52 @@ func main() {
 		upperBoundary = 30
 	)
 
-	var departments int
-
 	reader := bufio.NewReader(os.Stdin)
-	departmentsTemp, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Println(-1)
-		return
-	}
+	
+	departmentsTemp, _ := reader.ReadString('\n')
+	departments, _ := strconv.Atoi(strings.TrimSpace(departmentsTemp))
 
-	departments, err = strconv.Atoi(strings.TrimSpace(departmentsTemp))
-	if err != nil {
-		fmt.Println(-1)
-		return
-	}
-
-	for departmentIndex := 0; departmentIndex < departments; departmentIndex++ {
-		var employees int
-
-		employeesTemp, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(-1)
-			return
-		}
-
-		employees, err = strconv.Atoi(strings.TrimSpace(employeesTemp))
-		if err != nil {
-			fmt.Println(-1)
-			return
-		}
+	for d := 0; d < departments; d++ {
+		employeesTemp, _ := reader.ReadString('\n')
+		employees, _ := strconv.Atoi(strings.TrimSpace(employeesTemp))
 		
 		lowerBorder, upperBorder := lowerBoundary, upperBoundary
 		hasError := false
-		currentEmployee := 0
+		processedEmployees := 0
 
-		for employeeIndex := 0; employeeIndex <= employees; employeeIndex++ {
-			currentEmployee = employeeIndex
-			var settings string
-
+		for e := 0; e < employees; e++ {
+			processedEmployees = e
+			
+			if hasError {
+				fmt.Println(-1)
+				reader.ReadString('\n') 
+				continue
+			}
+			
 			settingsTemp, err := reader.ReadString('\n')
 			if err != nil {
 				fmt.Println(-1)
-				return
+				hasError = true
+				continue
 			}
-
-			settings = strings.TrimSpace(settingsTemp)
-
-			sign, temperature := func() (string, int) {
-				parts := strings.Fields(settings)
-				if len(parts) < 2 {
-					return "", 0
-				}
-				temperature, err := strconv.Atoi(parts[1])
-				if err != nil {
-					return "", 0
-				}
-				return parts[0], temperature
-			}()
-
-			if sign == "" {
+			
+			settings := strings.TrimSpace(settingsTemp)
+			
+			parts := strings.Fields(settings)
+			if len(parts) < 2 {
 				fmt.Println(-1)
 				hasError = true
-				break
+				continue
 			}
-
+			
+			sign := parts[0]
+			temperature, err := strconv.Atoi(parts[1])
+			if err != nil {
+				fmt.Println(-1)
+				hasError = true
+				continue
+			}
+			
 			if sign == ">=" {
 				lowerBorder = max(lowerBorder, temperature)
 			} else if sign == "<=" {
@@ -87,18 +69,32 @@ func main() {
 			if lowerBorder > upperBorder {
 				fmt.Println(-1)
 				hasError = true
-				break
 			} else {
 				fmt.Println(lowerBorder)
 			}
 		}
 		
 		if hasError {
-			remainingEmployees := employees - (currentEmployee + 1)
-			for i := 0; i < remainingEmployees; i++ {
-				reader.ReadString('\n')
+			remaining := employees - (processedEmployees + 1)
+			for i := 0; i < remaining; i++ {
+				reader.ReadString('\n') 
+				fmt.Println(-1)
 			}
 		}
 	}
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
