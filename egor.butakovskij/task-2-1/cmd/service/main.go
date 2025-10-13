@@ -36,6 +36,7 @@ func getRecommendedTemperature(employeesCount int) error {
 
 		fmt.Println(recTemp)
 	}
+
 	return nil
 }
 
