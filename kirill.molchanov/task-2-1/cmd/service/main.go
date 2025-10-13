@@ -16,6 +16,7 @@ func getTemperature(k int) { //nolint:varnamelen
 		_, err := fmt.Scanln(&sign, &temperature)
 		if err != nil {
 			fmt.Println("Error reading input:", err)
+
 			return
 		}
 
@@ -39,6 +40,7 @@ func getTemperature(k int) { //nolint:varnamelen
 		if highBorder <= lowBorder {
 			fmt.Println(highBorder)
 		}
+
 		if highBorder > lowBorder {
 			fmt.Println(-1)
 		}
@@ -48,8 +50,13 @@ func getTemperature(k int) { //nolint:varnamelen
 func main() {
 	var n, k int //nolint:varnamelen
 
-	_, err := fmt.Scan(&n)
+	count, err := fmt.Scan(&n)
 	if err != nil {
+		return
+	}
+	if count != 1 {
+		fmt.Println("Incorrect number of arguments read.")
+
 		return
 	}
 
