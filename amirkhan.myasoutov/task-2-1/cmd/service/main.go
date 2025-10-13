@@ -7,7 +7,7 @@ func main() {
 
 	_, err := fmt.Scan(&departmentAmount)
 	if err != nil {
-		fmt.Println(err)
+
 		return
 	}
 
@@ -19,7 +19,7 @@ func main() {
 
 		_, err = fmt.Scan(&employeeAmount)
 		if err != nil {
-			fmt.Println(err)
+			
 			return
 		}
 
@@ -31,7 +31,7 @@ func main() {
 
 			_, err = fmt.Scan(&operand, &temperature)
 			if err != nil {
-				fmt.Println(err)
+
 				return
 			}
 
@@ -45,6 +45,7 @@ func main() {
 
 			if minimumTemp <= maximumTemp {
 				fmt.Println(minimumTemp)
+
 				continue
 			}
 			
