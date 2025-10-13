@@ -7,7 +7,6 @@ func main() {
 
 	_, err := fmt.Scan(&departmentAmount)
 	if err != nil {
-
 		return
 	}
 
@@ -19,7 +18,6 @@ func main() {
 
 		_, err = fmt.Scan(&employeeAmount)
 		if err != nil {
-			
 			return
 		}
 
@@ -31,7 +29,6 @@ func main() {
 
 			_, err = fmt.Scan(&operand, &temperature)
 			if err != nil {
-
 				return
 			}
 
