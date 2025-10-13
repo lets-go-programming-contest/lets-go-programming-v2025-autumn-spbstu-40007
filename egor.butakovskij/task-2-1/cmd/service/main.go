@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
-func getRecommendedTemperature(employeesCount int) {
+func getRecommendedTemperature(employeesCount int) error {
 	var (
 		temp, recTemp, highBorder, lowBorder int
 		sign                                 string
@@ -14,7 +17,7 @@ func getRecommendedTemperature(employeesCount int) {
 	for range employeesCount {
 		_, err := fmt.Scanf("%s %d", &sign, &temp)
 		if err != nil {
-			fmt.Println(err)
+			return fmt.Errorf("error: %w", err)
 		}
 
 		if sign == ">=" {
@@ -33,22 +36,29 @@ func getRecommendedTemperature(employeesCount int) {
 
 		fmt.Println(recTemp)
 	}
+	return nil
 }
 
 func main() {
+	log.SetFlags(0)
+
 	var departmentsCount, employeesCount int
 
 	_, err := fmt.Scan(&departmentsCount)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("error: %v", err)
 	}
 
 	for range departmentsCount {
 		_, err := fmt.Scan(&employeesCount)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatalf("error: %v", err)
 		}
 
-		getRecommendedTemperature(employeesCount)
+		err = getRecommendedTemperature(employeesCount)
+
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
 	}
 }
