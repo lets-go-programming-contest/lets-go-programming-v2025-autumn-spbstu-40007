@@ -9,6 +9,7 @@ func main() {
 
 	if _, err := fmt.Scan(&departmentsCount); err != nil {
 		fmt.Println("Input error: failed to read department count -", err)
+
 		return
 	}
 
@@ -17,6 +18,7 @@ func main() {
 
 		if _, err := fmt.Scan(&employeesCount); err != nil {
 			fmt.Println("Input error: failed to read employees count -", err)
+
 			return
 		}
 
@@ -31,6 +33,7 @@ func main() {
 
 			if _, err := fmt.Scan(&operator, &tempValue); err != nil {
 				fmt.Println("Input error: failed to read operator and temperature value -", err)
+
 				return
 			}
 
@@ -44,6 +47,7 @@ func main() {
 
 			if minTemp > maxTemp {
 				fmt.Println(-1)
+
 				continue
 			}
 			fmt.Println(minTemp)
