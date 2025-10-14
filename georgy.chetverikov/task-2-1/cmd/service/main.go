@@ -12,13 +12,14 @@ func main() {
 	const (
 		lowerBoundary = 15
 		upperBoundary = 30
+		settingsLength = 2
 	)
 
 	reader := bufio.NewReader(os.Stdin)
 	departmentsTemp, _ := reader.ReadString('\n')
 	departments, _ := strconv.Atoi(strings.TrimSpace(departmentsTemp))
 
-	for d := 0; d < departments; d++ {
+	for range departments {
 		employeesTemp, _ := reader.ReadString('\n')
 		employees, _ := strconv.Atoi(strings.TrimSpace(employeesTemp))
 
@@ -26,13 +27,13 @@ func main() {
 		hasError := false
 		processedEmployees := 0
 
-		for e := 0; e < employees; e++ {
-			processedEmployees = e
+		for employeesNumber := range employees {
+			processedEmployees = employeesNumber
 
 			if hasError {
 				fmt.Println(-1)
 				reader.ReadString('\n') //nolint:errcheck
-				//сделано для того, чтобы просто пропустить ввод в случае чего, но линтер ругается на то, что не ловлю ошибку, поэтому считаю, что тут можно это сделать.
+				// сделано для того, чтобы просто пропустить ввод в случае чего, но линтер ругается на то, что не ловлю ошибку, поэтому считаю, что тут можно это сделать.
 
 				continue
 			}
@@ -45,10 +46,10 @@ func main() {
 			}
 			settings := strings.TrimSpace(settingsTemp)
 			parts := strings.Fields(settings)
-			if len(parts) < 2 {
+			if len(parts) < settingsLength {
 				fmt.Println(-1)
 				hasError = true //nolint:wsl
-				//линтер ругается на то, что присваивание не стоит вместе с другими присваиваниями, оно тут не нужно и я, честно говоря, и не знаю как ему угодить, так что пишу нолинт.
+				// линтер ругается на то, что присваивание не стоит вместе с другими присваиваниями, оно тут не нужно и я, честно говоря, и не знаю как ему угодить, так что пишу нолинт.
 
 				continue
 			}
@@ -58,9 +59,10 @@ func main() {
 					fmt.Println(-1)
 					hasError = true
 				}
+				
 				return parts[0], temperature
 			}()
-			//сразу поясню, для чего тут это. Линтер ругался на то, что у меня до if statment'a идут два присваивания, и поэтому, долго не ломая голову, решил сделать так, как у меня было изначально в каком-то из первых коммитов.
+			// сразу поясню, для чего тут это. Линтер ругался на то, что у меня до if statment'a идут два присваивания, и поэтому, долго не ломая голову, решил сделать так, как у меня было изначально в каком-то из первых коммитов.
 
 			if sign == ">=" {
 				lowerBorder = max(lowerBorder, temperature)
@@ -77,9 +79,9 @@ func main() {
 		}
 		if hasError {
 			remaining := employees - (processedEmployees + 1)
-			for i := 0; i < remaining; i++ {
+			for range remaining {
 				reader.ReadString('\n') //nolint:errcheck
-				//такая же история, как и в предыдущем случае
+				// такая же история, как и в предыдущем случае
 				fmt.Println(-1)
 			}
 		}
