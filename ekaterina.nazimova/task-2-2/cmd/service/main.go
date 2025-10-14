@@ -12,9 +12,9 @@ func (h *IntHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
 func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
-    if value, ok := x.(int); ok {
-        *h = append(*h, value)
-    }
+	if value, ok := x.(int); ok {
+		*h = append(*h, value)
+	}
 }
 
 func (h *IntHeap) Pop() interface{} {
@@ -63,8 +63,7 @@ func main() {
 	}
 
 	for range make([]int, dishNumber) {
-		kthDish := heap.Pop(dishHeap) 
-
+		kthDish := heap.Pop(dishHeap)
 
 		fmt.Println(kthDish)
 	}
