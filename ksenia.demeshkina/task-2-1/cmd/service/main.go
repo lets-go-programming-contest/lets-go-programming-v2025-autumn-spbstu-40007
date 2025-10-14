@@ -13,7 +13,7 @@ func temperature(workers int) error {
 
 		_, err := fmt.Scan(&operator, &value)
 		if err != nil {
-			return err
+			return fmt.Errorf("error reading operator and value %w", err)
 		}
 
 		if operator == "<=" {
@@ -34,7 +34,7 @@ func temperature(workers int) error {
 			for j := iterator + 1; j < workers; j++ {
 				_, err := fmt.Scan(&operator, &value)
 				if err != nil {
-					return err
+					return fmt.Errorf("error reading remaining data %w", err)
 				}
 
 				fmt.Println(-1)
@@ -79,7 +79,7 @@ func main() {
 
 		err := temperature(workers)
 		if err != nil {
-			fmt.Println("temperature data entry error")
+			fmt.Println("error: ", err)
 
 			return
 		}
