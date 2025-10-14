@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-func main() {//nolint:funlen
+//nolint:gci
+func main() { //nolint:funlen
 	const (
 		lowerBoundary  = 15
 		upperBoundary  = 30
@@ -36,8 +37,8 @@ func main() {//nolint:funlen
 
 				continue
 			}
-			settingsTemp, err := reader.ReadString('\n')//nolint:wsl
-			if err != nil {//nolint:wsl
+			settingsTemp, err := reader.ReadString('\n') //nolint:wsl
+			if err != nil {                              //nolint:wsl
 				fmt.Println(-1)
 				hasError = true //nolint:wsl
 
