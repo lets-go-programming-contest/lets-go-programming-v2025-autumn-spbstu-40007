@@ -42,11 +42,11 @@ func main() {
 				maxTemp = tempValue
 			}
 
-			if minTemp <= maxTemp {
-				fmt.Println(minTemp)
-			} else {
+			if minTemp > maxTemp {
 				fmt.Println(-1)
+				continue
 			}
+			fmt.Println(minTemp)
 		}
 	}
 }
