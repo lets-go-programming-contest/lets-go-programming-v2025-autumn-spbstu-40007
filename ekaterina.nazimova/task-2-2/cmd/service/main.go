@@ -62,11 +62,11 @@ func main() {
 		return
 	}
 
-	for range make([]int, dishNumber) {
-		val := heap.Pop(dishHeap)
+	var kthDish interface{}
 
-		if dishNumber == 1 {
-			fmt.Println(val)
-		}
+	for range make([]int, dishNumber) {
+		kthDish = heap.Pop(dishHeap)
 	}
+
+	fmt.Println(kthDish)
 }
