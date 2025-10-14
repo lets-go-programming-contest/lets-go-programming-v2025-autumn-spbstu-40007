@@ -13,6 +13,7 @@ func (h *IntHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *IntHeap) Push(x interface{}) {
     if value, ok := x.(int); ok {
+		
         *h = append(*h, value)
     }
 }
