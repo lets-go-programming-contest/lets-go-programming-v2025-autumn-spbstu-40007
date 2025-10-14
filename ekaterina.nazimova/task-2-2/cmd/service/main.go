@@ -62,19 +62,12 @@ func main() {
 		return
 	}
 
-	var kthDish int
+	 var kthDish int
 
-	for range make([]int, dishNumber) {
-		val, ok := heap.Pop(dishHeap).(int)
+    for range make([]int, dishNumber) {
+        val := heap.Pop(dishHeap).(int)
+        kthDish = val
+    }
 
-		if !ok {
-			fmt.Println("Unexpected type")
-
-			return
-		}
-
-		kthDish = val
-	}
-
-	fmt.Println(kthDish)
+    fmt.Println(kthDish)
 }
