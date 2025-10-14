@@ -62,13 +62,10 @@ func main() {
 		return
 	}
 
-	var kthDish int
-
 	for range make([]int, dishNumber) {
-		val := heap.Pop(dishHeap).(int)
+		kthDish := heap.Pop(dishHeap) 
 
-		kthDish = val
+
+		fmt.Println(kthDish)
 	}
-
-	fmt.Println(kthDish)
 }
