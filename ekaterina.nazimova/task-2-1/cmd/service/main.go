@@ -44,7 +44,7 @@ func main() {
 
 			if minTemp > maxTemp {
 				fmt.Println(-1)
-				return
+				break
 			}
 			fmt.Println(minTemp)
 
