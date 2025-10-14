@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-//nolint:gci
 func main() { //nolint:funlen
 	const (
 		lowerBoundary  = 15
