@@ -63,8 +63,10 @@ func main() {
 	}
 
 	for range make([]int, dishNumber) {
-		kthDish := heap.Pop(dishHeap)
+		val := heap.Pop(dishHeap)
 
-		fmt.Println(kthDish)
+		if dishNumber == 1 {
+			fmt.Println(val)
+		}
 	}
 }
