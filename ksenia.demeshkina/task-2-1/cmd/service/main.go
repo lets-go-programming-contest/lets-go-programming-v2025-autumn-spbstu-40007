@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func temperature(workers int) {
+func temperature(workers int) error {
 	minTemp := 15
 	maxTemp := 30
 
@@ -13,16 +13,16 @@ func temperature(workers int) {
 
 		_, err := fmt.Scan(&operator, &value)
 		if err != nil {
-			fmt.Println("Ошибка ввода")
-
-			return
+			return err
 		}
 
 		if operator == "<=" {
 			if value < maxTemp {
 				maxTemp = value
 			}
-		} else if operator == ">=" {
+		}
+
+		if operator == ">=" {
 			if value > minTemp {
 				minTemp = value
 			}
@@ -34,19 +34,19 @@ func temperature(workers int) {
 			for j := iterator + 1; j < workers; j++ {
 				_, err := fmt.Scan(&operator, &value)
 				if err != nil {
-					fmt.Println("Ошибка ввода")
-
-					return
+					return err
 				}
 
 				fmt.Println(-1)
 			}
 
-			return
-		} else {
-			fmt.Println(minTemp)
+			return nil
 		}
+
+		fmt.Println(minTemp)
 	}
+
+	return nil
 }
 
 func main() {
@@ -54,11 +54,11 @@ func main() {
 
 	_, err := fmt.Scan(&department)
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Invalid department input format")
 	}
 
 	if department < 1 || department > 1000 {
-		fmt.Println("Количество отделов в диапазоне от 1 до 1000")
+		fmt.Println("The number of departments must be in the range from 1 to 1000")
 
 		return
 	}
@@ -66,15 +66,22 @@ func main() {
 	for range department {
 		_, err = fmt.Scan(&workers)
 		if err != nil {
-			fmt.Println("Error")
-		}
-
-		if workers < 1 || workers > 1000 {
-			fmt.Println("Количество сотрудников от 1 до 1000")
+			fmt.Println("Invalid employee input format")
 
 			return
 		}
 
-		temperature(workers)
+		if workers < 1 || workers > 1000 {
+			fmt.Println("The number of employees must be from 1 to 1000")
+
+			return
+		}
+
+		err := temperature(workers)
+		if err != nil {
+			fmt.Println("temperature data entry error")
+
+			return
+		}
 	}
 }
