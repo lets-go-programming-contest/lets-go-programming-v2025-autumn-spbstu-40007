@@ -4,7 +4,6 @@ import (
 	"container/heap"
 	"fmt"
 	"log"
-	"os"
 )
 
 type IntHeap []int
@@ -22,28 +21,45 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
 func main() {
-	var N int
-	if _, err := fmt.Scan(&N); err != nil && err.Error() != "EOF" {
-		log.Fatal(err)
+	var N int //nolint:varnamelen
+	if _, err := fmt.Scan(&N); err != nil {
+		if err.Error() != "EOF" {
+			log.Fatal(err)
+		}
+
+		return
 	}
 
 	preferences := make([]int, N)
 	for i := 0; i < N; i++ {
-		if _, err := fmt.Scan(&preferences[i]); err != nil && err.Error() != "EOF" {
-			log.Fatal(err)
+		if _, err := fmt.Scan(&preferences[i]); err != nil {
+			if err.Error() != "EOF" {
+				log.Fatal(err)
+			}
+
+			return
 		}
 	}
 
-	var K int
-	if _, err := fmt.Scan(&K); err != nil && err.Error() != "EOF" {
-		log.Fatal(err)
+	var K int //nolint:varnamelen
+	if _, err := fmt.Scan(&K); err != nil {
+		if err.Error() != "EOF" {
+			log.Fatal(err)
+		}
+
+		return
 	}
 
-	h := &IntHeap{}
+	if K < 1 || K > N {
+		return
+	}
+
+	h := &IntHeap{} //nolint:varnamelen
 
 	for _, pref := range preferences {
 		heap.Push(h, pref)
@@ -55,7 +71,5 @@ func main() {
 
 	if h.Len() > 0 {
 		fmt.Println((*h)[0])
-	} else {
-		os.Exit(1)
 	}
 }
