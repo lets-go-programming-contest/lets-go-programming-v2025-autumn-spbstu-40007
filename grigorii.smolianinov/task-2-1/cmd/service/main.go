@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 func main() {
 	var departmentsCount, employeesCount int
 
-	if _, err := fmt.Scanln(&departmentsCount); err != nil {
+	if _, err := fmt.Fscan(os.Stdin, &departmentsCount); err != nil {
 		return
 	}
 
 	for range departmentsCount {
-		if _, err := fmt.Scanln(&employeesCount); err != nil {
+		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
 			return
 		}
 
@@ -25,7 +26,7 @@ func main() {
 				temp int
 			)
 
-			if _, err := fmt.Scanln(&sign, &temp); err != nil {
+			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
 				return
 			}
 
