@@ -48,6 +48,7 @@ func main() { //nolint:funlen
 
 			settings := strings.TrimSpace(settingsTemp)
 			parts := strings.Fields(settings)
+
 			if len(parts) < settingsLength {
 				fmt.Println(-1)
 
@@ -75,6 +76,7 @@ func main() { //nolint:funlen
 
 			if lowerBorder > upperBorder {
 				fmt.Println(-1)
+
 				hasError = true
 			} else {
 				fmt.Println(lowerBorder)
