@@ -25,40 +25,33 @@ func (h *IntHeap) Pop() any {
 	return x
 }
 
-func main() {
-	var N int //nolint:varnamelen
-	if _, err := fmt.Scan(&N); err != nil {
-		if err.Error() != "EOF" {
-			log.Fatal(err)
-		}
+const ErrorEOF = "EOF"
 
-		return
+func readInt() (int, error) {
+	var value int
+	_, err := fmt.Scan(&value)
+	if err != nil && err.Error() != ErrorEOF {
+		return 0, err
 	}
 
+	return value, nil
+}
+
+func readPreferences(N int) ([]int, error) {
 	preferences := make([]int, N)
-	for i := 0; i < N; i++ {
+	for i := range N {
 		if _, err := fmt.Scan(&preferences[i]); err != nil {
-			if err.Error() != "EOF" {
-				log.Fatal(err)
+			if err.Error() != ErrorEOF {
+				return nil, err
 			}
-
-			return
+			break
 		}
 	}
 
-	var K int //nolint:varnamelen
-	if _, err := fmt.Scan(&K); err != nil {
-		if err.Error() != "EOF" {
-			log.Fatal(err)
-		}
+	return preferences, nil
+}
 
-		return
-	}
-
-	if K < 1 || K > N {
-		return
-	}
-
+func findKthSmallest(preferences []int, K int) int {
 	h := &IntHeap{} //nolint:varnamelen
 
 	for _, pref := range preferences {
@@ -70,6 +63,40 @@ func main() {
 	}
 
 	if h.Len() > 0 {
-		fmt.Println((*h)[0])
+		return (*h)[0]
+	}
+
+	return 0
+}
+
+func run() error {
+	N, err := readInt() //nolint:varnamelen
+	if err != nil {
+		return err
+	}
+
+	preferences, err := readPreferences(N)
+	if err != nil {
+		return err
+	}
+
+	K, err := readInt() //nolint:varnamelen
+	if err != nil {
+		return err
+	}
+
+	if K < 1 || K > N {
+		return nil
+	}
+
+	result := findKthSmallest(preferences, K)
+	fmt.Println(result)
+
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
 	}
 }
