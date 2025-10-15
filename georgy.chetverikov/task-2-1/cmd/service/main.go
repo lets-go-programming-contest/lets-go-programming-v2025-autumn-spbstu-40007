@@ -36,32 +36,32 @@ func main() { //nolint:funlen
 
 				continue
 			}
-			
-			settingsTemp, err := reader.ReadString('\n') 
-			if err != nil {                              
+
+			settingsTemp, err := reader.ReadString('\n')
+			if err != nil {
 				fmt.Println(-1)
-				
-				hasError = true 
+
+				hasError = true
 
 				continue
 			}
-			
+
 			settings := strings.TrimSpace(settingsTemp)
 			parts := strings.Fields(settings)
-			if len(parts) < settingsLength { 
+			if len(parts) < settingsLength {
 				fmt.Println(-1)
-				
-				hasError = true 
+
+				hasError = true
 
 				continue
 			}
-			
-			sign, temperature := func() (string, int) { 
+
+			sign, temperature := func() (string, int) {
 				temperature, err := strconv.Atoi(parts[1])
 				if err != nil {
 					fmt.Println(-1)
-					
-					hasError = true 
+
+					hasError = true
 				}
 
 				return parts[0], temperature
@@ -75,13 +75,13 @@ func main() { //nolint:funlen
 
 			if lowerBorder > upperBorder {
 				fmt.Println(-1)
-				hasError = true 
+				hasError = true
 			} else {
 				fmt.Println(lowerBorder)
 			}
 		}
-		
-		if hasError { 
+
+		if hasError {
 			remaining := employees - (processedEmployees + 1)
 			for range remaining {
 				reader.ReadString('\n') //nolint:errcheck
