@@ -2,18 +2,18 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 func main() {
-	var departmentsCount, employeesCount int
+	var departmentsCount int
 
-	if _, err := fmt.Fscan(os.Stdin, &departmentsCount); err != nil {
+	if _, err := fmt.Scan(&departmentsCount); err != nil {
 		return
 	}
 
 	for range departmentsCount {
-		if _, err := fmt.Fscan(os.Stdin, &employeesCount); err != nil {
+		var employeesCount int
+		if _, err := fmt.Scan(&employeesCount); err != nil {
 			return
 		}
 
@@ -26,7 +26,7 @@ func main() {
 				temp int
 			)
 
-			if _, err := fmt.Fscan(os.Stdin, &sign, &temp); err != nil {
+			if _, err := fmt.Scan(&sign, &temp); err != nil {
 				return
 			}
 
@@ -46,11 +46,10 @@ func main() {
 
 			if minTemp <= maxTemp {
 				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
-
-				rangeValid = false
 			}
+			fmt.Println(-1)
+
+			rangeValid = false
 		}
 	}
 }
