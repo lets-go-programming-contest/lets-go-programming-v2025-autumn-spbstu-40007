@@ -52,6 +52,5 @@ func main() {
 				rangeValid = false
 			}
 		}
-
 	}
 }
