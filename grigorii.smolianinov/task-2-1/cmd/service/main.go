@@ -47,6 +47,7 @@ func main() {
 			if minTemp <= maxTemp {
 				fmt.Println(minTemp)
 			}
+
 			fmt.Println(-1)
 
 			rangeValid = false
