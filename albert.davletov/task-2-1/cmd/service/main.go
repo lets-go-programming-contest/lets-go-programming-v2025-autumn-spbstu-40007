@@ -5,9 +5,7 @@ import (
 )
 
 func main() {
-	var (
-		numberDepartments int
-	)
+	var numberDepartments int
 
 	_, err := fmt.Scan(&numberDepartments)
 	if err != nil {
