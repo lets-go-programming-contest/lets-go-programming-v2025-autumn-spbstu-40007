@@ -5,24 +5,27 @@ import (
 	"fmt"
 )
 
-type Heap struct {
+type Heap struct {//nolint:recvcheck
 	numbers []int
 }
 
 func (heap Heap) Len() int {
+	
 	return len(heap.numbers)
 }
 
 func (heap Heap) Less(i, j int) bool {
+	
 	return heap.numbers[i] > heap.numbers[j]
 }
 
 func (heap Heap) Swap(i, j int) {
-	heap.numbers[i], heap.numbers[j] = heap.numbers[j], heap.numbers[i]
+	heapx.numbers[i], heap.numbers[j] = heap.numbers[j], heap.numbers[i]
 }
 
 func (heap *Heap) Push(x any) {
-	heap.numbers = append(heap.numbers, x.(int))
+	//only one type used, no need to check it
+	heap.numbers = append(heap.numbers, x.(int)) //nolint:forcetypeassert
 }
 
 func (heap *Heap) Pop() any {
@@ -33,6 +36,7 @@ func (heap *Heap) Pop() any {
 }
 
 func (heap Heap) Peek() int {
+	
 	return heap.numbers[0]
 }
 
@@ -41,6 +45,7 @@ func main() {
 
 	if _, err := fmt.Scan(&numbersAmount); err != nil {
 		fmt.Println("Error: couldn't read the amount of numbers. Numbers must be integers only")
+		
 		return
 	}
 
@@ -49,12 +54,14 @@ func main() {
 	for index := range numbersSequence {
 		if _, err := fmt.Scan(&numbersSequence[index]); err != nil {
 			fmt.Println("Error: numbers in the sequence must be integer only")
+			
 			return
 		}
 	}
 
 	if _, err := fmt.Scan(&targetPosition); err != nil {
 		fmt.Println("Error: number you are trying to enter must be integer only")
+		
 		return
 	}
 
