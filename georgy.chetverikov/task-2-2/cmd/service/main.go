@@ -10,12 +10,10 @@ type Heap struct { //nolint:recvcheck
 }
 
 func (heap Heap) Len() int {
-
 	return len(heap.numbers)
 }
 
 func (heap Heap) Less(i, j int) bool {
-
 	return heap.numbers[i] > heap.numbers[j]
 }
 
@@ -24,7 +22,7 @@ func (heap Heap) Swap(i, j int) {
 }
 
 func (heap *Heap) Push(x any) {
-	//only one type used, no need to check it
+	// only one type used, no need to check it
 	heap.numbers = append(heap.numbers, x.(int)) //nolint:forcetypeassert
 }
 
@@ -36,7 +34,6 @@ func (heap *Heap) Pop() any {
 }
 
 func (heap Heap) Peek() int {
-
 	return heap.numbers[0]
 }
 
