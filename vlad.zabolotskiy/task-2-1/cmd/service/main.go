@@ -59,7 +59,6 @@ func optimalTemperature(reader *bufio.Reader, departments int) {
 
 			operator := data[0]
 			temperature, err := strconv.Atoi(data[1])
-
 			if err != nil {
 				minTemp = maxTemp + 1
 
