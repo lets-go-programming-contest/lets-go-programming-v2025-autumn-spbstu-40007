@@ -5,32 +5,42 @@ import (
 )
 
 func main() {
-	var N int //так в задании написано что уж
+	var N int // так в задании написано что уж
+
 	if _, err := fmt.Scan(&N); err != nil {
 		fmt.Println("Input error: failed to read N (количество отделов) -", err)
+
 		return
 	}
-	for range N {
-		var K int // ну и это тоже
-		if _, err := fmt.Scan(&K); err != nil {
+
+	for i := 0; i < N; i++ {
+		var kCount int // а это не хочу просто K
+
+		if _, err := fmt.Scan(&kCount); err != nil {
 			fmt.Println("Input error: failed to read K (количество сотрудников) -", err)
+
 			return
 		}
+
 		minT := 15
 		maxT := 30
-		for range K {
+
+		for j := 0; j < kCount; j++ {
 			var (
-				smooth_operator string //Carlos Sainz Jr.
-				valueT          int
+				operator string // оператор сравнения 
+				valueT   int
 			)
-			if _, err := fmt.Scan(&smooth_operator, &valueT); err != nil {
-				fmt.Println("Input error: failed to read Carlos Sainz Jr. and valueT (данные температуры) -", err)
+
+			if _, err := fmt.Scan(&operator, &valueT); err != nil {
+				fmt.Println("Input error: failed to read operator and valueT (данные температуры) -", err)
+
 				return
 			}
-			if smooth_operator == ">=" && valueT > minT {
+
+			if operator == ">=" && valueT > minT {
 				minT = valueT
 			}
-			if smooth_operator == "<=" && valueT < maxT {
+			if operator == "<=" && valueT < maxT {
 				maxT = valueT
 			}
 
