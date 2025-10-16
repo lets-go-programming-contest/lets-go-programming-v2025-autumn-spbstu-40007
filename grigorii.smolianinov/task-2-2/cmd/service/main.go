@@ -30,6 +30,7 @@ const ErrorEOF = "EOF"
 func readInt() (int, error) {
 	var value int
 	_, err := fmt.Scan(&value)
+
 	if err != nil && err.Error() != ErrorEOF {
 		return 0, err
 	}
@@ -37,9 +38,9 @@ func readInt() (int, error) {
 	return value, nil
 }
 
-func readPreferences(N int) ([]int, error) {
-	preferences := make([]int, N)
-	for i := range N {
+func readPreferences(dishAmount int) ([]int, error) {
+	preferences := make([]int, dishAmount)
+	for i := range dishAmount {
 		if _, err := fmt.Scan(&preferences[i]); err != nil {
 			if err.Error() != ErrorEOF {
 				return nil, err
@@ -51,13 +52,13 @@ func readPreferences(N int) ([]int, error) {
 	return preferences, nil
 }
 
-func findKthSmallest(preferences []int, K int) int {
+func finddishNumberthSmallest(preferences []int, dishNumber int) int {
 	h := &IntHeap{} //nolint:varnamelen
 
 	for _, pref := range preferences {
 		heap.Push(h, pref)
 
-		if h.Len() > K {
+		if h.Len() > dishNumber {
 			heap.Pop(h)
 		}
 	}
@@ -70,26 +71,26 @@ func findKthSmallest(preferences []int, K int) int {
 }
 
 func run() error {
-	N, err := readInt() //nolint:varnamelen
+	dishAmount, err := readInt()
 	if err != nil {
 		return err
 	}
 
-	preferences, err := readPreferences(N)
+	preferences, err := readPreferences(dishAmount)
 	if err != nil {
 		return err
 	}
 
-	K, err := readInt() //nolint:varnamelen
+	dishNumber, err := readInt()
 	if err != nil {
 		return err
 	}
 
-	if K < 1 || K > N {
+	if dishNumber < 1 || dishNumber > dishAmount {
 		return nil
 	}
 
-	result := findKthSmallest(preferences, K)
+	result := finddishNumberthSmallest(preferences, dishNumber)
 	fmt.Println(result)
 
 	return nil
