@@ -6,8 +6,7 @@ import (
 
 func main() {
 	var (
-		minTemperature, maxTemperature int = 15, 30
-		numberDepartments              int
+		numberDepartments int
 	)
 
 	_, err := fmt.Scan(&numberDepartments)
@@ -30,11 +29,10 @@ func main() {
 			return
 		}
 
+		minTemperature, maxTemperature := 15, 30
+
 		for range numberEmployees {
 			_, err := fmt.Scan(&operand, &temperature)
-
-			fmt.Println(temperature)
-
 			if err != nil {
 				fmt.Println("Error reading input: ", err)
 
@@ -53,8 +51,5 @@ func main() {
 				fmt.Println(minTemperature)
 			}
 		}
-
-		minTemperature, maxTemperature = 15, 30
-
 	}
 }
