@@ -14,7 +14,7 @@ func main() {
 	}
 
 	for range make([]struct{}, departmentsCount) {
-		var staffCount int 
+		var staffCount int
 
 		if _, err := fmt.Scan(&staffCount); err != nil {
 			fmt.Println("Input error: failed to read staff count -", err)
@@ -27,7 +27,7 @@ func main() {
 
 		for range make([]struct{}, staffCount) {
 			var (
-				operator string 
+				operator string
 				valueT   int
 			)
 
