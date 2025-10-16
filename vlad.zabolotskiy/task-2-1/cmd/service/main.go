@@ -28,14 +28,14 @@ func main() {
 		return
 	}
 
-	quantityEmployees, _ := reader.ReadString('\n')
-	employees, _ := strconv.Atoi(strings.TrimSpace(quantityEmployees))
-
-	optimalTemperature(reader, departments, employees)
+	optimalTemperature(reader, departments)
 }
 
-func optimalTemperature(reader *bufio.Reader, departments, employees int) {
+func optimalTemperature(reader *bufio.Reader, departments int) {
 	for range departments {
+		quantityEmployees, _ := reader.ReadString('\n')
+		employees, _ := strconv.Atoi(strings.TrimSpace(quantityEmployees))
+
 		if employees < 1 || employees > 1000 {
 			fmt.Println("Invalid employees range")
 
@@ -44,8 +44,6 @@ func optimalTemperature(reader *bufio.Reader, departments, employees int) {
 
 		minTemp := minTempConst
 		maxTemp := maxTempConst
-		opMore := opMoreConst
-		opLess := opLessConst
 
 		for range employees {
 			preference, _ := reader.ReadString('\n')
@@ -54,33 +52,35 @@ func optimalTemperature(reader *bufio.Reader, departments, employees int) {
 			data := strings.Fields(preference)
 
 			if len(data) != expectedFieldsCount {
+				minTemp = maxTemp + 1
+
+				continue
+			}
+
+			operator := data[0]
+			temperature, err := strconv.Atoi(data[1])
+
+			if err != nil {
+				minTemp = maxTemp + 1
+
+				continue
+			}
+
+			switch operator {
+			case opMoreConst:
+				minTemp = max(minTemp, temperature)
+			case opLessConst:
+				maxTemp = min(maxTemp, temperature)
+			default:
+				minTemp = maxTemp + 1
+
+				continue
+			}
+
+			if minTemp > maxTemp {
 				fmt.Println(-1)
 			} else {
-				operator := data[0]
-				temperature, err := strconv.Atoi(data[1])
-
-				if err != nil {
-					fmt.Println(-1)
-
-					continue
-				}
-
-				switch operator {
-				case opMore:
-					minTemp = max(minTemp, temperature)
-				case opLess:
-					maxTemp = min(maxTemp, temperature)
-				default:
-					fmt.Println(-1)
-
-					continue
-				}
-
-				if minTemp > maxTemp {
-					fmt.Println(-1)
-				} else {
-					fmt.Println(minTemp)
-				}
+				fmt.Println(minTemp)
 			}
 		}
 	}
