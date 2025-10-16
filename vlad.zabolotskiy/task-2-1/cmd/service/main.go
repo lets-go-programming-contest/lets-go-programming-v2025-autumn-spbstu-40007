@@ -24,6 +24,7 @@ func main() {
 
 	if departments < 1 || departments > 1000 {
 		fmt.Println("Invalid departments range")
+
 		return
 	}
 
@@ -37,45 +38,48 @@ func optimalTemperature(reader *bufio.Reader, departments, employees int) {
 	for range departments {
 		if employees < 1 || employees > 1000 {
 			fmt.Println("Invalid employees range")
+
 			return
-		} else {
-			minTemp := minTempConst
-			maxTemp := maxTempConst
-			opMore := opMoreConst
-			opLess := opLessConst
+		}
 
-			for range employees {
-				preference, _ := reader.ReadString('\n')
-				preference = strings.TrimSpace(preference)
+		minTemp := minTempConst
+		maxTemp := maxTempConst
+		opMore := opMoreConst
+		opLess := opLessConst
 
-				data := strings.Fields(preference)
+		for range employees {
+			preference, _ := reader.ReadString('\n')
+			preference = strings.TrimSpace(preference)
 
-				if len(data) != expectedFieldsCount {
+			data := strings.Fields(preference)
+
+			if len(data) != expectedFieldsCount {
+				fmt.Println(-1)
+			} else {
+				operator := data[0]
+				temperature, err := strconv.Atoi(data[1])
+
+				if err != nil {
+					fmt.Println(-1)
+
+					continue
+				}
+
+				switch operator {
+				case opMore:
+					minTemp = max(minTemp, temperature)
+				case opLess:
+					maxTemp = min(maxTemp, temperature)
+				default:
+					fmt.Println(-1)
+
+					continue
+				}
+
+				if minTemp > maxTemp {
 					fmt.Println(-1)
 				} else {
-					operator := data[0]
-					temperature, err := strconv.Atoi(data[1])
-
-					if err != nil {
-						fmt.Println(-1)
-						continue
-					}
-
-					switch operator {
-					case opMore:
-						minTemp = max(minTemp, temperature)
-					case opLess:
-						maxTemp = min(maxTemp, temperature)
-					default:
-						fmt.Println(-1)
-						continue
-					}
-
-					if minTemp > maxTemp {
-						fmt.Println(-1)
-					} else {
-						fmt.Println(minTemp)
-					}
+					fmt.Println(minTemp)
 				}
 			}
 		}
