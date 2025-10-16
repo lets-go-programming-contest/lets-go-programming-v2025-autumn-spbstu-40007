@@ -27,7 +27,7 @@ func (heap *Heap) Push(x any) {
 
 func (heap *Heap) Pop() any {
 	x := heap.numbers[len(heap.numbers)-1]
-	heap.numbres = heap.numbres[:len(heap.numbers)-1]
+	heap.numbers = heap.numbers[:len(heap.numbers)-1]
 
 	return x
 }
