@@ -7,16 +7,11 @@ import (
 	"strconv"
 )
 
-func readInput(scanner *bufio.Scanner) string {
+func readInput(scanner *bufio.Scanner) (string, error) {
 	scanner.Scan()
-
 	err := scanner.Err()
-	if err != nil {
-		fmt.Println("Error reading input")
-		os.Exit(0)
-	}
 
-	return scanner.Text()
+	return scanner.Text(), err
 }
 
 func main() {
@@ -25,13 +20,50 @@ func main() {
 
 	reader := bufio.NewScanner(os.Stdin)
 
-	numberDepartments, _ := strconv.Atoi(readInput(reader))
+	numberDepartmentsString, err := readInput(reader)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	numberDepartments, err := strconv.Atoi(numberDepartmentsString)
+	if err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
 	for range numberDepartments {
-		numberEmployees, _ := strconv.Atoi(readInput(reader))
+		numberEmployeesString, err := readInput(reader)
+		if err != nil {
+			fmt.Println(err)
+
+			return
+		}
+
+		numberEmployees, err := strconv.Atoi(numberEmployeesString)
+		if err != nil {
+			fmt.Println(err)
+
+			return
+		}
+
 		for range numberEmployees {
-			preferences := readInput(reader)
+			preferences, err := readInput(reader)
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
+
 			operand := preferences[:2]
-			temperature, _ := strconv.Atoi(preferences[3:])
+			temperature, err := strconv.Atoi(preferences[3:])
+			if err != nil {
+				fmt.Println(err)
+
+				return
+			}
 
 			if operand == "<=" {
 				maxTemperature = min(maxTemperature, temperature)
