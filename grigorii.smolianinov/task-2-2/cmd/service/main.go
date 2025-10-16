@@ -6,14 +6,14 @@ import (
 	"log"
 )
 
-type IntHeap []int
+type IntHeap []int //nolint:recvcheck
 
 func (h IntHeap) Len() int           { return len(h) }
 func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
 func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	*h = append(*h, x.(int)) //nolint:forcetypeassert
 }
 
 func (h *IntHeap) Pop() any {
@@ -32,7 +32,7 @@ func readInt() (int, error) {
 	_, err := fmt.Scan(&value)
 
 	if err != nil && err.Error() != ErrorEOF {
-		return 0, err
+		return 0, err //nolint:wrapcheck
 	}
 
 	return value, nil
@@ -43,8 +43,9 @@ func readPreferences(dishAmount int) ([]int, error) {
 	for i := range dishAmount {
 		if _, err := fmt.Scan(&preferences[i]); err != nil {
 			if err.Error() != ErrorEOF {
-				return nil, err
+				return nil, err //nolint:wrapcheck
 			}
+
 			break
 		}
 	}
