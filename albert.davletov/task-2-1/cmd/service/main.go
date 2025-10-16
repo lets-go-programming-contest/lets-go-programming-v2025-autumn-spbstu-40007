@@ -31,8 +31,9 @@ func main() {
 		}
 
 		for range numberEmployees {
+			_, err := fmt.Scan(&operand, &temperature)
 
-			_, err := fmt.Scan(&operand, temperature)
+			fmt.Println(temperature)
 
 			if err != nil {
 				fmt.Println("Error reading input: ", err)
@@ -52,5 +53,8 @@ func main() {
 				fmt.Println(minTemperature)
 			}
 		}
+
+		minTemperature, maxTemperature = 15, 30
+
 	}
 }
