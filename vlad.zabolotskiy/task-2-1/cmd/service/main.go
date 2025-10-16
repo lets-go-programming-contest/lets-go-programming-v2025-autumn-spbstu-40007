@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	minTempConst = 15
-	maxTempConst = 30
-	opMoreConst  = ">="
-	opLessConst  = "<="
+	minTempConst        = 15
+	maxTempConst        = 30
+	opMoreConst         = ">="
+	opLessConst         = "<="
+	expectedFieldsCount = 2
 )
 
 func main() {
@@ -43,13 +44,13 @@ func optimalTemperature(reader *bufio.Reader, departments, employees int) {
 			opMore := opMoreConst
 			opLess := opLessConst
 
-			for i := 0; i < employees; i++ {
+			for range employees {
 				preference, _ := reader.ReadString('\n')
 				preference = strings.TrimSpace(preference)
 
 				data := strings.Fields(preference)
 
-				if len(data) != 2 {
+				if len(data) != expectedFieldsCount {
 					fmt.Println(-1)
 				} else {
 					operator := data[0]
