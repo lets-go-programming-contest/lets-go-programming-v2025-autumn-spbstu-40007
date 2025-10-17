@@ -7,9 +7,9 @@ import (
 
 type DishHeap []int
 
-func (h *DishHeap) Len() int           { return len(*h) }
-func (h *DishHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
-func (h *DishHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
+func (h DishHeap) Len() int           { return len(h) }
+func (h DishHeap) Less(i, j int) bool { return h[i] > h[j] }
+func (h DishHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *DishHeap) Push(x any) {
 	if val, ok := x.(int); ok {
@@ -34,39 +34,34 @@ func (h *DishHeap) Pop() any {
 func main() {
 	var numDishes, preferenceRank int
 	if _, err := fmt.Scan(&numDishes); err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid input:", err)
 
 		return
 	}
 
-	scores := make([]int, numDishes)
+	dishPreferenceHeap := make(DishHeap, numDishes)
 	for i := range numDishes {
-		if _, err := fmt.Scan(&scores[i]); err != nil {
-			fmt.Println("Invalid input")
+		if _, err := fmt.Scan(&dishPreferenceHeap[i]); err != nil {
+			fmt.Println("Invalid input:", err)
 
 			return
 		}
 	}
 
 	if _, err := fmt.Scan(&preferenceRank); err != nil {
-		fmt.Println("Invalid input")
+		fmt.Println("Invalid input:", err)
 
 		return
 	}
 
-	dishPreferenceHeap := &DishHeap{}
-	heap.Init(dishPreferenceHeap)
-
-	for _, score := range scores {
-		heap.Push(dishPreferenceHeap, score)
-	}
+	heap.Init(&dishPreferenceHeap)
 
 	for range preferenceRank - 1 {
-		heap.Pop(dishPreferenceHeap)
+		heap.Pop(&dishPreferenceHeap)
 	}
 
 	if dishPreferenceHeap.Len() > 0 {
-		fmt.Println((*dishPreferenceHeap)[0])
+		fmt.Println(dishPreferenceHeap[0])
 	} else {
 		fmt.Println("Invalid input")
 	}
