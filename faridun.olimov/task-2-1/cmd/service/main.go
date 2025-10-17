@@ -57,6 +57,7 @@ func processDepartment(numRequests int) {
 
 		if lowBorder > highBorder {
 			inContradiction = true
+			
 			fmt.Println("-1")
 		} else {
 			fmt.Println(lowBorder)
