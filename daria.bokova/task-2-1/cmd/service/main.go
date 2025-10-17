@@ -8,17 +8,21 @@ func processEmployeeConstraint(operation string, temperature, minTemp, maxTemp i
 		if temperature > maxTemp {
 			return 0, 0, false
 		}
+
 		if temperature > minTemp {
 			minTemp = temperature
 		}
+
 	case "<=":
 		if temperature < minTemp {
 			return 0, 0, false
 		}
+
 		if temperature < maxTemp {
 			maxTemp = temperature
 		}
 	}
+
 	return minTemp, maxTemp, true
 }
 
@@ -28,7 +32,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departments; i++ {
+	for range departments {
 		var employees int
 		if _, err := fmt.Scan(&employees); err != nil {
 			return
@@ -38,7 +42,7 @@ func main() {
 		maxTemp := 30
 		valid := true
 
-		for j := 0; j < employees; j++ {
+		for range employees {
 			var (
 				operation   string
 				temperature int
@@ -50,13 +54,16 @@ func main() {
 
 			if !valid {
 				fmt.Println(-1)
+
 				continue
 			}
 
 			newMin, newMax, ok := processEmployeeConstraint(operation, temperature, minTemp, maxTemp)
 			if !ok {
 				fmt.Println(-1)
+
 				valid = false
+
 				continue
 			}
 
