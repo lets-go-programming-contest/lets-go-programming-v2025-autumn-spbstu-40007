@@ -48,13 +48,13 @@ func main() {
 	numberSequence := make([]int, totalNumbers)
 	for idx := range totalNumbers {
 		if _, err := fmt.Scan(&numberSequence[idx]); err != nil {
-			fmt.Println("Error reading number at position %d: %v\n", idx, err)
+			fmt.Println("Error reading number at position")
 			return
 		}
 	}
 
 	if _, err := fmt.Scan(&targetPosition); err != nil {
-		fmt.Printf("Error reading target position: %v\n", err)
+		fmt.Printf("Error reading target position")
 		return
 	}
 
