@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func main() {
+func main() { //nolint:cyclop
 	var departmentNum, employeesNum int
 
 	_, err := fmt.Scanln(&departmentNum)
@@ -14,7 +14,7 @@ func main() {
 		return
 	}
 
-	for i := 0; i < departmentNum; i++ {
+	for range departmentNum {
 		_, err = fmt.Scanln(&employeesNum)
 		if err != nil || employeesNum < 1 || employeesNum > 1000 {
 			fmt.Println(-1)
