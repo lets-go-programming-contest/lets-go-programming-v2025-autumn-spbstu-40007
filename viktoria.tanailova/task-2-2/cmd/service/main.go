@@ -20,13 +20,14 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
-	
+
 	return x
 }
 
 func main() { //nolint:cyclop
 	var dishesNumber int
 	_, err := fmt.Scanln(&dishesNumber)
+
 	if err != nil || dishesNumber < 1 || dishesNumber > 10000 {
 		fmt.Println("ERROR: invalid number of dishes.")
 
@@ -45,6 +46,7 @@ func main() { //nolint:cyclop
 
 	var desiredDish int
 	_, err = fmt.Scanln(&desiredDish)
+
 	if err != nil || desiredDish < 1 || desiredDish > dishesNumber {
 		fmt.Println("ERROR: invalid number of desired dish")
 	}
