@@ -29,6 +29,7 @@ func processDepartment(empCount int) {
 
 		if _, err := fmt.Scanf("%s %d", &operator, &temp); err != nil || (operator != ">=" && operator != "<=") {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -42,6 +43,7 @@ func processDepartment(empCount int) {
 
 		if minTemp <= maxTemp && minTemp >= 15 && minTemp <= 30 {
 			fmt.Println(minTemp)
+
 			continue
 		}
 
