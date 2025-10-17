@@ -60,7 +60,6 @@ func main() {
 
 	reader := bufio.NewScanner(os.Stdin)
 	preferedDishes, err := readInput(reader)
-
 	if err != nil {
 		fmt.Println("Error reading input: ", err)
 
@@ -69,7 +68,6 @@ func main() {
 
 	for _, v := range strings.Fields(preferedDishes) {
 		intv, err := strconv.Atoi(v)
-
 		if err != nil {
 			fmt.Println("Erorr converting to number: ", err)
 		}
@@ -86,7 +84,6 @@ func main() {
 	heap.Init(dishesHeap)
 
 	numberOfPreferedDishString, err := readInput(reader)
-
 	if err != nil {
 		fmt.Println("Error reading input: ", err)
 
@@ -94,7 +91,6 @@ func main() {
 	}
 
 	numberOfPreferedDish, err := strconv.Atoi(numberOfPreferedDishString)
-
 	if err != nil {
 		fmt.Println("Erorr converting to number: ", err)
 
