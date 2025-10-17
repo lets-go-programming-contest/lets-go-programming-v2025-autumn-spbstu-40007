@@ -15,8 +15,7 @@ func main() {
 		return
 	}
 	//nolint:intrange
-	for i := 0; i < numOfState; i++ {
-
+	for i := 0; i < numOfState; i++ { //nolint:whitespace
 		maxTemp = 15
 		minTemp = 30
 
