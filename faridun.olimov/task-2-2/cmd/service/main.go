@@ -3,6 +3,7 @@ package main
 import (
 	"container/heap"
 	"fmt"
+	"os"
 )
 
 type IntHeap []int
@@ -31,6 +32,8 @@ func main() {
 
 	_, err := fmt.Scan(&count)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+
 		return
 	}
 
@@ -39,12 +42,16 @@ func main() {
 	for i := range count {
 		_, err = fmt.Scan(&numbers[i])
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+
 			return
 		}
 	}
 
 	_, err = fmt.Scan(&kValue)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+
 		return
 	}
 
