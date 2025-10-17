@@ -31,6 +31,7 @@ func (h *MaxHeap) Pop() interface{} {
 	n := len(old)
 	x := old[n-1]
 	h.elements = old[0 : n-1]
+
 	return x
 }
 
@@ -47,6 +48,7 @@ func main() {
 
 		return
 	}
+
 	numOfMeals := make([]int, countOfMeals)
 
 	//nolint:intrange
@@ -73,7 +75,6 @@ func main() {
 		heap.Push(numHeap, numOfMeals[i])
 	}
 
-	//nolint:intrange
 	for i := targetIndex; i < countOfMeals; i++ {
 		if numOfMeals[i] > numHeap.Peek() {
 			heap.Pop(numHeap)
