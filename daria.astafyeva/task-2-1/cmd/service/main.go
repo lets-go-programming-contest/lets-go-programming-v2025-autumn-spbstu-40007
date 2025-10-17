@@ -35,15 +35,16 @@ func processDepartment(empCount int) {
 
 		if operator == ">=" {
 			minTemp = intMaximum(minTemp, temp)
-		} else if operator == "<=" {
+		}
+		if operator == "<=" {
 			maxTemp = intMinimum(maxTemp, temp)
 		}
 
 		if minTemp <= maxTemp && minTemp >= 15 && minTemp <= 30 {
 			fmt.Println(minTemp)
-		} else {
-			fmt.Println(-1)
+			continue
 		}
+		fmt.Println(-1)
 	}
 }
 
