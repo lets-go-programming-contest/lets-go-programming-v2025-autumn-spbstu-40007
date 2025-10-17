@@ -14,6 +14,7 @@ func main() {
 
 		return
 	}
+
 	//nolint:intrange
 	for i := 0; i < numOfState; i++ {
 
@@ -25,6 +26,7 @@ func main() {
 
 			return
 		}
+
 		//nolint:intrange
 		for j := 0; j < numOfEmp; j++ {
 			var operand string
