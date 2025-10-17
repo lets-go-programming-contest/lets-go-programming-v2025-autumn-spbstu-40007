@@ -69,7 +69,6 @@ func main() {
 		heap.Push(ourHeap, numberOfMeals[i])
 	}
 
-	//nolint:intrange
 	for i := indexK; i < numOfNumbers; i++ {
 		if numberOfMeals[i] > (*ourHeap)[0] {
 			heap.Pop(ourHeap)
