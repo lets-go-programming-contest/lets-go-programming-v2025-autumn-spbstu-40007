@@ -41,18 +41,20 @@ func (h *MaxHeap) Peek() int {
 func main() {
 	var totalNumbers, targetPosition int
 
-	if _, scanErr := fmt.Scan(&totalNumbers); scanErr != nil {
+	if _, err := fmt.Scan(&totalNumbers); err != nil {
 		return
 	}
 
 	numberSequence := make([]int, totalNumbers)
 	for idx := range totalNumbers {
-		if _, scanErr := fmt.Scan(&numberSequence[idx]); scanErr != nil {
+		if _, err := fmt.Scan(&numberSequence[idx]); err != nil {
+			fmt.Println("Error reading number at position %d: %v\n", idx, err)
 			return
 		}
 	}
 
-	if _, scanErr := fmt.Scan(&targetPosition); scanErr != nil {
+	if _, err := fmt.Scan(&targetPosition); err != nil {
+		fmt.Printf("Error reading target position: %v\n", err)
 		return
 	}
 
