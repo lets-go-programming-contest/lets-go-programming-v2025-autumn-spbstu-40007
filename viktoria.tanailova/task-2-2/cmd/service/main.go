@@ -5,14 +5,14 @@ import (
 	"fmt"
 )
 
-type IntHeap []int
+type IntHeap []int //nolint:recvcheck
 
 func (h IntHeap) Len() int           { return len(h) }
 func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
 func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *IntHeap) Push(x any) {
-	*h = append(*h, x.(int))
+	*h = append(*h, x.(int)) //nolint:forcetypeassert
 }
 
 func (h *IntHeap) Pop() any {
@@ -20,22 +20,25 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+	
 	return x
 }
 
-func main() {
+func main() { //nolint:cyclop
 	var dishesNumber int
 	_, err := fmt.Scanln(&dishesNumber)
 	if err != nil || dishesNumber < 1 || dishesNumber > 10000 {
 		fmt.Println("ERROR: invalid number of dishes.")
+
 		return
 	}
 
 	dishesRating := make([]int, dishesNumber)
-	for i := 0; i < dishesNumber; i++ {
+	for i := range dishesNumber {
 		_, err = fmt.Scan(&dishesRating[i])
 		if err != nil || dishesRating[i] < -10000 || dishesRating[i] > 10000 {
 			fmt.Println("ERROR: invalid rating of dishes.")
+
 			return
 		}
 	}
@@ -46,10 +49,10 @@ func main() {
 		fmt.Println("ERROR: invalid number of desired dish")
 	}
 
-	h := &IntHeap{}
+	h := &IntHeap{} //nolint:varnamelen
 	heap.Init(h)
 
-	for i := 0; i < desiredDish; i++ {
+	for i := range desiredDish {
 		heap.Push(h, dishesRating[i])
 	}
 
