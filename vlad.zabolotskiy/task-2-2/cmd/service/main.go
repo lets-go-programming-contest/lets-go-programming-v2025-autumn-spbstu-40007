@@ -36,6 +36,7 @@ func (h *IntHeap) Pop() any {
 	return x
 }
 
+//nolint:cyclop
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
