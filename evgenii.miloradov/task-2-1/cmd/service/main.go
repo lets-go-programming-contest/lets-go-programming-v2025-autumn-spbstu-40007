@@ -14,7 +14,7 @@ func main() {
 
 		return
 	}
-	//nolint:(intrange)
+	//nolint:intrange
 	for i := 0; i < numOfState; i++ {
 
 		maxTemp = 15
@@ -25,7 +25,7 @@ func main() {
 
 			return
 		}
-		//nolint:(intrange)
+		//nolint:intrange
 		for j := 0; j < numOfEmp; j++ {
 			var operand string
 
