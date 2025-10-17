@@ -9,16 +9,11 @@ import (
 	"strings"
 )
 
-func readInput(scanner *bufio.Scanner) string {
+func readInput(scanner *bufio.Scanner) (string, error) {
 	scanner.Scan()
-
 	err := scanner.Err()
-	if err != nil {
-		fmt.Println("Error reading input")
-		os.Exit(0)
-	}
 
-	return scanner.Text()
+	return scanner.Text(), err
 }
 
 type IntHeap []int
@@ -36,12 +31,10 @@ func (ownHeap *IntHeap) Swap(i, j int) {
 }
 
 func (ownHeap *IntHeap) Push(x interface{}) {
-	intX, err := x.(int)
-	if !err {
-		return
+	intX, ok := x.(int)
+	if ok {
+		*ownHeap = append(*ownHeap, intX)
 	}
-
-	*ownHeap = append(*ownHeap, intX)
 }
 
 func (ownHeap *IntHeap) Pop() interface{} {
@@ -66,10 +59,19 @@ func main() {
 	}
 
 	reader := bufio.NewScanner(os.Stdin)
-	preferedDishes := readInput(reader)
+	preferedDishes, err := readInput(reader)
+	if err != nil {
+		fmt.Println("Error reading input: ", err)
+
+		return
+	}
 
 	for _, v := range strings.Fields(preferedDishes) {
-		intv, _ := strconv.Atoi(v)
+		intv, err := strconv.Atoi(v)
+		if err != nil {
+			fmt.Println("Erorr converting to number: ", err)
+		}
+
 		dishesHeap.Push(intv)
 	}
 
@@ -81,11 +83,23 @@ func main() {
 
 	heap.Init(dishesHeap)
 
-	numberOfPreferedDish, _ := strconv.Atoi(readInput(reader))
+	numberOfPreferedDishString, err := readInput(reader)
+	if err != nil {
+		fmt.Println("Error reading input: ", err)
+
+		return
+	}
+
+	numberOfPreferedDish, err := strconv.Atoi(numberOfPreferedDishString)
+	if err != nil {
+		fmt.Println("Erorr converting to number: ", err)
+
+		return
+	}
+
 	for range numberOfPreferedDish - 1 {
 		heap.Pop(dishesHeap)
 	}
 
-	out := heap.Pop(dishesHeap)
-	fmt.Println(out)
+	fmt.Println(heap.Pop(dishesHeap))
 }
