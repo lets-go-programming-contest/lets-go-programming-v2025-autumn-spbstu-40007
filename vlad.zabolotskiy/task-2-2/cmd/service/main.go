@@ -50,7 +50,7 @@ func main() {
 
 	sequenceNumbers := make([]int, numberDishes)
 
-	for i := range numberDishes {
+	for i := range sequenceNumbers {
 		_, err := fmt.Fscan(reader, &sequenceNumbers[i])
 
 		if err != nil || sequenceNumbers[i] < -10000 || sequenceNumbers[i] > 10000 {
