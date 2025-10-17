@@ -14,8 +14,8 @@ func main() {
 
 		return
 	}
-
-	for i := 0; i < numOfState; i++ { //nolint:(intrange)
+	//nolint:(intrange)
+	for i := 0; i < numOfState; i++ {
 
 		maxTemp = 15
 		minTemp = 30
@@ -25,8 +25,8 @@ func main() {
 
 			return
 		}
-
-		for j := 0; j < numOfEmp; j++ { //nolint:(intrange)
+		//nolint:(intrange)
+		for j := 0; j < numOfEmp; j++ {
 			var operand string
 
 			var comfTemp int
