@@ -9,6 +9,7 @@ func intMax(x, y int) int {
 	if x > y {
 		return x
 	}
+
 	return y
 }
 
@@ -16,6 +17,7 @@ func intMin(x, y int) int {
 	if x < y {
 		return x
 	}
+
 	return y
 }
 
@@ -37,11 +39,13 @@ func processDepartment(numRequests int) {
 			if err.Error() != "EOF" {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			}
+
 			return
 		}
 
 		if inContradiction {
 			fmt.Println("-1")
+
 			continue
 		}
 
@@ -69,6 +73,7 @@ func main() {
 	_, err := fmt.Scan(&numDepartments)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+
 		return
 	}
 
@@ -76,6 +81,7 @@ func main() {
 		_, err = fmt.Scan(&numRequests)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+
 			return
 		}
 
