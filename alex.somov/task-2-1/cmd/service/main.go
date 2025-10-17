@@ -9,12 +9,15 @@ func findOptimalTemp(numOfEmployees int) {
 	maxTemperature := 30
 
 	for range numOfEmployees {
-		var sign string
-		var temperature int
+		var (
+			sign        string
+			temperature int
+		)
 
 		_, err := fmt.Scanln(&sign, &temperature)
 		if err != nil || (sign != ">=" && sign != "<=") {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -40,6 +43,7 @@ func main() {
 	_, err := fmt.Scanln(&numOfDepartments)
 	if err != nil || numOfDepartments > 1000 || numOfDepartments < 1 {
 		fmt.Println(-1)
+
 		return
 	}
 
@@ -47,6 +51,7 @@ func main() {
 		_, err = fmt.Scanln(&numOfEmployees)
 		if err != nil || numOfEmployees > 1000 || numOfEmployees < 1 {
 			fmt.Println(-1)
+
 			continue
 		}
 
