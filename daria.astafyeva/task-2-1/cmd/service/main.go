@@ -29,13 +29,13 @@ func processDepartment(empCount int) {
 
 		if _, err := fmt.Scanf("%s %d", &operator, &temp); err != nil || (operator != ">=" && operator != "<=") {
 			fmt.Println(-1)
-
 			continue
 		}
 
 		if operator == ">=" {
 			minTemp = intMaximum(minTemp, temp)
 		}
+
 		if operator == "<=" {
 			maxTemp = intMinimum(maxTemp, temp)
 		}
@@ -44,6 +44,7 @@ func processDepartment(empCount int) {
 			fmt.Println(minTemp)
 			continue
 		}
+
 		fmt.Println(-1)
 	}
 }
