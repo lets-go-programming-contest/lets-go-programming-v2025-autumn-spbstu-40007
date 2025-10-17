@@ -6,30 +6,35 @@ import (
 
 func main() {
 	var numOfState, numOfEmp int
+
 	var maxTemp, minTemp int
 
 	if _, err := fmt.Scan(&numOfState); err != nil {
 		fmt.Println(-1)
+
 		return
 	}
 
-	for i := 0; i < numOfState; i++ {
+	for i := 0; i < numOfState; i++ { //nolint:(intrange)
 
 		maxTemp = 15
 		minTemp = 30
 
 		if _, err := fmt.Scan(&numOfEmp); err != nil {
 			fmt.Println(-1)
+
 			return
 		}
 
-		for j := 0; j < numOfEmp; j++ {
+		for j := 0; j < numOfEmp; j++ { //nolint:(intrange)
 			var operand string
+
 			var comfTemp int
 
 			_, err := fmt.Scan(&operand, &comfTemp)
 			if err != nil {
 				fmt.Println("-1")
+
 				return
 			}
 
@@ -44,8 +49,8 @@ func main() {
 				}
 			default:
 				fmt.Println("-1")
-				return
 
+				return
 			}
 
 			if maxTemp <= minTemp {
