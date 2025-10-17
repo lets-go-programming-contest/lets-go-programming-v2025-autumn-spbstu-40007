@@ -59,6 +59,7 @@ func main() {
 	}
 
 	reader := bufio.NewScanner(os.Stdin)
+
 	preferedDishes, err := readInput(reader)
 	if err != nil {
 		fmt.Println("Error reading input: ", err)
