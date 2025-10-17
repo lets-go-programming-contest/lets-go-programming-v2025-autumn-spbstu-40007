@@ -67,7 +67,12 @@ func main() {
 
 		return
 	}
-	numHeap := &MaxHeap{elements: []int{}}
+
+	//nolint:wsl
+	numHeap := &MaxHeap{
+		elements: []int{},
+	}
+
 	heap.Init(numHeap)
 
 	//nolint:intrange
