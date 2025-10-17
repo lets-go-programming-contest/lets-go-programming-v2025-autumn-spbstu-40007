@@ -24,7 +24,7 @@ func (h *IntHeap) Pop() any {
 	return x
 }
 
-func main() {
+func main() { //nolint:cyclop
 	var numOfDishes int
 	_, err := fmt.Scanln(&numOfDishes)
 
@@ -53,7 +53,7 @@ func main() {
 		return
 	}
 
-	h := &IntHeap{}
+	h := &IntHeap{} //nolint:varnamelen
 	heap.Init(h)
 
 	for i := range dishPriority {
