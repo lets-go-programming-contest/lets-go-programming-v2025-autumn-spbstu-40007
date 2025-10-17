@@ -68,7 +68,6 @@ func main() {
 		return
 	}
 
-	//nolint:wsl
 	numHeap := &MaxHeap{
 		elements: []int{},
 	}
