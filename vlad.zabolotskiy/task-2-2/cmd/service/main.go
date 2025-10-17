@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+//nolint:recvcheck
 type IntHeap []int
 
 func (h IntHeap) Len() int {
@@ -22,6 +23,7 @@ func (h IntHeap) Swap(i, j int) {
 }
 
 func (h *IntHeap) Push(x any) {
+	//nolint:forcetypeassert
 	*h = append(*h, x.(int))
 }
 
@@ -45,22 +47,23 @@ func main() {
 		return
 	}
 
-	a := make([]int, numberDishes)
+	sequenceNumbers := make([]int, numberDishes)
 
+	//nolint:intrange
 	for i := range numberDishes {
-		_, err := fmt.Fscan(reader, &a[i])
+		_, err := fmt.Fscan(reader, &sequenceNumbers[i])
 
-		if err != nil || a[i] < -10000 || a[i] > 10000 {
+		if err != nil || sequenceNumbers[i] < -10000 || sequenceNumbers[i] > 10000 {
 			fmt.Println("Invalid ai range")
 
 			return
 		}
 	}
 
-	var k int
-	_, err2 := fmt.Fscan(reader, &k)
+	var kDishes int
+	_, err2 := fmt.Fscan(reader, &kDishes)
 
-	if err2 != nil || k < 1 || k > numberDishes {
+	if err2 != nil || kDishes < 1 || kDishes > numberDishes {
 		fmt.Println("Invalid k range")
 
 		return
@@ -69,10 +72,11 @@ func main() {
 	h := &IntHeap{}
 	heap.Init(h)
 
-	for i := range a {
-		heap.Push(h, a[i])
+	//nolint:intrange
+	for i := range sequenceNumbers {
+		heap.Push(h, sequenceNumbers[i])
 
-		if h.Len() > k {
+		if h.Len() > kDishes {
 			heap.Pop(h)
 		}
 	}
