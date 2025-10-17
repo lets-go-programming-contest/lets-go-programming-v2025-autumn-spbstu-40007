@@ -32,6 +32,7 @@ func (h *IntHeap) Pop() any {
 	n := len(old)
 	x := old[n-1]
 	*h = old[0 : n-1]
+
 	return x
 }
 
@@ -49,7 +50,6 @@ func main() {
 
 	sequenceNumbers := make([]int, numberDishes)
 
-	//nolint:intrange
 	for i := range numberDishes {
 		_, err := fmt.Fscan(reader, &sequenceNumbers[i])
 
@@ -69,17 +69,16 @@ func main() {
 		return
 	}
 
-	h := &IntHeap{}
-	heap.Init(h)
+	heapD := &IntHeap{}
+	heap.Init(heapD)
 
-	//nolint:intrange
 	for i := range sequenceNumbers {
-		heap.Push(h, sequenceNumbers[i])
+		heap.Push(heapD, sequenceNumbers[i])
 
-		if h.Len() > kDishes {
-			heap.Pop(h)
+		if heapD.Len() > kDishes {
+			heap.Pop(heapD)
 		}
 	}
 
-	fmt.Println((*h)[0])
+	fmt.Println((*heapD)[0])
 }
