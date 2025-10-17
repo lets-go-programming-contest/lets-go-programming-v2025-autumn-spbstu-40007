@@ -3,24 +3,22 @@ package main
 import "fmt"
 
 func processEmployeeConstraint(operation string, temperature, minTemp, maxTemp int) (int, int, bool) {
-	isValid := true
+	if temperature < minTemp || temperature > maxTemp {
+		return minTemp, maxTemp, false
+	}
 
 	switch operation {
 	case ">=":
-		if temperature > maxTemp {
-			isValid = false
-		} else if temperature > minTemp {
+		if temperature > minTemp {
 			minTemp = temperature
 		}
 	case "<=":
-		if temperature < minTemp {
-			isValid = false
-		} else if temperature < maxTemp {
+		if temperature < maxTemp {
 			maxTemp = temperature
 		}
 	}
 
-	return minTemp, maxTemp, isValid
+	return minTemp, maxTemp, true
 }
 
 func main() {
@@ -37,7 +35,6 @@ func main() {
 
 		minTemp := 15
 		maxTemp := 30
-		isValid := true
 
 		for range employees {
 			var (
@@ -49,19 +46,16 @@ func main() {
 				return
 			}
 
+			newMin, newMax, isValid := processEmployeeConstraint(operation, temperature, minTemp, maxTemp)
+
 			if !isValid {
 				fmt.Println(-1)
-
+				minTemp, maxTemp = newMin, newMax
 				continue
 			}
 
-			minTemp, maxTemp, isValid = processEmployeeConstraint(operation, temperature, minTemp, maxTemp)
-
-			if isValid {
-				fmt.Println(minTemp)
-			} else {
-				fmt.Println(-1)
-			}
+			minTemp, maxTemp = newMin, newMax
+			fmt.Println(minTemp)
 		}
 	}
 }
