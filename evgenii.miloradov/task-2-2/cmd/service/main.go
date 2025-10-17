@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+//nolint:recvcheck
 type stdHeap []int
 
 func (ourHeap stdHeap) Len() int {
@@ -20,6 +21,7 @@ func (ourHeap stdHeap) Swap(i, j int) {
 }
 
 func (ourHeap *stdHeap) Push(x any) {
+	//nolint:forcetypeassert
 	*ourHeap = append(*ourHeap, x.(int))
 }
 
@@ -43,8 +45,13 @@ func main() {
 
 	numberOfMeals := make([]int, numOfNumbers)
 
+	//nolint:intrange
 	for i := 0; i < numOfNumbers; i++ {
-		fmt.Scan(&numberOfMeals[i])
+		if _, err := fmt.Scan(&numberOfMeals[i]); err != nil {
+			fmt.Println(-1)
+
+			return
+		}
 	}
 
 	if _, err := fmt.Scan(&indexK); err != nil {
@@ -57,15 +64,18 @@ func main() {
 
 	heap.Init(ourHeap)
 
+	//nolint:intrange
 	for i := 0; i < indexK; i++ {
 		heap.Push(ourHeap, numberOfMeals[i])
 	}
 
+	//nolint:intrange
 	for i := indexK; i < numOfNumbers; i++ {
 		if numberOfMeals[i] > (*ourHeap)[0] {
 			heap.Pop(ourHeap)
 			heap.Push(ourHeap, numberOfMeals[i])
 		}
 	}
+
 	fmt.Println((*ourHeap)[0])
 }
