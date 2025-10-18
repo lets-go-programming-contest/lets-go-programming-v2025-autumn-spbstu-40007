@@ -7,9 +7,9 @@ import (
 
 type DishRating []int
 
-func (h DishRating) Len() int           { return len(h) }
-func (h DishRating) Less(i, j int) bool { return h[i] < h[j] }
-func (h DishRating) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *DishRating) Len() int { return len(*h) }
+func (h *DishRating) Less(i, j int) bool { return (*h)[i] < (*h)[j] }
+func (h *DishRating) Swap(i, j int) { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *DishRating) Push(x any) {
 	value, ok := x.(int)
