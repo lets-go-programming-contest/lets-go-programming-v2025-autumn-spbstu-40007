@@ -12,7 +12,11 @@ func (h DishRating) Less(i, j int) bool { return h[i] < h[j] }
 func (h DishRating) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *DishRating) Push(x any) {
-	*h = append(*h, x.(int))
+	value, ok := x.(int)
+	if !ok {
+		return
+	}
+	*h = append(*h, value)
 }
 
 func (h *DishRating) Pop() any {
@@ -49,7 +53,7 @@ func main() {
 	_, err = fmt.Scan(&preferenceNumber)
 	if err != nil || preferenceNumber < 0 || preferenceNumber > dishAmount {
 		fmt.Println("Invalid number of preference")
-		
+
 		return
 	}
 
