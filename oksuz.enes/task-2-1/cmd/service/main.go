@@ -33,11 +33,12 @@ func main() {
 				return
 			}
 
-			if operator == ">=" {
+			switch operator {
+			case ">=":
 				if temperature > minTemp {
 					minTemp = temperature
 				}
-			} else if operator == "<=" {
+			case "<=":
 				if temperature < maxTemp {
 					maxTemp = temperature
 				}
