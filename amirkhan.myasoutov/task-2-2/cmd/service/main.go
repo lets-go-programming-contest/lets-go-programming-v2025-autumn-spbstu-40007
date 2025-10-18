@@ -24,7 +24,6 @@ func (h *DishRating) Pop() any {
 }
 
 func main() {
-
 	var (
 		dishAmount       int
 		preferenceNumber int
