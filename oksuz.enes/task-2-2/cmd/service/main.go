@@ -20,12 +20,9 @@ func (myHeap *MinHeap) Swap(i, j int) {
 }
 
 func (myHeap *MinHeap) Push(x interface{}) {
-	value, ok := x.(int)
-	if !ok {
-		return
+	if value, ok := x.(int); ok {
+		*myHeap = append(*myHeap, value)
 	}
-
-	*myHeap = append(*myHeap, value)
 }
 
 func (myHeap *MinHeap) Pop() interface{} {
@@ -43,6 +40,8 @@ func main() {
 	_, err := fmt.Scan(&count)
 	if err != nil {
 		fmt.Println(err)
+
+		return
 	}
 
 	prefer := make([]int, count)
@@ -50,12 +49,16 @@ func main() {
 		_, err = fmt.Scan(&prefer[i])
 		if err != nil {
 			fmt.Println(err)
+
+			return
 		}
 	}
 
 	_, err = fmt.Scan(&value)
 	if err != nil {
 		fmt.Println(err)
+
+		return
 	}
 
 	minHeap := &MinHeap{}
@@ -64,7 +67,11 @@ func main() {
 	for _, pref := range prefer {
 		if minHeap.Len() < value {
 			heap.Push(minHeap, pref)
-		} else if pref > (*minHeap)[0] {
+
+			continue
+		}
+
+		if pref > (*minHeap)[0] {
 			heap.Pop(minHeap)
 			heap.Push(minHeap, pref)
 		}
