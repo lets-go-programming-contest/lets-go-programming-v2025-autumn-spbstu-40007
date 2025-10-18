@@ -7,9 +7,9 @@ import (
 
 type DishHeap []int
 
-func (h DishHeap) Len() int           { return len(h) }
-func (h DishHeap) Less(i, j int) bool { return h[i] > h[j] }
-func (h DishHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h *DishHeap) Len() int           { return len(*h) }
+func (h *DishHeap) Less(i, j int) bool { return (*h)[i] > (*h)[j] }
+func (h *DishHeap) Swap(i, j int)      { (*h)[i], (*h)[j] = (*h)[j], (*h)[i] }
 
 func (h *DishHeap) Push(x any) {
 	if val, ok := x.(int); ok {
