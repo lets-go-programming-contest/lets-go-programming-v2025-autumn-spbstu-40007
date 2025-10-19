@@ -1,8 +1,8 @@
 package files
 
 import (
-    "os"
-    "path/filepath"
+	"os"
+	"path/filepath"
 )
 
 func Exists(path string) bool {
