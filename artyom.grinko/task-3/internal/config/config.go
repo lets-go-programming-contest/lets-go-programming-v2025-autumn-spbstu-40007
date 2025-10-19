@@ -3,6 +3,7 @@ package config
 //nolint:gofumpt,gci
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"task-3/internal/die"
@@ -11,6 +12,9 @@ import (
 )
 
 var errDidNotFindExpectedKey = errors.New("config: did not find expected key")
+var errWrapErr = func(err error) error {
+	return fmt.Errorf("config: %w", err)
+}
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -20,7 +24,7 @@ type Config struct {
 func FromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err //nolint:wrapcheck
+		return nil, errWrapErr(err)
 	}
 
 	defer func() {
