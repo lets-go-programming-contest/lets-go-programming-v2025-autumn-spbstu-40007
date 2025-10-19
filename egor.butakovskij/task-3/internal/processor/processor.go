@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/tntkatz/task-3/internal/config"
-	"github.com/tntkatz/task-3/internal/crp"
 	"github.com/tntkatz/task-3/internal/data"
 	"github.com/tntkatz/task-3/internal/pathcreator"
 	"github.com/tntkatz/task-3/internal/vp"
@@ -42,9 +41,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("failed during valute processing: %w", err)
 	}
 
-	currencyResults := crp.CurrencyProcess(sortedValutes)
-
-	jsonData, err := json.Marshal(currencyResults)
+	jsonData, err := json.Marshal(sortedValutes)
 	if err != nil {
 		return fmt.Errorf("failed to marshal results to JSON: %w", err)
 	}

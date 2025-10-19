@@ -29,25 +29,15 @@ func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 }
 
 type Valute struct {
-	ID        string     `xml:"ID,attr"`
-	NumCode   int        `xml:"NumCode"`
-	CharCode  string     `xml:"CharCode"`
-	Nominal   string     `xml:"Nominal"`
-	Name      string     `xml:"Name"`
-	Value     FloatValue `xml:"Value"`
-	VunitRate string     `xml:"VunitRate"`
+	NumCode  int        `xml:"NumCode"  json:"num_code"`
+	CharCode string     `xml:"CharCode" json:"char_code"`
+	Value    FloatValue `xml:"Value"    json:"value"`
 }
 
 type ValCurs struct {
 	Date   string   `xml:"Date,attr"`
 	Name   string   `xml:"name,attr"`
 	Valute []Valute `xml:"Valute"`
-}
-
-type CurrencyResult struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
 }
 
 type ByValue []Valute
