@@ -1,9 +1,15 @@
-package file
+package files
 
 import (
-	"os"
-	"path/filepath"
+    "os"
+    "path/filepath"
 )
+
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+
+	return !os.IsNotExist(err)
+}
 
 func CreateIfNotExists(path string) error {
 	dir := filepath.Dir(path)
@@ -30,3 +36,4 @@ func CreateIfNotExists(path string) error {
 
 	return nil
 }
+

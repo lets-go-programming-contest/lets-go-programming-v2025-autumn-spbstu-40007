@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"task-3/internal/die"
-	"task-3/internal/file"
+	"task-3/internal/files"
 
 	"golang.org/x/net/html/charset"
 )
@@ -69,7 +69,7 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 }
 
 func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
-	err := file.CreateIfNotExists(path)
+	err := files.CreateIfNotExists(path)
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
