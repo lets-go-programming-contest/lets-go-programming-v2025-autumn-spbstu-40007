@@ -2,6 +2,7 @@ package data
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -9,17 +10,17 @@ import (
 type FloatValue float64
 
 func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	var v string
+	var xmlCode string
 
-	if err := d.DecodeElement(&v, &start); err != nil {
-		return err
+	if err := d.DecodeElement(&xmlCode, &start); err != nil {
+		return fmt.Errorf("failed to decode element: %w", err)
 	}
 
-	newValue := strings.Replace(v, ",", ".", 1)
+	newValue := strings.Replace(xmlCode, ",", ".", 1)
 
 	parsedValue, err := strconv.ParseFloat(newValue, 64)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse float: %w", err)
 	}
 
 	*f = FloatValue(parsedValue)
