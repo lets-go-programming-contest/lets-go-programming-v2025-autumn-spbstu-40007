@@ -29,9 +29,9 @@ func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 }
 
 type Valute struct {
-	NumCode  int        `xml:"NumCode"  json:"num_code"`
-	CharCode string     `xml:"CharCode" json:"char_code"`
-	Value    FloatValue `xml:"Value"    json:"value"`
+	NumCode  int        `json:"num_code"  xml:"NumCode"`
+	CharCode string     `json:"char_code" xml:"CharCode"`
+	Value    FloatValue `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
