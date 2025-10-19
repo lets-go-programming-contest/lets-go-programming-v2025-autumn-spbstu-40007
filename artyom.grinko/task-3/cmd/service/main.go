@@ -34,7 +34,7 @@ func main() {
 		return cmp.Compare(y.Value, x.Value)
 	})
 
-	if err = rate.ToJSONFile(config.OutputFile); err != nil { //nolint:noinlineerr
+	if err = rate.ToJSONFile(config.OutputFile); err != nil {
 		die.Die(err)
 	}
 }

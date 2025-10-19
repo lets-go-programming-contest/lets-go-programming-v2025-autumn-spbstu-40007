@@ -12,7 +12,8 @@ import (
 )
 
 var errDidNotFindExpectedKey = errors.New("config: did not find expected key")
-var errWrapErr = func(err error) error {
+
+func wrapErr(err error) error {
 	return fmt.Errorf("config: %w", err)
 }
 
@@ -24,11 +25,11 @@ type Config struct {
 func FromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, errWrapErr(err)
+		return nil, wrapErr(err)
 	}
 
 	defer func() {
-		if err = file.Close(); err != nil { //nolint:noinlineerr
+		if err = file.Close(); err != nil {
 			die.Die(err)
 		}
 	}()
@@ -36,7 +37,7 @@ func FromFile(path string) (*Config, error) {
 	result := &Config{} //nolint:exhaustruct
 	decoder := yaml.NewDecoder(file)
 
-	if err = decoder.Decode(result); err != nil { //nolint:noinlineerr
+	if err = decoder.Decode(result); err != nil {
 		return nil, errDidNotFindExpectedKey
 	}
 

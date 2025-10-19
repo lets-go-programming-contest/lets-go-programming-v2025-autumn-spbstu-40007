@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-var errWrapErr = func(err error) error {
+func wrapErr(err error) error {
 	return fmt.Errorf("files: %w", err)
 }
 
@@ -20,23 +20,23 @@ func CreateIfNotExists(path string) error {
 	dir := filepath.Dir(path)
 
 	// Magic number? Are you serious?
-	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:noinlineerr,mnd
-		return errWrapErr(err)
+	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:mnd
+		return wrapErr(err)
 	}
 
 	if Exists(path) {
-		if err := os.Remove(path); err != nil { //nolint:noinlineerr
-			return errWrapErr(err)
+		if err := os.Remove(path); err != nil {
+			return wrapErr(err)
 		}
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return errWrapErr(err)
+		return wrapErr(err)
 	}
 
-	if err = file.Close(); err != nil { //nolint:noinlineerr
-		return errWrapErr(err)
+	if err = file.Close(); err != nil {
+		return wrapErr(err)
 	}
 
 	return nil
