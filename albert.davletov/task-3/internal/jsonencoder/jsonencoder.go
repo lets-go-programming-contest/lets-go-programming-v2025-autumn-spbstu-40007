@@ -10,15 +10,20 @@ import (
 	"github.com/treadwave/task-3/internal/structs"
 )
 
+const (
+	dirPerm  = 0o755
+	filePerm = 0o644
+)
+
 func JSONEncoder(valutes []structs.Valute, outpath string) error {
 	dir := filepath.Dir(outpath)
 
-	err := os.MkdirAll(dir, 0o755)
+	err := os.MkdirAll(dir, dirPerm)
 	if err != nil {
 		return fmt.Errorf("error creating dir: %w", err)
 	}
 
-	file, err := os.OpenFile(outpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	file, err := os.OpenFile(outpath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm)
 	if err != nil {
 		return fmt.Errorf("error opening or creating file : %w", err)
 	}

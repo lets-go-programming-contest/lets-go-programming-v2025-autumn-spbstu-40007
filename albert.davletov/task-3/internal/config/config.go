@@ -28,6 +28,7 @@ func YamlDecoder(filepath string) (Config, error) {
 	decoder := yaml.NewDecoder(file)
 
 	var cfg Config
+
 	err = decoder.Decode(&cfg)
 	if err != nil {
 		return Config{}, fmt.Errorf("error decoding YAML: %w", err)

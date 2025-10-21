@@ -24,7 +24,6 @@ func Converter(tempValutes []structs.TempValute) ([]structs.Valute, error) {
 			CharCode: tempValute.CharCode,
 			Value:    value,
 		}
-
 	}
 
 	return result, nil
