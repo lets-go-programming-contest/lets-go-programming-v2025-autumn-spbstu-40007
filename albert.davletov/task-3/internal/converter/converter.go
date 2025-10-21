@@ -11,7 +11,7 @@ import (
 func Converter(tempValutes []structs.TempValute) ([]structs.Valute, error) {
 	result := make([]structs.Valute, len(tempValutes))
 
-	for i, tempValute := range tempValutes {
+	for index, tempValute := range tempValutes {
 		valueString := strings.Replace(tempValute.Value, ",", ".", 1)
 
 		value, err := strconv.ParseFloat(valueString, 64)
@@ -19,7 +19,7 @@ func Converter(tempValutes []structs.TempValute) ([]structs.Valute, error) {
 			return nil, fmt.Errorf("error converting string to float64: %w", err)
 		}
 
-		result[i] = structs.Valute{
+		result[index] = structs.Valute{
 			NumCode:  tempValute.NumCode,
 			CharCode: tempValute.CharCode,
 			Value:    value,

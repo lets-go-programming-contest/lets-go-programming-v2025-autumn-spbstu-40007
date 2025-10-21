@@ -23,7 +23,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	xmlValutes, err := xmldecoder.XmlDecode(configStruct.InputFile)
+	xmlValutes, err := xmldecoder.XMLDecode(configStruct.InputFile)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -33,7 +33,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	err = jsonencoder.JsonEncoder(convertedValutes, configStruct.OutputFile)
+	err = jsonencoder.JSONEncoder(convertedValutes, configStruct.OutputFile)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -18,13 +18,17 @@ func YamlDecoder(filepath string) (Config, error) {
 		return Config{}, fmt.Errorf("error reading file: %w", err)
 	}
 
-	defer file.Close()
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	decoder := yaml.NewDecoder(file)
 
 	var cfg Config
 	err = decoder.Decode(&cfg)
-
 	if err != nil {
 		return Config{}, fmt.Errorf("error decoding YAML: %w", err)
 	}
