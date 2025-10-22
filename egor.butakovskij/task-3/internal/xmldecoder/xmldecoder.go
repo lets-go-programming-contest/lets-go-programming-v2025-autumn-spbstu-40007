@@ -22,12 +22,12 @@ func DecodeXML(inputFile []byte, valCurs *data.ValCurs) error {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
 
-		return nil, fmt.Errorf("failed to decode %w: %s", ErrUnsupportedCharset, charset)
+		return nil, fmt.Errorf("decoding %w: %q", ErrUnsupportedCharset, charset)
 	}
 
 	err := decoder.Decode(valCurs)
 	if err != nil {
-		return fmt.Errorf("XML decode error: %w", err)
+		return fmt.Errorf("decoding XML: %w", err)
 	}
 
 	return nil

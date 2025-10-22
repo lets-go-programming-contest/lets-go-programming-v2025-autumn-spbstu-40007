@@ -13,7 +13,7 @@ func CreatePath(outputFile string) error {
 
 	err := os.MkdirAll(outputDir, DefaultDirPermissions)
 	if err != nil {
-		return fmt.Errorf("failed to create output directory '%s': %w", outputDir, err)
+		return fmt.Errorf("creating output directory %q: %w", outputDir, err)
 	}
 
 	return nil

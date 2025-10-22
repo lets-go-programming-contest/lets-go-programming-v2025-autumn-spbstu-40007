@@ -13,14 +13,14 @@ func (f *FloatValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	var xmlCode string
 
 	if err := d.DecodeElement(&xmlCode, &start); err != nil {
-		return fmt.Errorf("failed to decode element: %w", err)
+		return fmt.Errorf("decoding element: %w", err)
 	}
 
 	newValue := strings.Replace(xmlCode, ",", ".", 1)
 
 	parsedValue, err := strconv.ParseFloat(newValue, 64)
 	if err != nil {
-		return fmt.Errorf("failed to parse float: %w", err)
+		return fmt.Errorf("parsing float: %w", err)
 	}
 
 	*f = FloatValue(parsedValue)
@@ -35,21 +35,21 @@ type Valute struct {
 }
 
 type ValCurs struct {
-	Date   string   `xml:"Date,attr"`
-	Name   string   `xml:"name,attr"`
-	Valute []Valute `xml:"Valute"`
+	Date    string  `xml:"Date,attr"`
+	Name    string  `xml:"name,attr"`
+	Valutes Valutes `xml:"Valute"`
 }
 
-type ByValue []Valute
+type Valutes []Valute
 
-func (a ByValue) Len() int {
-	return len(a)
+func (v Valutes) Len() int {
+	return len(v)
 }
 
-func (a ByValue) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
+func (v Valutes) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
 }
 
-func (a ByValue) Less(i, j int) bool {
-	return a[i].Value > a[j].Value
+func (v Valutes) Less(i, j int) bool {
+	return v[i].Value > v[j].Value
 }

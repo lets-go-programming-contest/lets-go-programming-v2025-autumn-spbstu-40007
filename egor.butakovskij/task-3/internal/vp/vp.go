@@ -6,12 +6,12 @@ import (
 	"github.com/tntkatz/task-3/internal/data"
 )
 
-func ValuteProcess(valCurs data.ValCurs) ([]data.Valute, error) {
-	sortedValutes := make([]data.Valute, len(valCurs.Valute))
+func ProcessValute(valCurs data.ValCurs) ([]data.Valute, error) {
+	sortedValutes := make(data.Valutes, len(valCurs.Valutes))
 
-	copy(sortedValutes, valCurs.Valute)
+	copy(sortedValutes, valCurs.Valutes)
 
-	sort.Sort(data.ByValue(sortedValutes))
+	sort.Sort(sortedValutes)
 
 	return sortedValutes, nil
 }

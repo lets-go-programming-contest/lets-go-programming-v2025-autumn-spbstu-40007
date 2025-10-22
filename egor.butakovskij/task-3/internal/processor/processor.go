@@ -17,43 +17,39 @@ const DefaultFilePermissions = 0o600
 func Run(configPath string) error {
 	cfg, err := config.ReadConfig(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to read config: %w", err)
+		return fmt.Errorf("reading config: %w", err)
 	}
 
 	inputFile, err := os.ReadFile(cfg.InputFile)
 	if err != nil {
-		return fmt.Errorf("failed to read input file '%s': %w", cfg.InputFile, err)
+		return fmt.Errorf("reading input file %q: %w", cfg.InputFile, err)
 	}
 
-	valCurs := data.ValCurs{
-		Date:   "",
-		Name:   "",
-		Valute: nil,
-	}
+	valCurs := data.ValCurs{} //nolint:exhaustivestruct
 
 	err = xmldecoder.DecodeXML(inputFile, &valCurs)
 	if err != nil {
-		return fmt.Errorf("failed during XML decoding: %w", err)
+		return fmt.Errorf("decoding XML: %w", err)
 	}
 
 	sortedValutes, err := vp.ValuteProcess(valCurs)
 	if err != nil {
-		return fmt.Errorf("failed during valute processing: %w", err)
+		return fmt.Errorf("processing valute: %w", err)
 	}
 
 	jsonData, err := json.Marshal(sortedValutes)
 	if err != nil {
-		return fmt.Errorf("failed to marshal results to JSON: %w", err)
+		return fmt.Errorf("marshalling results to JSON: %w", err)
 	}
 
 	err = pathcreator.CreatePath(cfg.OutputFile)
 	if err != nil {
-		return fmt.Errorf("failed to create output path: %w", err)
+		return fmt.Errorf("creating output path: %w", err)
 	}
 
 	err = os.WriteFile(cfg.OutputFile, jsonData, DefaultFilePermissions)
 	if err != nil {
-		return fmt.Errorf("failed to write output file '%s': %w", cfg.OutputFile, err)
+		return fmt.Errorf("writing output file %q: %w", cfg.OutputFile, err)
 	}
 
 	return nil
