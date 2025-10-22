@@ -9,13 +9,12 @@ import (
 )
 
 var (
-	ErrInvalidPosition   = errors.New("invalid position")
-	ErrHeapEmpty         = errors.New("heap became empty unexpectedly")
-	ErrNoResult          = errors.New("unable to retrieve result from heap")
-	ErrInvalidDataType   = errors.New("invalid data type in heap")
-	ErrInvalidInput      = errors.New("invalid input")
-	ErrInvalidDishCount  = errors.New("invalid dish count")
-	ErrInvalidKValue     = errors.New("invalid k value")
+	ErrInvalidPosition  = errors.New("invalid position")
+	ErrHeapEmpty        = errors.New("heap became empty unexpectedly")
+	ErrNoResult         = errors.New("unable to retrieve result from heap")
+	ErrInvalidDataType  = errors.New("invalid data type in heap")
+	ErrInvalidDishCount = errors.New("invalid dish count")
+	ErrInvalidKValue    = errors.New("invalid k value")
 )
 
 func getKthMaximum(values []int, position int) (int, error) {
@@ -53,6 +52,7 @@ func getKthMaximum(values []int, position int) (int, error) {
 
 func executeProgram() {
 	var totalDishes int
+
 	_, scanErr := fmt.Scan(&totalDishes)
 	if scanErr != nil {
 		fmt.Printf("Error reading dish count: %v\n", scanErr)
@@ -77,6 +77,7 @@ func executeProgram() {
 	}
 
 	var targetPosition int
+
 	_, posErr := fmt.Scan(&targetPosition)
 	if posErr != nil {
 		fmt.Printf("Error reading target position: %v\n", posErr)
@@ -85,7 +86,7 @@ func executeProgram() {
 	}
 
 	if targetPosition > totalDishes || targetPosition <= 0 {
-		fmt.Printf("%w: position %d for %d dishes\n", ErrInvalidKValue, targetPosition, totalDishes)
+		fmt.Printf("Error: %v - position %d for %d dishes\n", ErrInvalidKValue, targetPosition, totalDishes)
 
 		return
 	}
