@@ -19,6 +19,7 @@ func takeTemperature(employees int) {
 		_, err3 := fmt.Scanln(&operation, &value)
 		if err3 != nil {
 			fmt.Println("Invalid operation or value")
+			
 			return
 		}
 
@@ -38,12 +39,9 @@ func takeTemperature(employees int) {
 		} else {
 			fmt.Println(minTemp)
 		}
-
 	}
 }
-
 func main() {
-
 	var (
 		departments, employees int
 	)
@@ -51,6 +49,7 @@ func main() {
 	_, err1 := fmt.Scanln(&departments)
 	if err1 != nil {
 		fmt.Println("Invalid departments")
+		
 		return
 	}
 
@@ -58,10 +57,10 @@ func main() {
 		_, err2 := fmt.Scanln(&employees)
 		if err2 != nil {
 			fmt.Println("Invalid employees")
+			
 			return
 		}
 
 		takeTemperature(employees)
 	}
-
 }
