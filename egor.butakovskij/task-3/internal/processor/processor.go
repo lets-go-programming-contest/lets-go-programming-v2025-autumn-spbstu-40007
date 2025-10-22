@@ -32,7 +32,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("decoding XML: %w", err)
 	}
 
-	sortedValutes, err := vp.ValuteProcess(valCurs)
+	sortedValutes, err := vp.ProcessValute(valCurs)
 	if err != nil {
 		return fmt.Errorf("processing valute: %w", err)
 	}
