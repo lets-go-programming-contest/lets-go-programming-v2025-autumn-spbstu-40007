@@ -5,11 +5,11 @@ import (
 	"strconv"
 )
 
-func takeTemperature(K int) {
+func takeTemperature(k int) {
 	minTemp := 15
 	maxTemp := 30
 
-	for range K {
+	for range k {
 
 		var (
 			operation string
@@ -46,23 +46,23 @@ func takeTemperature(K int) {
 func main() {
 
 	var (
-		N, K int
+		n, k int
 	)
 
-	_, err1 := fmt.Scanln(&N)
+	_, err1 := fmt.Scanln(&n)
 	if err1 != nil {
 		fmt.Println("Invalid departments")
 		return
 	}
 
-	for range N {
-		_, err2 := fmt.Scanln(&K)
+	for range n {
+		_, err2 := fmt.Scanln(&k)
 		if err2 != nil {
 			fmt.Println("Invalid employees")
 			return
 		}
 
-		takeTemperature(K)
+		takeTemperature(k)
 	}
 
 }
