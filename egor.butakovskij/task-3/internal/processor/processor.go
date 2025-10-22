@@ -25,7 +25,7 @@ func Run(configPath string) error {
 		return fmt.Errorf("reading input file %q: %w", cfg.InputFile, err)
 	}
 
-	valCurs := data.ValCurs{} //nolint:exhaustivestruct
+	valCurs := data.ValCurs{} //nolint:exhaustruct
 
 	err = xmldecoder.DecodeXML(inputFile, &valCurs)
 	if err != nil {
