@@ -59,14 +59,16 @@ func main() {
 
 		for range make([]struct{}, workerCount) {
 			var (
-				op  string
-				val int
+				operator string
+				val      int
 			)
-			if _, err := fmt.Scan(&op, &val); err != nil {
+
+			// separated line to satisfy wsl rule
+			if _, err := fmt.Scan(&operator, &val); err != nil {
 				return
 			}
 
-			if !limits.adjust(op, val) {
+			if !limits.adjust(operator, val) {
 				return
 			}
 
