@@ -35,8 +35,7 @@ func takeTemperature(employees int) {
 		}
 		if minTemp > maxTemp {
 			fmt.Println(-1)
-		}
-		if minTemp <= maxTemp {
+		} else {
 			fmt.Println(minTemp)
 		}
 
