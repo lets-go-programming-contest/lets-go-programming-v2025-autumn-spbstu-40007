@@ -14,22 +14,24 @@ type TempRange struct {
 	high int
 }
 
-func makeRange() TempRange {
-	return TempRange{lowLimit, highLimit}
+func newTempRange() TempRange {
+	return TempRange{low: lowLimit, high: highLimit}
 }
 
-func (r *TempRange) adjust(sign string, t int) bool {
-	if sign == ">=" {
-		if t > r.low {
-			r.low = t
+func (r *TempRange) adjust(operator string, tempValue int) bool {
+	switch operator {
+	case ">=":
+		if tempValue > r.low {
+			r.low = tempValue
 		}
-	} else if sign == "<=" {
-		if t < r.high {
-			r.high = t
+	case "<=":
+		if tempValue < r.high {
+			r.high = tempValue
 		}
-	} else {
+	default:
 		return false
 	}
+
 	return true
 }
 
@@ -37,30 +39,37 @@ func (r *TempRange) current() int {
 	if r.low <= r.high {
 		return r.low
 	}
+
 	return -1
 }
 
 func main() {
-	var sections int
-	if _, err := fmt.Scan(&sections); err != nil {
+	var sectionCount int
+	if _, err := fmt.Scan(&sectionCount); err != nil {
 		return
 	}
 
-	for s := 0; s < sections; s++ {
-		var workers int
-		fmt.Scan(&workers)
+	for range make([]struct{}, sectionCount) {
+		var workerCount int
+		if _, err := fmt.Scan(&workerCount); err != nil {
+			return
+		}
 
-		limits := makeRange()
+		limits := newTempRange()
 
-		for w := 0; w < workers; w++ {
-			var op string
-			var val int
-			fmt.Scan(&op, &val)
-
-			ok := limits.adjust(op, val)
-			if !ok {
+		for range make([]struct{}, workerCount) {
+			var (
+				op  string
+				val int
+			)
+			if _, err := fmt.Scan(&op, &val); err != nil {
 				return
 			}
+
+			if !limits.adjust(op, val) {
+				return
+			}
+
 			fmt.Println(limits.current())
 		}
 	}
