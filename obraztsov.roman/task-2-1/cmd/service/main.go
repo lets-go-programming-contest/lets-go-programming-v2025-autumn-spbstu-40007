@@ -14,11 +14,9 @@ func takeTemperature(employees int) {
 			operation string
 			value     string
 		)
-
 		_, err3 := fmt.Scanln(&operation, &value)
 		if err3 != nil {
 			fmt.Println("Invalid operation or value")
-			
 			return
 		}
 
@@ -47,11 +45,9 @@ func main() {
 	var (
 		departments, employees int
 	)
-
 	_, err1 := fmt.Scanln(&departments)
 	if err1 != nil {
 		fmt.Println("Invalid departments")
-		
 		return
 	}
 
