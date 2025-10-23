@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+	"github.com/Maska192/task-3/internal/data"
 )
 
 func saveResults(filePath string, format string, data []ResultValute) {
