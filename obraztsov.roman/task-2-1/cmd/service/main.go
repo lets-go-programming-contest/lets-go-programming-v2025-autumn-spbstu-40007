@@ -55,7 +55,6 @@ func main() {
 		_, err2 := fmt.Scanln(&employees)
 		if err2 != nil {
 			fmt.Println("Invalid employees")
-			
 			return
 		}
 		takeTemperature(employees)
