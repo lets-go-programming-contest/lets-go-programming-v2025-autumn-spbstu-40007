@@ -12,7 +12,7 @@ import (
 	"github.com/Maska192/task-3/internal/data"
 )
 
-func saveResults(filePath string, format string, data []ResultValute) {
+func saveResults(filePath string, format string, data []data.ResultValute) {
 	var encodedData []byte
 	var err error
 
@@ -22,7 +22,7 @@ func saveResults(filePath string, format string, data []ResultValute) {
 	case "yaml":
 		encodedData, err = yaml.Marshal(data)
 	case "xml":
-		resultXML := ResultValutes{Valutes: data}
+		resultXML := data.ResultValutes{Valutes: data}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:
