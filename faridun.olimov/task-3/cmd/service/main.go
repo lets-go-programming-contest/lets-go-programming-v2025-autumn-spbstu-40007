@@ -4,6 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"sort"
+
+	"github.com/Maska192/task-3/internal/config"
+	"github.com/Maska192/task-3/internal/data"
+	"github.com/Maska192/task-3/internal/output"
 )
 
 var (
