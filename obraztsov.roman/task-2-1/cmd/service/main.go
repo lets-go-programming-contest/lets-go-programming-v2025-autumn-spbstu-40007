@@ -18,6 +18,7 @@ func takeTemperature(employees int) {
 		_, err3 := fmt.Scanln(&operation, &value)
 		if err3 != nil {
 			fmt.Println("Invalid operation or value")
+			
 			return
 		}
 
@@ -33,6 +34,7 @@ func takeTemperature(employees int) {
 			minTemp = max(minTemp, tempInt)
 		}
 		result := minTemp > maxTemp
+		
 		if result {
 			fmt.Println(-1)
 		} else {
