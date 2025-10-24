@@ -3,8 +3,8 @@ package main
 import (
  "log"
 
- "github.com/UwUshkin/task-3/internal/config" 
- "github.com/UwUshkin/task-3/internal/processor" 
+ "github.com/UwUshkin/task-3/internal/config"
+ "github.com/UwUshkin/task-3/internal/processor"
 )
 
 func main() {
