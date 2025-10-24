@@ -18,15 +18,15 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 	currentMin := minTemp
 	currentMax := maxTemp
 
-	for range make([]struct{}, numEmployees) {
+	for i := 0; i < numEmployees; i++ {
 		if !scanner.Scan() {
 			return
 		}
 
-		line := strings.TrimSpace(scanner.Text())
-		parts := strings.Split(line, " ")
+		parts := strings.Split(strings.TrimSpace(scanner.Text()), " ")
 		if len(parts) != expectedParts {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -36,6 +36,7 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 		value, convErr := strconv.Atoi(valueStr)
 		if convErr != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -50,6 +51,7 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 			}
 		default:
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -69,8 +71,7 @@ func main() {
 		return
 	}
 
-	numDepartmentsStr := strings.TrimSpace(scanner.Text())
-	numDepartments, err := strconv.Atoi(numDepartmentsStr)
+	numDepartments, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
 	if err != nil {
 		return
 	}
@@ -79,13 +80,12 @@ func main() {
 		return
 	}
 
-	for range make([]struct{}, numDepartments) {
+	for i := 0; i < numDepartments; i++ {
 		if !scanner.Scan() {
 			return
 		}
 
-		numEmployeesStr := strings.TrimSpace(scanner.Text())
-		numEmployees, convErr := strconv.Atoi(numEmployeesStr)
+		numEmployees, convErr := strconv.Atoi(strings.TrimSpace(scanner.Text()))
 		if convErr != nil {
 			return
 		}
