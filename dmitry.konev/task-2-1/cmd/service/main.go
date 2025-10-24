@@ -31,8 +31,10 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 		}
 
 		operator := parts[0]
-		value, err := strconv.Atoi(parts[1])
-		if err != nil {
+		valueStr := parts[1]
+
+		value, convErr := strconv.Atoi(valueStr)
+		if convErr != nil {
 			fmt.Println(-1)
 			continue
 		}
@@ -67,8 +69,12 @@ func main() {
 		return
 	}
 
-	numDepartments, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-	if err != nil || numDepartments < 1 || numDepartments > 1000 {
+	numDepartmentsStr := strings.TrimSpace(scanner.Text())
+	numDepartments, err := strconv.Atoi(numDepartmentsStr)
+	if err != nil {
+		return
+	}
+	if numDepartments < 1 || numDepartments > 1000 {
 		return
 	}
 
@@ -77,8 +83,12 @@ func main() {
 			return
 		}
 
-		numEmployees, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-		if err != nil || numEmployees < 1 || numEmployees > 1000 {
+		numEmployeesStr := strings.TrimSpace(scanner.Text())
+		numEmployees, convErr := strconv.Atoi(numEmployeesStr)
+		if convErr != nil {
+			return
+		}
+		if numEmployees < 1 || numEmployees > 1000 {
 			return
 		}
 
