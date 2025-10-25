@@ -29,6 +29,27 @@ func (h *DishRating) Pop() any {
 	return x
 }
 
+func findDishRating(dishQueue []int, preferenceNumber int) (int, error){
+	dishRating := &DishRating{}
+	heap.Init(dishRating)
+
+	for _, value := range dishQueue {
+		if dishRating.Len() < preferenceNumber {
+			heap.Push(dishRating, value)
+
+			continue
+		}
+
+		if (*dishRating)[0] < value {
+			heap.Pop(dishRating)
+			heap.Push(dishRating, value)
+		}
+	}
+
+	result := (*dishRating)[0]
+	return result, nil
+}
+
 func main() {
 	var dishAmount int
 	_, err := fmt.Scanln(&dishAmount)
@@ -52,29 +73,19 @@ func main() {
 
 	var preferenceNumber int
 	_, err = fmt.Scan(&preferenceNumber)
-	
+
 	if err != nil || preferenceNumber < 0 || preferenceNumber > dishAmount {
 		fmt.Println("Invalid number of preference")
 
 		return
 	}
 
-	dishRating := &DishRating{}
-	heap.Init(dishRating)
-
-	for _, value := range dishQueue {
-		if dishRating.Len() < preferenceNumber {
-			heap.Push(dishRating, value)
-
-			continue
-		}
-
-		if (*dishRating)[0] < value {
-			heap.Pop(dishRating)
-			heap.Push(dishRating, value)
-		}
+	result, err := findDishRating(dishQueue, preferenceNumber)
+	if err != nil {
+		fmt.Println("Error finding dish rating:", err)
+		
+		return
 	}
 
-	result := (*dishRating)[0]
 	fmt.Println(result)
 }
