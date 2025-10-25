@@ -13,13 +13,15 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	XMLName  xml.Name `xml:"Valute"`
-	ID       string   `xml:"ID,attr"`
-	NumCode  string   `xml:"NumCode"`
-	CharCode string   `xml:"CharCode"`
-	Nominal  int      `xml:"Nominal"`
-	Name     string   `xml:"Name"`
-	ValueStr string   `xml:"Value"`
+	XMLName xml.Name `xml:"Valute"`
+	ID      string   `xml:"ID,attr"`
+
+	CharCode string `xml:"CharCode"`
+	NumCode  string `xml:"NumCode"`
+
+	Nominal  int    `xml:"Nominal"`
+	Name     string `xml:"Name"`
+	ValueStr string `xml:"Value"`
 }
 
 type OutputCurrency struct {
