@@ -32,13 +32,7 @@ func (h *DishRating) Pop() any {
 func main() {
 	var dishAmount int
 	_, err := fmt.Scanln(&dishAmount)
-	if err != nil {
-		fmt.Println("Invalid number of dishes")
-
-		return
-	}
-
-	if dishAmount < 1 || dishAmount > 10000 {
+	if err != nil || dishAmount < 1 || dishAmount > 10000 {
 		fmt.Println("Invalid number of dishes")
 
 		return
@@ -47,13 +41,7 @@ func main() {
 	dishQueue := make([]int, dishAmount)
 	for index := range dishQueue {
 		_, err = fmt.Scan(&dishQueue[index])
-		if err != nil {
-			fmt.Println("Invalid dish rating")
-
-			return
-		}
-
-		if dishQueue[index] < -10000 || dishQueue[index] > 10000 {
+		if err != nil || dishQueue[index] < -10000 || dishQueue[index] > 10000 {
 			fmt.Println("Invalid dish rating")
 
 			return
@@ -62,13 +50,7 @@ func main() {
 
 	var preferenceNumber int
 	_, err = fmt.Scan(&preferenceNumber)
-	if err != nil {
-		fmt.Println("Invalid number of preference")
-
-		return
-	}
-
-	if preferenceNumber < 0 || preferenceNumber > dishAmount {
+	if err != nil || preferenceNumber < 0 || preferenceNumber > dishAmount {
 		fmt.Println("Invalid number of preference")
 
 		return
