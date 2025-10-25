@@ -20,11 +20,9 @@ func main() {
 		log.Fatalf("Fatal error loading config file '%s': %v", configPath, err)
 	}
 
-	log.Printf("Loaded config: InputFile=%s, OutputFile=%s", cfg.InputFile, cfg.OutputFile)
 
 	if err := processor.ProcessAndSave(cfg.InputFile, cfg.OutputFile); err != nil {
 		log.Fatalf("Fatal error during data processing: %v", err)
 	}
 
-	log.Println("Program executed successfully.")
 }
