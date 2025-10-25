@@ -4,7 +4,7 @@ package exchangerate
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -15,23 +15,25 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-func wrapErr(err error) error {
-	return fmt.Errorf("exchrangerate: %w", err)
-}
+var (
+	errFailedToUnmarshalFloat = errors.New("exchangerate: failed to unmarshal float")
+	errFailedToReadXMLFile    = errors.New("exchangerate: failed to read xml file")
+	errFailedToWriteJSONFile  = errors.New("exchangerate: failed to write json file")
+)
 
 type RussianFloat float64
 
 func (russianFloat *RussianFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	content := ""
 	if err := decoder.DecodeElement(&content, &start); err != nil {
-		return wrapErr(err)
+		return errFailedToUnmarshalFloat
 	}
 
 	content = strings.ReplaceAll(content, ",", ".")
 
 	result, err := strconv.ParseFloat(content, 64)
 	if err != nil {
-		return wrapErr(err)
+		return errFailedToUnmarshalFloat
 	}
 
 	*russianFloat = RussianFloat(result)
@@ -52,7 +54,7 @@ type ExchangeRate struct {
 func FromXMLFile(path string) (*ExchangeRate, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, wrapErr(err)
+		return nil, errFailedToReadXMLFile
 	}
 
 	defer func() {
@@ -67,7 +69,7 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err = decoder.Decode(result); err != nil {
-		return nil, wrapErr(err)
+		return nil, errFailedToReadXMLFile
 	}
 
 	return result, nil
@@ -76,13 +78,13 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	err := files.CreateIfNotExists(path)
 	if err != nil {
-		return wrapErr(err)
+		return errFailedToWriteJSONFile
 	}
 
 	// Magic number? Are you serious?
 	file, err := os.OpenFile(path, os.O_WRONLY, 0o600) //nolint:mnd
 	if err != nil {
-		return wrapErr(err)
+		return errFailedToWriteJSONFile
 	}
 
 	defer func() {
@@ -95,7 +97,7 @@ func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	encoder.SetIndent("", "  ")
 
 	if err = encoder.Encode(exchangeRate.Currencies); err != nil {
-		return wrapErr(err)
+		return errFailedToWriteJSONFile
 	}
 
 	return nil

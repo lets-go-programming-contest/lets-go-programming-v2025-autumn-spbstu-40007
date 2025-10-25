@@ -1,14 +1,9 @@
 package files
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
-
-func wrapErr(err error) error {
-	return fmt.Errorf("files: %w", err)
-}
 
 func Exists(path string) bool {
 	_, err := os.Stat(path)
@@ -21,22 +16,22 @@ func CreateIfNotExists(path string) error {
 
 	// Magic number? Are you serious?
 	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:mnd
-		return wrapErr(err)
+		return err //nolint:wrapcheck
 	}
 
 	if Exists(path) {
 		if err := os.Remove(path); err != nil {
-			return wrapErr(err)
+			return err //nolint:wrapcheck
 		}
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return wrapErr(err)
+		return err //nolint:wrapcheck
 	}
 
 	if err = file.Close(); err != nil {
-		return wrapErr(err)
+		return err //nolint:wrapcheck
 	}
 
 	return nil

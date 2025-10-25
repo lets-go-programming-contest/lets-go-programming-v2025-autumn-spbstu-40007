@@ -3,7 +3,6 @@ package config
 //nolint:gofumpt,gci
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"task-3/internal/die"
@@ -11,11 +10,10 @@ import (
 	yaml "github.com/goccy/go-yaml"
 )
 
-var errDidNotFindExpectedKey = errors.New("config: did not find expected key")
-
-func wrapErr(err error) error {
-	return fmt.Errorf("config: %w", err)
-}
+var (
+	errDidNotFindExpectedKey  = errors.New("config: did not find expected key")
+	errFailedToReadConfigFile = errors.New("config: failed to read config file")
+)
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -25,7 +23,7 @@ type Config struct {
 func FromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, wrapErr(err)
+		return nil, errFailedToReadConfigFile
 	}
 
 	defer func() {
