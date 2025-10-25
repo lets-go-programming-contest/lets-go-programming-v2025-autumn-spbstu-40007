@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -16,21 +16,21 @@ type Config struct {
 func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading config file %q: %w", path, err)
 	}
 
 	cfg := &Config{}
 	err = yaml.Unmarshal(data, cfg)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshalling config data: %w", err)
 	}
 
 	outputDir := filepath.Dir(cfg.OutputFile)
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-		log.Printf("Creating output directory: %s", outputDir)
-		err := os.MkdirAll(outputDir, 0755)
+
+		err := os.MkdirAll(outputDir, 0o755)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("creating output directory %q: %w", outputDir, err)
 		}
 	}
 
