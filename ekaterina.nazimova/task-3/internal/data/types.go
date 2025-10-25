@@ -23,7 +23,7 @@ type Valute struct {
 }
 
 type OutputCurrency struct {
-	NumCode  string  `json:"num_code"`
+	NumCode  int     `json:"num_code"`
 	CharCode string  `json:"char_code"`
 	Value    float64 `json:"value"`
 }
@@ -34,8 +34,10 @@ func (v Valute) ConvertToOutput() OutputCurrency {
 
 	normalizedValue := value / float64(v.Nominal)
 
+	numCodeInt, _ := strconv.Atoi(v.NumCode)
+
 	return OutputCurrency{
-		NumCode:  v.NumCode,
+		NumCode:  numCodeInt,
 		CharCode: v.CharCode,
 		Value:    normalizedValue,
 	}

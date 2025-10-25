@@ -2,6 +2,7 @@ package xmldecoder
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
 	"os"
 
@@ -21,7 +22,7 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 
 	var valCurs data.ValCurs
 	if err := decoder.Decode(&valCurs); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decoding XML structure: %w", err)
 	}
 
 	return &valCurs, nil
@@ -30,7 +31,7 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 func DecodeCBRXML(filePath string) (*data.ValCurs, error) {
 	xmlFile, err := os.Open(filePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("opening XML file %q: %w", filePath, err)
 	}
 	defer xmlFile.Close()
 

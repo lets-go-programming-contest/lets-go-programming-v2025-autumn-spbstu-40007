@@ -19,10 +19,12 @@ func main() {
 	if err != nil {
 		wrappedErr := fmt.Errorf("fatal error loading config file '%s': %w", configPath, err)
 		fmt.Fprintf(os.Stderr, "%v\n", wrappedErr)
+		os.Exit(1)
 	}
 
 	if err := processor.ProcessAndSave(cfg.InputFile, cfg.OutputFile); err != nil {
 		wrappedErr := fmt.Errorf("fatal error during data processing: %w", err)
 		fmt.Fprintf(os.Stderr, "%v\n", wrappedErr)
+		os.Exit(1)
 	}
 }
