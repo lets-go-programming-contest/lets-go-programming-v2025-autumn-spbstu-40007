@@ -30,9 +30,10 @@ type Valute struct {
 	NominalStr string `xml:"Nominal"    json:"-"`
 	Name       string `xml:"Name"       json:"-"`
 
-	NumCode  int           `json:"num_code"  xml:"NumCode"`
-	CharCode string        `json:"char_code" xml:"CharCode"`
-	Value    CurrencyValue `json:"value"     xml:"Value"`
+	CharCode string `json:"char_code" xml:"CharCode"`
+	NumCode  int    `json:"num_code"  xml:"NumCode"`
+
+	Value CurrencyValue `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
