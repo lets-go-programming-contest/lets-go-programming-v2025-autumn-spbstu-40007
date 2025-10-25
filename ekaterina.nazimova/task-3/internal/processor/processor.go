@@ -6,26 +6,18 @@ import (
 	"os"
 	"sort"
 
-	"github.com/UwUshkin/task-3/internal/data"
 	"github.com/UwUshkin/task-3/internal/xmldecoder"
 )
 
 func ProcessAndSave(inputPath, outputPath string) error {
-	valCurs, err := xmldecoder.DecodeCBRXML(inputPath)
+	valCursData, err := xmldecoder.DecodeCBRXML(inputPath)
 	if err != nil {
 		return fmt.Errorf("decoding XML from %q: %w", inputPath, err)
 	}
 
-	var outputCurrencies []data.OutputCurrency
-	for _, valute := range valCurs.Valutes {
-		outputCurrencies = append(outputCurrencies, valute.ConvertToOutput())
-	}
+	sort.Sort(valCursData.Valutes)
 
-	sort.Slice(outputCurrencies, func(i, j int) bool {
-		return outputCurrencies[i].Value > outputCurrencies[j].Value
-	})
-
-	jsonData, err := json.MarshalIndent(outputCurrencies, "", "  ")
+	jsonData, err := json.MarshalIndent(valCursData.Valutes, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshalling results to JSON: %w", err)
 	}

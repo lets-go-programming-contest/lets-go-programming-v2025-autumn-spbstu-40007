@@ -20,12 +20,12 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 		return nil, nil
 	}
 
-	var valCurs data.ValCurs
-	if err := decoder.Decode(&valCurs); err != nil {
+	var result data.ValCurs
+	if err := decoder.Decode(&result); err != nil {
 		return nil, fmt.Errorf("decoding XML structure: %w", err)
 	}
 
-	return &valCurs, nil
+	return &result, nil
 }
 
 func DecodeCBRXML(filePath string) (*data.ValCurs, error) {

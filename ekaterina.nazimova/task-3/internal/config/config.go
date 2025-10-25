@@ -14,23 +14,22 @@ type Config struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+	fileData, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading config file %q: %w", path, err)
 	}
 
 	cfg := &Config{}
-	err = yaml.Unmarshal(data, cfg)
+	err = yaml.Unmarshal(fileData, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshalling config data: %w", err)
 	}
 
-	outputDir := filepath.Dir(cfg.OutputFile)
-	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
-
-		err := os.MkdirAll(outputDir, 0o755)
+	outputDirectory := filepath.Dir(cfg.OutputFile)
+	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
+		err := os.MkdirAll(outputDirectory, 0o755)
 		if err != nil {
-			return nil, fmt.Errorf("creating output directory %q: %w", outputDir, err)
+			return nil, fmt.Errorf("creating output directory %q: %w", outputDirectory, err)
 		}
 	}
 
