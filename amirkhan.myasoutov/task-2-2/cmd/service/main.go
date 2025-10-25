@@ -81,12 +81,7 @@ func main() {
 		return
 	}
 
-	result, err := findDishRating(dishQueue, preferenceNumber)
-	if err != nil {
-		fmt.Println("Error finding dish rating:", err)
-
-		return
-	}
+	result := findDishRating(dishQueue, preferenceNumber)
 
 	fmt.Println(result)
 }
