@@ -16,7 +16,6 @@ func (c *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 	}
 
 	cleanString := strings.Replace(xmlString, ",", ".", 1)
-
 	parsedFloat, err := strconv.ParseFloat(cleanString, 64)
 	if err != nil {
 		return fmt.Errorf("parsing cleaned float %q: %w", cleanString, err)
@@ -27,12 +26,12 @@ func (c *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 }
 
 type Valute struct {
-	ID      string `xml:"ID,attr"    json:"-"`
-	Nominal int    `xml:"Nominal"    json:"-"`
-	Name    string `xml:"Name"       json:"-"`
+	ID         string `xml:"ID,attr"    json:"-"`
+	NominalStr string `xml:"Nominal"    json:"-"`
+	Name       string `xml:"Name"       json:"-"`
 
-	CharCode string        `json:"char_code" xml:"CharCode"`
 	NumCode  int           `json:"num_code"  xml:"NumCode"`
+	CharCode string        `json:"char_code" xml:"CharCode"`
 	Value    CurrencyValue `json:"value"     xml:"Value"`
 }
 
@@ -53,7 +52,21 @@ func (c CurrencyList) Swap(i, j int) {
 }
 
 func (c CurrencyList) Less(i, j int) bool {
-	valI := float64(c[i].Value) / float64(c[i].Nominal)
-	valJ := float64(c[j].Value) / float64(c[j].Nominal)
-	return valI > valJ
+	valI := float64(c[i].Value)
+	valJ := float64(c[j].Value)
+
+	nomI, errI := strconv.ParseFloat(c[i].NominalStr, 64)
+	nomJ, errJ := strconv.ParseFloat(c[j].NominalStr, 64)
+
+	if errI != nil || nomI == 0 {
+		nomI = 1
+	}
+	if errJ != nil || nomJ == 0 {
+		nomJ = 1
+	}
+
+	normalizedI := valI / nomI
+	normalizedJ := valJ / nomJ
+
+	return normalizedI > normalizedJ
 }
