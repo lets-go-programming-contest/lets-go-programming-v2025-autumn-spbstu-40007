@@ -1,25 +1,30 @@
 package main
 
 import (
- "log"
+	"flag"
+	"log"
 
- "github.com/UwUshkin/task-3/internal/config"
- "github.com/UwUshkin/task-3/internal/processor"
+	"github.com/UwUshkin/task-3/internal/config"
+	"github.com/UwUshkin/task-3/internal/processor"
 )
 
 func main() {
- const configPath = "config.yaml"
+	var configPath string
 
- cfg, err := config.LoadConfig(configPath)
- if err != nil {
-  log.Fatalf("Fatal error loading config file '%s': %v", configPath, err)
- }
+	flag.StringVar(&configPath, "config", "config.yaml", "Path to the YAML configuration file")
 
- log.Printf("Loaded config: InputFile=%s, OutputFile=%s", cfg.InputFile, cfg.OutputFile)
+	flag.Parse()
 
- if err := processor.ProcessAndSave(cfg.InputFile, cfg.OutputFile); err != nil {
-  log.Fatalf("Fatal error during data processing: %v", err)
- }
+	cfg, err := config.LoadConfig(configPath)
+	if err != nil {
+		log.Fatalf("Fatal error loading config file '%s': %v", configPath, err)
+	}
 
- log.Println("Program executed successfully.")
+	log.Printf("Loaded config: InputFile=%s, OutputFile=%s", cfg.InputFile, cfg.OutputFile)
+
+	if err := processor.ProcessAndSave(cfg.InputFile, cfg.OutputFile); err != nil {
+		log.Fatalf("Fatal error during data processing: %v", err)
+	}
+
+	log.Println("Program executed successfully.")
 }
