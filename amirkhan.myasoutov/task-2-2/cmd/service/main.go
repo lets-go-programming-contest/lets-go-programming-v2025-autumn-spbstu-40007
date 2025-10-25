@@ -29,7 +29,7 @@ func (h *DishRating) Pop() any {
 	return x
 }
 
-func findDishRating(dishQueue []int, preferenceNumber int) (int, error){
+func findDishRating(dishQueue []int, preferenceNumber int) (int, error) {
 	dishRating := &DishRating{}
 	heap.Init(dishRating)
 
@@ -47,6 +47,7 @@ func findDishRating(dishQueue []int, preferenceNumber int) (int, error){
 	}
 
 	result := (*dishRating)[0]
+
 	return result, nil
 }
 
@@ -83,7 +84,7 @@ func main() {
 	result, err := findDishRating(dishQueue, preferenceNumber)
 	if err != nil {
 		fmt.Println("Error finding dish rating:", err)
-		
+
 		return
 	}
 
