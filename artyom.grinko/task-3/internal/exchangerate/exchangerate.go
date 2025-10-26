@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
-	"fmt"
 
 	"task-3/internal/die"
 	"task-3/internal/files"
