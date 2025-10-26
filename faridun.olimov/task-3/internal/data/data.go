@@ -12,10 +12,12 @@ import (
 )
 
 type ValCurs struct {
+	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
 }
 
 type Valute struct {
+	XMLName  xml.Name `xml:"ValCurs"`
 	NumCode  string   `xml:"NumCode"`
 	CharCode string   `xml:"CharCode"`
 	ValueStr string   `xml:"Value"`
@@ -29,6 +31,7 @@ type ResultValute struct {
 }
 
 type ResultValutes struct {
+	XMLName xml.Name       `xml:"ValCurs"`
 	Valutes []ResultValute `xml:"Valute"`
 }
 
@@ -38,7 +41,7 @@ func (a CustomSorter) Len() int           { return len(a) }
 func (a CustomSorter) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a CustomSorter) Less(i, j int) bool { return a[i].Value > a[j].Value }
 
-func decodeXMLData(filePath string) []Valute {
+func DecodeXMLData(filePath string) []Valute {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Printf("Error reading source file '%s': %v\n", filePath, err)
@@ -77,7 +80,7 @@ func decodeXMLData(filePath string) []Valute {
 	return processedValutes
 }
 
-func (v Valute) toResultValute() ResultValute {
+func (v Valute) ToResultValute() ResultValute {
 	numCode, err := strconv.Atoi(v.NumCode)
 	if err != nil {
 		fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)

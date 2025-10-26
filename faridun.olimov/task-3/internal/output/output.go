@@ -8,21 +8,20 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v3"
 	"github.com/Maska192/task-3/internal/data"
+	"gopkg.in/yaml.v3"
 )
 
-func saveResults(filePath string, format string, dataName []data.ResultValute) {
+func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var encodedData []byte
 	var err error
-
 	switch strings.ToLower(format) {
 	case "json":
-		encodedData, err = json.MarshalIndent(dataName, "", "  ")
+		encodedData, err = json.MarshalIndent(result, "", "  ")
 	case "yaml":
-		encodedData, err = yaml.Marshal(dataName)
+		encodedData, err = yaml.Marshal(result)
 	case "xml":
-		resultXML := data.ResultValutes{Valutes: dataName}
+		resultXML := data.ResultValutes{Valutes: result}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:

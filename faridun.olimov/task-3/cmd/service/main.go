@@ -23,23 +23,23 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cfg := loadConfig(configPath)
+	cfg := config.LoadConfig(configPath)
 
-	valutes := decodeXMLData(cfg.InputFile)
+	valutes := data.DecodeXMLData(cfg.InputFile)
 
-	sort.Sort(CustomSorter(valutes))
+	sort.Sort(data.CustomSorter(valutes))
 
 	resultValutes := prepareResults(valutes)
 
-	saveResults(cfg.OutputFile, outputFormat, resultValutes)
+	output.SaveResults(cfg.OutputFile, outputFormat, resultValutes)
 
 	fmt.Printf("Successfully saved %d currencies to file '%s' in '%s' format.\n", len(resultValutes), cfg.OutputFile, outputFormat)
 }
 
-func prepareResults(valutes []Valute) []ResultValute {
-	resultValutes := make([]ResultValute, len(valutes))
+func prepareResults(valutes []data.Valute) []data.ResultValute {
+	resultValutes := make([]data.ResultValute, len(valutes))
 	for i, v := range valutes {
-		resultValutes[i] = v.toResultValute()
+		resultValutes[i] = v.ToResultValute()
 	}
 	return resultValutes
 }
