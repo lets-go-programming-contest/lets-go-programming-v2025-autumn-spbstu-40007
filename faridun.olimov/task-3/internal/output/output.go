@@ -12,17 +12,17 @@ import (
 	"github.com/Maska192/task-3/internal/data"
 )
 
-func saveResults(filePath string, format string, data []data.ResultValute) {
+func saveResults(filePath string, format string, dataName []data.ResultValute) {
 	var encodedData []byte
 	var err error
 
 	switch strings.ToLower(format) {
 	case "json":
-		encodedData, err = json.MarshalIndent(data, "", "  ")
+		encodedData, err = json.MarshalIndent(dataName, "", "  ")
 	case "yaml":
-		encodedData, err = yaml.Marshal(data)
+		encodedData, err = yaml.Marshal(dataName)
 	case "xml":
-		resultXML := data.ResultValutes{Valutes: data, XMLName: dataName}
+		resultXML := data.ResultValutes{Valutes: dataName}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:
