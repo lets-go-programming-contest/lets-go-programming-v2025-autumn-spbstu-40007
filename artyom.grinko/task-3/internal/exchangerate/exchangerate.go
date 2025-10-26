@@ -54,7 +54,7 @@ type ExchangeRate struct {
 func FromXMLFile(path string) (*ExchangeRate, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, errFailedToReadXMLFile
+		return nil, errors.New(errFailedToReadXMLFile.Error() + ": " + err.Error())
 	}
 
 	defer func() {
