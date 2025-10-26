@@ -17,7 +17,7 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	XMLName  xml.Name `xml:"ValCurs"`
+	XMLName  xml.Name `xml:"Valute"`
 	NumCode  string   `xml:"NumCode"`
 	CharCode string   `xml:"CharCode"`
 	ValueStr string   `xml:"Value"`
