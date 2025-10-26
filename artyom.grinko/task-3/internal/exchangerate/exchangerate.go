@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-    "fmt"
+	"fmt"
 
 	"task-3/internal/die"
 	"task-3/internal/files"
