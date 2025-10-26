@@ -12,10 +12,12 @@ import (
 )
 
 type ValCurs struct {
+	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []Valute `xml:"Valute"`
 }
 
 type Valute struct {
+	XMLName xml.Name `xml:"ValCurs"`
 	NumCode  string   `xml:"NumCode"`
 	CharCode string   `xml:"CharCode"`
 	ValueStr string   `xml:"Value"`
@@ -29,6 +31,7 @@ type ResultValute struct {
 }
 
 type ResultValutes struct {
+	XMLName xml.Name `xml:"ValCurs"`
 	Valutes []ResultValute `xml:"Valute"`
 }
 
