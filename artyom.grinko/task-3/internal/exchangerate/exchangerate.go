@@ -54,7 +54,7 @@ type ExchangeRate struct {
 func FromXMLFile(path string) (*ExchangeRate, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, errors.New(errFailedToReadXMLFile.Error() + ": " + err.Error())
+		return nil, fmt.Errorf("%w: %w", errFailedToReadXMLFile, err)
 	}
 
 	defer func() {
@@ -69,7 +69,7 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err = decoder.Decode(result); err != nil {
-		return nil, errFailedToReadXMLFile
+		return nil, fmt.Errorf("%w: %w", errFailedToReadXMLFile, err)
 	}
 
 	return result, nil
@@ -78,13 +78,13 @@ func FromXMLFile(path string) (*ExchangeRate, error) {
 func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	err := files.CreateIfNotExists(path)
 	if err != nil {
-		return errFailedToWriteJSONFile
+		return fmt.Errorf("%w: %w", errFailedToWriteJSONFile, err)
 	}
 
 	// Magic number? Are you serious?
 	file, err := os.OpenFile(path, os.O_WRONLY, 0o600) //nolint:mnd
 	if err != nil {
-		return errFailedToWriteJSONFile
+		return fmt.Errorf("%w: %w", errFailedToWriteJSONFile, err)
 	}
 
 	defer func() {
@@ -97,7 +97,7 @@ func (exchangeRate *ExchangeRate) ToJSONFile(path string) error {
 	encoder.SetIndent("", "  ")
 
 	if err = encoder.Encode(exchangeRate.Currencies); err != nil {
-		return errFailedToWriteJSONFile
+		return fmt.Errorf("%w: %w", errFailedToWriteJSONFile, err)
 	}
 
 	return nil
