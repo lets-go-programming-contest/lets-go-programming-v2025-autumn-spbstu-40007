@@ -25,9 +25,9 @@ type Valute struct {
 }
 
 type ResultValute struct {
-	NumCode  int     `json:"num_code" yaml:"num_code" xml:"NumCode"`
+	NumCode  int     `json:"num_code"  yaml:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" yaml:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" yaml:"value" xml:"Value"`
+	Value    float64 `json:"value"     yaml:"value"     xml:"Value"`
 }
 
 type ResultValutes struct {

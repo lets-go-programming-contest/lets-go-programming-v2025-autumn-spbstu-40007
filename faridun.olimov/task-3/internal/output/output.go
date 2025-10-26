@@ -15,6 +15,7 @@ import (
 func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var encodedData []byte
 	var err error
+	
 	switch strings.ToLower(format) {
 	case "json":
 		encodedData, err = json.MarshalIndent(result, "", "  ")
@@ -39,7 +40,7 @@ func SaveResults(filePath string, format string, result []data.ResultValute) {
 		panic(fmt.Errorf("failed to create directory: %w", err))
 	}
 
-	if err := os.WriteFile(filePath, encodedData, 0644); err != nil {
+	if err := os.WriteFile(filePath, encodedData, 0600); err != nil {
 		fmt.Printf("Error writing to file '%s': %v\n", filePath, err)
 		panic(fmt.Errorf("failed to write result to file: %w", err))
 	}

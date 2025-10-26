@@ -41,5 +41,6 @@ func prepareResults(valutes []data.Valute) []data.ResultValute {
 	for i, v := range valutes {
 		resultValutes[i] = v.ToResultValute()
 	}
+	
 	return resultValutes
 }
