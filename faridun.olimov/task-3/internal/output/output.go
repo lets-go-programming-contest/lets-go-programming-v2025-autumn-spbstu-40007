@@ -17,8 +17,8 @@ var ErrUnsupportedFormat = errors.New("unsupported output format")
 
 func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var (
-		encodedData []byte
-	 	err error
+			encodedData []byte
+	 		err error
 	)
 	
 	switch strings.ToLower(format) {
