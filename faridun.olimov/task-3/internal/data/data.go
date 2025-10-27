@@ -55,7 +55,7 @@ func DecodeXMLData(filePath string) []Valute {
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if charset == "windows-1251" {
-				return charmap.Windows1251.NewDecoder().Reader(input), nil
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
 
 		return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
