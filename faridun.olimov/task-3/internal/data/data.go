@@ -7,9 +7,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"errors"
 
 	"golang.org/x/text/encoding/charmap"
 )
+
+var ErrUnknownCharset = errors.New("unknown charset")
 
 type ValCurs struct {
 	XMLName xml.Name `xml:"ValCurs"`
@@ -25,9 +28,9 @@ type Valute struct {
 }
 
 type ResultValute struct {
-	NumCode  int     `json:"num_code"  yaml:"num_code"  xml:"NumCode"`
-	CharCode string  `json:"char_code" yaml:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value"     yaml:"value"     xml:"Value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"  yaml:"num_code"`
+	CharCode string  `json:"char_code" xml:"CharCode" yaml:"char_code"`
+	Value    float64 `json:"value"     xml:"Value"    yaml:"value"`
 }
 
 type ResultValutes struct {
@@ -55,7 +58,7 @@ func DecodeXMLData(filePath string) []Valute {
 				return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
 
-		return nil, fmt.Errorf("unknown charset: %s", charset)
+		return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
 	}
 
 	var valCurs ValCurs
@@ -64,13 +67,13 @@ func DecodeXMLData(filePath string) []Valute {
 		panic(fmt.Errorf("XML data decoding error: %w", err))
 	}
 
-	var processedValutes []Valute
+	processedValutes := make([]Valute, 0, len(valCurs.Valutes))
 	for _, valute := range valCurs.Valutes {
 		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
 			fmt.Printf("Error converting value '%s' to float64: %v\n", valute.ValueStr, err)
-			panic(fmt.Errorf("invalid currency value: %s", valute.ValueStr))
+			panic(fmt.Errorf("invalid currency value: %s: %w", valute.ValueStr, err))
 		}
 		valute.Value = value
 		processedValutes = append(processedValutes, valute)
@@ -88,7 +91,7 @@ func (v Valute) ToResultValute() ResultValute {
 
 		if err != nil {
 			fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)
-			panic(fmt.Errorf("invalid NumCode: %s", v.NumCode))
+			panic(fmt.Errorf("invalid NumCode: %s: %w", v.NumCode, err))
 		}
 	} 
 
