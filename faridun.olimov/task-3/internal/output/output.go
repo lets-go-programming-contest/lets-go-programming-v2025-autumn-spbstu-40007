@@ -13,8 +13,10 @@ import (
 )
 
 func SaveResults(filePath string, format string, result []data.ResultValute) {
-	var encodedData []byte
-	var err error
+	var (
+		encodedData []byte
+	 	err error
+	) 
 	
 	switch strings.ToLower(format) {
 	case "json":

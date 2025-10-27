@@ -52,8 +52,7 @@ func DecodeXMLData(filePath string) []Valute {
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if charset == "windows-1251" {
-
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
+				return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
 
 		return nil, fmt.Errorf("unknown charset: %s", charset)
@@ -66,15 +65,15 @@ func DecodeXMLData(filePath string) []Valute {
 	}
 
 	var processedValutes []Valute
-	for _, v := range valCurs.Valutes {
-		valueStr := strings.ReplaceAll(v.ValueStr, ",", ".")
+	for _, valute := range valCurs.Valutes {
+		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
-			fmt.Printf("Error converting value '%s' to float64: %v\n", v.ValueStr, err)
-			panic(fmt.Errorf("invalid currency value: %s", v.ValueStr))
+			fmt.Printf("Error converting value '%s' to float64: %v\n", valute.ValueStr, err)
+			panic(fmt.Errorf("invalid currency value: %s", valute.ValueStr))
 		}
-		v.Value = value
-		processedValutes = append(processedValutes, v)
+		valute.Value = value
+		processedValutes = append(processedValutes, valute)
 	}
 
 	return processedValutes
@@ -86,6 +85,7 @@ func (v Valute) ToResultValute() ResultValute {
 	if v.NumCode != "" {
 		var err error
 		numCode, err = strconv.Atoi(v.NumCode)
+
 		if err != nil {
 			fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)
 			panic(fmt.Errorf("invalid NumCode: %s", v.NumCode))

@@ -10,17 +10,13 @@ import (
 	"github.com/Maska192/task-3/internal/output"
 )
 
-var (
-	configPath   string
-	outputFormat string
-)
+func main() {
+	var configPath string
+	var outputFormat string
 
-func init() {
 	flag.StringVar(&configPath, "config", "config.yaml", "Path to the YAML configuration file")
 	flag.StringVar(&outputFormat, "output-format", "json", "Output file format (json, yaml, xml)")
-}
 
-func main() {
 	flag.Parse()
 
 	cfg := config.LoadConfig(configPath)
@@ -33,7 +29,10 @@ func main() {
 
 	output.SaveResults(cfg.OutputFile, outputFormat, resultValutes)
 
-	fmt.Printf("Successfully saved %d currencies to file '%s' in '%s' format.\n", len(resultValutes), cfg.OutputFile, outputFormat)
+	fmt.Printf(
+		"Successfully saved %d currencies to file '%s' in '%s' format.\n",
+		len(resultValutes), cfg.OutputFile, outputFormat,
+	)
 }
 
 func prepareResults(valutes []data.Valute) []data.ResultValute {
@@ -41,6 +40,6 @@ func prepareResults(valutes []data.Valute) []data.ResultValute {
 	for i, v := range valutes {
 		resultValutes[i] = v.ToResultValute()
 	}
-	
+
 	return resultValutes
 }
