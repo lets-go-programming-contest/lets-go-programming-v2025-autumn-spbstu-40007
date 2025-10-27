@@ -89,7 +89,8 @@ func (v Valute) ToResultValute() ResultValute {
 	numCode := 0
 	
 	if v.NumCode != "" {
-		numCode, err := strconv.Atoi(v.NumCode)
+		var err error
+		numCode, err = strconv.Atoi(v.NumCode)
 
 		if err != nil {
 			fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)
