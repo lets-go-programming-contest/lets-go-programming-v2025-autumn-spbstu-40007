@@ -17,8 +17,8 @@ var ErrUnsupportedFormat = errors.New("unsupported output format")
 
 func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var (
-		encodedData []byte
-	 	err error
+			encodedData []byte
+	 		err error
 	)
 	
 	switch strings.ToLower(format) {
@@ -27,7 +27,7 @@ func SaveResults(filePath string, format string, result []data.ResultValute) {
 	case "yaml":
 		encodedData, err = yaml.Marshal(result)
 	case "xml":
-		resultXML := data.ResultValutes{XMLName: xml.Name{Local: "ValCurs"}, Valutes: result}
+		resultXML := data.ResultValutes{XMLName: xml.Name{Space: "", Local: "ValCurs"}, Valutes: result}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:
