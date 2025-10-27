@@ -27,7 +27,7 @@ func SaveResults(filePath string, format string, result []data.ResultValute) {
 	case "yaml":
 		encodedData, err = yaml.Marshal(result)
 	case "xml":
-		resultXML := ResultValutes{Valutes: result}
+		resultXML := data.ResultValutes{XMLName: xml.Name{Local: "ValCurs"}, Valutes: result}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:
