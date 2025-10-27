@@ -3,6 +3,7 @@ package output
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,11 +13,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var ErrUnsupportedFormat = errors.New("unsupported output format")
+
 func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var (
 		encodedData []byte
 	 	err error
-	) 
+	)
 	
 	switch strings.ToLower(format) {
 	case "json":
@@ -24,11 +27,11 @@ func SaveResults(filePath string, format string, result []data.ResultValute) {
 	case "yaml":
 		encodedData, err = yaml.Marshal(result)
 	case "xml":
-		resultXML := data.ResultValutes{Valutes: result}
+		resultXML := ResultValutes{Valutes: result}
 		encodedData, err = xml.MarshalIndent(resultXML, "", "  ")
 		encodedData = []byte(xml.Header + string(encodedData))
 	default:
-		panic(fmt.Errorf("unsupported output format: %s. Available: json, yaml, xml", format))
+		panic(fmt.Errorf("%w: %s. Available: json, yaml, xml", ErrUnsupportedFormat, format))
 	}
 
 	if err != nil {

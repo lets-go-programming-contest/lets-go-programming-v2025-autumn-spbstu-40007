@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-
 	"golang.org/x/text/encoding/charmap"
 )
 
@@ -69,7 +68,7 @@ func DecodeXMLData(filePath string) []Valute {
 	}
 
 	processedValutes := make([]Valute, 0, len(valCurs.Valutes))
-	
+
 	for _, valute := range valCurs.Valutes {
 		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
