@@ -11,8 +11,7 @@ import (
 )
 
 func main() {
-	var configPath string
-	var outputFormat string
+	var configPath, outputFormat string
 
 	flag.StringVar(&configPath, "config", "config.yaml", "Path to the YAML configuration file")
 	flag.StringVar(&outputFormat, "output-format", "json", "Output file format (json, yaml, xml)")

@@ -2,12 +2,13 @@ package data
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
-	"errors"
+
 
 	"golang.org/x/text/encoding/charmap"
 )
@@ -68,13 +69,16 @@ func DecodeXMLData(filePath string) []Valute {
 	}
 
 	processedValutes := make([]Valute, 0, len(valCurs.Valutes))
+	
 	for _, valute := range valCurs.Valutes {
 		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
+
 		if err != nil {
 			fmt.Printf("Error converting value '%s' to float64: %v\n", valute.ValueStr, err)
 			panic(fmt.Errorf("invalid currency value: %s: %w", valute.ValueStr, err))
 		}
+
 		valute.Value = value
 		processedValutes = append(processedValutes, valute)
 	}
