@@ -43,7 +43,7 @@ func SaveToJSON(path string, valutes []xmlparser.Valute) {
 
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
-	
+
 	if err := enc.Encode(output); err != nil {
 		log.Panicf("Failed to write JSON: %v", err)
 	}

@@ -52,15 +52,14 @@ func LoadXML(path string) []Valute {
 	return valCurs.Valutes
 }
 
-func parseValue(s string) float64 {
-	s = strings.Replace(s, ",", ".", 1)
+func parseValue(valueStr string) float64 {
+	valueStr = strings.Replace(valueStr, ",", ".", 1)
 
 	var val float64
-	
-	_, err := fmt.Sscanf(s, "%f", &val)
 
+	_, err := fmt.Sscanf(valueStr, "%f", &val)
 	if err != nil {
-		log.Panicf("Invalid number format in XML: %s", s)
+		log.Panicf("Invalid number format in XML: %s", valueStr)
 	}
 
 	return val
