@@ -86,12 +86,13 @@ func DecodeXMLData(filePath string) []Valute {
 
 func (v Valute) ToResultValute() ResultValute {
 	numCode := 0
+
 	if v.NumCode != "" {
-		var err error
-		numCode, err = strconv.Atoi(v.NumCode)
-		if err != nil {
+		if nc, err := strconv.Atoi(v.NumCode); err != nil {
 			fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)
 			panic(fmt.Errorf("invalid NumCode: %s: %w", v.NumCode, err))
+		} else {
+			numCode = nc
 		}
 	}
 
