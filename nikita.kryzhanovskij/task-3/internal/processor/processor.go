@@ -35,5 +35,10 @@ func Process(valCurs *models.ValCurs) ([]models.ValuteOutput, error) {
 func parseValue(value string) (float64, error) {
 	value = strings.ReplaceAll(value, ",", ".")
 
-	return strconv.ParseFloat(value, 64)
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return 0, fmt.Errorf("parse float failed: %w", err)
+	}
+
+	return f, nil
 }
