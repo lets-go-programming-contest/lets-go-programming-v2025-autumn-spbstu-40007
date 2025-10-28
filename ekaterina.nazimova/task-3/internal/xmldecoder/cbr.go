@@ -17,7 +17,7 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 		if charset == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
-		return nil, fmt.Errorf("unsupported charset: %s", charset)
+		return nil, fmt.Errorf("unsupported charset: %w", charset)
 	}
 
 	var result data.ValCurs
@@ -33,6 +33,7 @@ func DecodeCBRXML(filePath string) (*data.ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening XML file %q: %w", filePath, err)
 	}
+
 	defer func() {
 		if closeErr := xmlFile.Close(); closeErr != nil && err == nil {
 			err = closeErr

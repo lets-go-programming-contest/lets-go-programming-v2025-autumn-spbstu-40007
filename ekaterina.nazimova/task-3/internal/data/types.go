@@ -16,6 +16,7 @@ func (c *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 	}
 
 	cleanString := strings.Replace(xmlString, ",", ".", 1)
+
 	parsedFloat, err := strconv.ParseFloat(cleanString, 64)
 	if err != nil {
 		return fmt.Errorf("parsing cleaned float %q: %w", cleanString, err)
@@ -27,14 +28,14 @@ func (c *CurrencyValue) UnmarshalXML(d *xml.Decoder, start xml.StartElement) err
 }
 
 type Valute struct {
-	ID         string `xml:"ID,attr"    json:"-"`
-	NominalStr string `xml:"Nominal"    json:"-"`
-	Name       string `xml:"Name"       json:"-"`
+	ID         string `json:"-" xml:"ID,attr"`
+	NominalStr string `json:"-" xml:"Nominal"`
+	Name       string `json:"-" xml:"Name"`
 
 	CharCode string `json:"char_code" xml:"CharCode"`
 	NumCode  int    `json:"num_code"  xml:"NumCode"`
 
-	Value CurrencyValue `json:"value"     xml:"Value"`
+	Value CurrencyValue `json:"value" xml:"Value"`
 }
 
 type ValCurs struct {
