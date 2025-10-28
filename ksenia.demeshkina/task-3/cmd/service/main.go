@@ -27,6 +27,4 @@ func main() {
 	})
 
 	writer.SaveToJSON(cfg.OutputFile, valutes)
-
-	log.Println("Result saved to:", cfg.OutputFile)
 }
