@@ -1,4 +1,3 @@
-// сохранение результата в json
 package writer
 
 import (
@@ -7,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"myapp/xmlparser"
+	"github.com/ksuah/task-3/internal/xmlparser"
 )
 
 type CurrencyOutput struct {

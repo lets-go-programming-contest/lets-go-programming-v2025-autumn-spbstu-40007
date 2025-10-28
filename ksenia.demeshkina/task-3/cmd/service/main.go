@@ -5,9 +5,9 @@ import (
 	"log"
 	"sort"
 
-	"myapp/config"
-	"myapp/writer"
-	"myapp/xmlparser"
+	"github.com/ksuah/task-3/internal/config"
+	"github.com/ksuah/task-3/internal/writer"
+	"github.com/ksuah/task-3/internal/xmlparser"
 )
 
 func main() {
@@ -18,11 +18,11 @@ func main() {
 		log.Panicf("Missing --config flag with path to YAML config")
 	}
 
-	cfg := config.LoadConfig(*configPath) // загружаем конфиг
+	cfg := config.LoadConfig(*configPath)
 
-	valutes := xmlparser.LoadXML(cfg.InputFile) // загружаем XML
+	valutes := xmlparser.LoadXML(cfg.InputFile)
 
-	sort.Slice(valutes, func(i, j int) bool { // сортируем валюты
+	sort.Slice(valutes, func(i, j int) bool {
 		return valutes[i].Value > valutes[j].Value
 	})
 

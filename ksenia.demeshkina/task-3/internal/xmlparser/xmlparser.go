@@ -1,14 +1,13 @@
-// загрузка и парсинг XML
 package xmlparser
 
 import (
 	"bytes"
-	"encoding/xml" // для разбора XML
-	"fmt"          // переводить строку "43,6438" -> 43.6438
+	"encoding/xml"
+	"fmt"
 	"io"
-	"log"     // вывод ошибок log.Panic
-	"os"      // для открытия и чтения файла
-	"strings" // чтоб заменить запятые на точки
+	"log"
+	"os"
+	"strings"
 
 	"golang.org/x/text/encoding/charmap"
 )
@@ -17,12 +16,11 @@ type ValCurs struct {
 	Valutes []Valute `xml:"Valute"`
 }
 
-// структура одной валюты
 type Valute struct {
 	NumCode  int     `xml:"NumCode"`
 	CharCode string  `xml:"CharCode"`
 	ValueStr string  `xml:"Value"`
-	Value    float64 `xml:"-"` // это поле вычисляемое но не из XML
+	Value    float64 `xml:"-"`
 }
 
 func LoadXML(path string) []Valute {
@@ -41,21 +39,18 @@ func LoadXML(path string) []Valute {
 		return input, nil
 	}
 
-	// парсинг XML
 	var valCurs ValCurs
-	if err := decoder.Decode(&valCurs); err != nil { // разбирает data и заполняет valCurs
+	if err := decoder.Decode(&valCurs); err != nil {
 		log.Panicf("Cannot parse XML: %v", err)
 	}
 
-	// преобразование строки ValueStr в числа Value
-	for i := range valCurs.Valutes { // цикл по всем валютам
-		valCurs.Valutes[i].Value = parseValue(valCurs.Valutes[i].ValueStr) // для каждой валюты берем ValueStr (строку с запятой), передаем в parseValue и записываем результат в Value
+	for i := range valCurs.Valutes {
+		valCurs.Valutes[i].Value = parseValue(valCurs.Valutes[i].ValueStr)
 	}
 
-	return valCurs.Valutes // возвращаем готовый срез
+	return valCurs.Valutes
 }
 
-// перевод строки вроде 43,432 в 43.432
 func parseValue(s string) float64 {
 	s = strings.Replace(s, ",", ".", 1)
 	var val float64

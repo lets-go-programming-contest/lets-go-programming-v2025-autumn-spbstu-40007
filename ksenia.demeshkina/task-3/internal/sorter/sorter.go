@@ -1,10 +1,9 @@
-// сортировка валют
 package sorter
 
 import (
 	"sort"
 
-	"myapp/xmlparser"
+	"github.com/ksuah/task-3/internal/xmlparser"
 )
 
 func SortByValueDesc(valutes []xmlparser.Valute) []xmlparser.Valute {
