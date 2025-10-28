@@ -72,7 +72,6 @@ func DecodeXMLData(filePath string) []Valute {
 	for _, valute := range valCurs.Valutes {
 		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
-
 		if err != nil {
 			fmt.Printf("Error converting value '%s' to float64: %v\n", valute.ValueStr, err)
 			panic(fmt.Errorf("invalid currency value: %s: %w", valute.ValueStr, err))
@@ -87,16 +86,14 @@ func DecodeXMLData(filePath string) []Valute {
 
 func (v Valute) ToResultValute() ResultValute {
 	numCode := 0
-	
 	if v.NumCode != "" {
 		var err error
 		numCode, err = strconv.Atoi(v.NumCode)
-
 		if err != nil {
 			fmt.Printf("Error converting NumCode '%s' to integer: %v\n", v.NumCode, err)
 			panic(fmt.Errorf("invalid NumCode: %s: %w", v.NumCode, err))
 		}
-	} 
+	}
 
 	return ResultValute{
 		NumCode:  numCode,

@@ -17,10 +17,10 @@ var ErrUnsupportedFormat = errors.New("unsupported output format")
 
 func SaveResults(filePath string, format string, result []data.ResultValute) {
 	var (
-			encodedData []byte
-	 		err error
+		encodedData []byte
+		err         error
 	)
-	
+
 	switch strings.ToLower(format) {
 	case "json":
 		encodedData, err = json.MarshalIndent(result, "", "  ")
@@ -40,12 +40,12 @@ func SaveResults(filePath string, format string, result []data.ResultValute) {
 	}
 
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		fmt.Printf("Error creating directory '%s': %v\n", dir, err)
 		panic(fmt.Errorf("failed to create directory: %w", err))
 	}
 
-	if err := os.WriteFile(filePath, encodedData, 0600); err != nil {
+	if err := os.WriteFile(filePath, encodedData, 0o600); err != nil {
 		fmt.Printf("Error writing to file '%s': %v\n", filePath, err)
 		panic(fmt.Errorf("failed to write result to file: %w", err))
 	}
