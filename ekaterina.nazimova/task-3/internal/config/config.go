@@ -8,6 +8,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const dirPermissions = 0o755
+
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
@@ -19,7 +21,11 @@ func LoadConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("reading config file %q: %w", path, err)
 	}
 
-	cfg := &Config{}
+	cfg := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
+
 	err = yaml.Unmarshal(fileData, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshalling config data: %w", err)
@@ -27,7 +33,7 @@ func LoadConfig(path string) (*Config, error) {
 
 	outputDirectory := filepath.Dir(cfg.OutputFile)
 	if _, err := os.Stat(outputDirectory); os.IsNotExist(err) {
-		err := os.MkdirAll(outputDirectory, 0o755)
+		err := os.MkdirAll(outputDirectory, dirPermissions)
 		if err != nil {
 			return nil, fmt.Errorf("creating output directory %q: %w", outputDirectory, err)
 		}

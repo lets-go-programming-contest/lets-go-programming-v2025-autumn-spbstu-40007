@@ -9,6 +9,8 @@ import (
 	"github.com/UwUshkin/task-3/internal/xmldecoder"
 )
 
+const outputPermissions = 0o600
+
 func ProcessAndSave(inputPath, outputPath string) error {
 	valCursData, err := xmldecoder.DecodeCBRXML(inputPath)
 	if err != nil {
@@ -22,7 +24,7 @@ func ProcessAndSave(inputPath, outputPath string) error {
 		return fmt.Errorf("marshalling results to JSON: %w", err)
 	}
 
-	if err := os.WriteFile(outputPath, jsonData, 0o644); err != nil {
+	if err := os.WriteFile(outputPath, jsonData, outputPermissions); err != nil {
 		return fmt.Errorf("writing output file %q: %w", outputPath, err)
 	}
 
