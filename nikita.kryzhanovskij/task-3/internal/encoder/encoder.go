@@ -20,6 +20,7 @@ func EncodeJSON(path string, data []models.ValuteOutput) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
+
 	defer func() {
 		if errClose := file.Close(); errClose != nil {
 			fmt.Fprintf(os.Stderr, "close file error: %v\n", errClose)
@@ -28,6 +29,7 @@ func EncodeJSON(path string, data []models.ValuteOutput) error {
 
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
+
 	if err := enc.Encode(data); err != nil {
 		return fmt.Errorf("failed to encode JSON: %w", err)
 	}

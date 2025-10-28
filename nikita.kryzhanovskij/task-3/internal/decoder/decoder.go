@@ -17,6 +17,7 @@ func DecodeXML(path string) (*models.ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read XML file: %w", err)
 	}
+
 	defer func() {
 		if errClose := file.Close(); errClose != nil {
 			fmt.Fprintf(os.Stderr, "close file error: %v\n", errClose)
