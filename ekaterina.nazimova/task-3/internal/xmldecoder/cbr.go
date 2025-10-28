@@ -20,7 +20,7 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 		if charset == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
-		
+
 		return nil, fmt.Errorf("decoding %w: %s", ErrUnsupportedCharset, charset)
 	}
 
