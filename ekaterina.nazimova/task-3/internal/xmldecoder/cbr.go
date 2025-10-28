@@ -2,12 +2,17 @@ package xmldecoder
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/UwUshkin/task-3/internal/data"
 	"golang.org/x/text/encoding/charmap"
+)
+
+var (
+	ErrUnsupportedCharset = errors.New("unsupported charset")
 )
 
 func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
@@ -17,7 +22,7 @@ func decodeXMLFromReader(reader io.Reader) (*data.ValCurs, error) {
 		if charset == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
-		return nil, fmt.Errorf("unsupported charset: %s", charset)
+		return nil, fmt.Errorf("decoding %w: %s", ErrUnsupportedCharset, charset)
 	}
 
 	var result data.ValCurs
