@@ -1,12 +1,15 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 	"nikita.kryzhanovskij/task-3/internal/models"
 )
+
+var ErrInvalidConfig = errors.New("invalid config: input-file and output-file are required")
 
 func Load(path string) (*models.Config, error) {
 	data, err := os.ReadFile(path)
@@ -20,7 +23,7 @@ func Load(path string) (*models.Config, error) {
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
-		return nil, fmt.Errorf("invalid config: input-file and output-file are required")
+		return nil, ErrInvalidConfig
 	}
 
 	return &cfg, nil

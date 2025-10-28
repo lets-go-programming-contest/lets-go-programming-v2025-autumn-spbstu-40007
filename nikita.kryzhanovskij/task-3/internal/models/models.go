@@ -15,13 +15,13 @@ type ValCurs struct {
 }
 
 type Valute struct {
-	ID        string `xml:"ID,attr" json:"id"`
-	NumCode   int    `xml:"NumCode" json:"num_code"`
-	CharCode  string `xml:"CharCode" json:"char_code"`
-	Nominal   int    `xml:"Nominal" json:"nominal"`
-	Name      string `xml:"Name" json:"name"`
-	Value     string `xml:"Value" json:"value"`
-	VunitRate string `xml:"VunitRate" json:"vunit_rate"`
+	ID        string `json:"id"         xml:"ID,attr"`
+	NumCode   int    `json:"num_code"   xml:"NumCode"`
+	CharCode  string `json:"char_code"  xml:"CharCode"`
+	Nominal   int    `json:"nominal"    xml:"Nominal"`
+	Name      string `json:"name"       xml:"Name"`
+	Value     string `json:"value"      xml:"Value"`
+	VunitRate string `json:"vunit_rate" xml:"VunitRate"`
 }
 
 type ValuteOutput struct {
