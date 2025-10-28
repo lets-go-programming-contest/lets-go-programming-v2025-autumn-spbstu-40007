@@ -53,21 +53,5 @@ func (c CurrencyList) Swap(i, j int) {
 }
 
 func (c CurrencyList) Less(i, j int) bool {
-	valI := float64(c[i].Value)
-	valJ := float64(c[j].Value)
-
-	nomI, errI := strconv.ParseFloat(c[i].NominalStr, 64)
-	nomJ, errJ := strconv.ParseFloat(c[j].NominalStr, 64)
-
-	if errI != nil || nomI == 0 {
-		nomI = 1
-	}
-	if errJ != nil || nomJ == 0 {
-		nomJ = 1
-	}
-
-	normalizedI := valI / nomI
-	normalizedJ := valJ / nomJ
-
-	return normalizedI > normalizedJ
+	return c[i].Value > c[j].Value
 }
