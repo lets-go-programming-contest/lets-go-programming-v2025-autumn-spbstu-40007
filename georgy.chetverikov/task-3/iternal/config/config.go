@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
+	InputFile    string `yaml:"input-file"`
+	OutputFile   string `yaml:"output-file"`
+	OutputFormat string `yaml:"output-format"`
 }
 
 func Read(path string) (*Config, error) {
@@ -22,6 +23,10 @@ func Read(path string) (*Config, error) {
 
 	if err := yaml.Unmarshal(data, config); err != nil {
 		return nil, fmt.Errorf("Unable to unmarshall data: %w", err)
+	}
+
+	if config.OutputFormat == "" {
+		config.OutputFormat = "json"
 	}
 
 	return config, nil
