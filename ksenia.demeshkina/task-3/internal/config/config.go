@@ -19,9 +19,7 @@ func LoadConfig(path string) Config {
 	}
 
 	var cfg Config
-	err = yaml.Unmarshal(data, &cfg)
-	
-	if err != nil {
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		log.Panicf("Failed to parse YAML: %v", err)
 	}
 
