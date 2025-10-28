@@ -71,13 +71,14 @@ func DecodeXMLData(filePath string) []Valute {
 
 	for _, valute := range valCurs.Valutes {
 		valueStr := strings.ReplaceAll(valute.ValueStr, ",", ".")
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
+
+		if value, err := strconv.ParseFloat(valueStr, 64); err != nil {
 			fmt.Printf("Error converting value '%s' to float64: %v\n", valute.ValueStr, err)
 			panic(fmt.Errorf("invalid currency value: %s: %w", valute.ValueStr, err))
+		} else {
+			valute.Value = value
 		}
 
-		valute.Value = value
 		processedValutes = append(processedValutes, valute)
 	}
 
