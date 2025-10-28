@@ -23,8 +23,9 @@ func Load(path string) (*models.Config, error) {
 
 	var cfg models.Config
 
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, fmt.Errorf("did not find expected key: %w", err)
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
