@@ -36,6 +36,7 @@ func LoadXML(path string) []Valute {
 		if strings.EqualFold(charset, "windows-1251") {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
+
 		return input, nil
 	}
 
@@ -53,8 +54,11 @@ func LoadXML(path string) []Valute {
 
 func parseValue(s string) float64 {
 	s = strings.Replace(s, ",", ".", 1)
+
 	var val float64
+	
 	_, err := fmt.Sscanf(s, "%f", &val)
+
 	if err != nil {
 		log.Panicf("Invalid number format in XML: %s", s)
 	}

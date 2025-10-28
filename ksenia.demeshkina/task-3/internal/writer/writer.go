@@ -26,9 +26,13 @@ func SaveToJSON(path string, valutes []xmlparser.Valute) {
 		log.Panicf("Cannot create output file: %v", err)
 	}
 
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Panicf("Failed to close file: %v", err)
+		}
+	}()
 
-	var output []CurrencyOutput
+	output := make([]CurrencyOutput, 0, len(valutes))
 	for _, v := range valutes {
 		output = append(output, CurrencyOutput{
 			NumCode:  v.NumCode,
@@ -39,6 +43,7 @@ func SaveToJSON(path string, valutes []xmlparser.Valute) {
 
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
+	
 	if err := enc.Encode(output); err != nil {
 		log.Panicf("Failed to write JSON: %v", err)
 	}
