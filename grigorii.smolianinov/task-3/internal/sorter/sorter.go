@@ -3,7 +3,7 @@ package sorter
 import (
 	"sort"
 
-	"task-3/internal/xmlparser"
+	"github.com/Smolyaninoff/GoLang.git/task-3/internal/xmlparser"
 )
 
 func SortByValueDesc(valutes []xmlparser.Valute) []xmlparser.Valute {

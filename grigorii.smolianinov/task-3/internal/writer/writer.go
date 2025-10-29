@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"task-3/internal/xmlparser"
+	"github.com/Smolyaninoff/GoLang.git/task-3/internal/xmlparser"
 )
 
 type CurrencyOutput struct {
