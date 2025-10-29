@@ -1,10 +1,12 @@
 package main
 
+//nolint:gofumpt
 import (
 	"flag"
 	"fmt"
 	"os"
 	"sort"
+
 	"task-3/internal/config"
 	"task-3/internal/currencies"
 )

@@ -33,9 +33,9 @@ func (float *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 type Currency struct {
-	NumCode  int    `xml:"NumCode"  json:"num_code"`
-	CharCode string `xml:"CharCode" json:"char_code"`
-	Value    Float  `xml:"Value"    json:"value"`
+	NumCode  int    `json:"num_code"  xml:"NumCode"`
+	CharCode string `json:"char_code" xml:"CharCode"`
+	Value    Float  `json:"value"     xml:"Value"`
 }
 
 type Currencies struct {
@@ -63,8 +63,8 @@ func New(path string) (*Currencies, error) {
 
 func (currencies *Currencies) SaveToOutputFile(path string) error {
 	dirs := filepath.Dir(path)
-	err := os.MkdirAll(dirs, 0o755) //nolint:mnd
 
+	err := os.MkdirAll(dirs, 0o755) //nolint:mnd
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "currencies: %w", err)
 	}
