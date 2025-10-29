@@ -20,7 +20,7 @@ func New(path string) (*Config, error) {
 
 	config := &Config{}
 	if err = yaml.Unmarshal(configContent, config); err != nil {
-		return nil, fmt.Errorf("config: %w", err)
+		return nil, fmt.Errorf("config: did not find expected key %w", err)
 	}
 
 	return config, nil
