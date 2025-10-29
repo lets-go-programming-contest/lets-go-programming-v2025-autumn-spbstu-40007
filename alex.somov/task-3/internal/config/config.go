@@ -18,7 +18,10 @@ func New(path string) (*Config, error) {
 		return nil, fmt.Errorf("config: %w", err)
 	}
 
-	config := &Config{}
+	config := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
 	if err = yaml.Unmarshal(configContent, config); err != nil {
 		return nil, fmt.Errorf("config: did not find expected key %w", err)
 	}

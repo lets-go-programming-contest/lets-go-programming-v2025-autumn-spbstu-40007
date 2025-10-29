@@ -15,14 +15,14 @@ import (
 type Float float32
 
 func (float *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	s := ""
-	if err := d.DecodeElement(&s, &start); err != nil {
+	decodeElementString := ""
+	if err := d.DecodeElement(&decodeElementString, &start); err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
 
-	s = strings.ReplaceAll(s, ",", ".")
+	decodeElementString = strings.ReplaceAll(decodeElementString, ",", ".")
 
-	f, err := strconv.ParseFloat(s, 32)
+	f, err := strconv.ParseFloat(decodeElementString, 32)
 	if err != nil {
 		return fmt.Errorf("currencies: %w", err)
 	}
@@ -33,9 +33,9 @@ func (float *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 type Currency struct {
-	NumCode  int    `xml:"NumCode" json:"num_code"`
+	NumCode  int    `xml:"NumCode"  json:"num_code"`
 	CharCode string `xml:"CharCode" json:"char_code"`
-	Value    Float  `xml:"Value" json:"value"`
+	Value    Float  `xml:"Value"    json:"value"`
 }
 
 type Currencies struct {
@@ -51,7 +51,9 @@ func New(path string) (*Currencies, error) {
 	decoder := xml.NewDecoder(strings.NewReader(string(currenciesContent)))
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	currencies := &Currencies{}
+	currencies := &Currencies{
+		Currencies: []Currency{},
+	}
 	if err = decoder.Decode(currencies); err != nil {
 		return nil, fmt.Errorf("currencies: %w", err)
 	}
@@ -61,12 +63,13 @@ func New(path string) (*Currencies, error) {
 
 func (currencies *Currencies) SaveToOutputFile(path string) error {
 	dirs := filepath.Dir(path)
-	err := os.MkdirAll(dirs, 0o755)
+	err := os.MkdirAll(dirs, 0o755) //nolint:mnd
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "currencies: %w", err)
 	}
 
-	output, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0o600)
+	output, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0o600) //nolint:mnd
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "currencies: %w", err)
 	}
