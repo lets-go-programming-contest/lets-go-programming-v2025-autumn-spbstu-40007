@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/myuser/go-task/internal/config"
-	"github.com/myuser/go-task/internal/sorter"
-	"github.com/myuser/go-task/internal/writer"
-	"github.com/myuser/go-task/internal/xmlparser"
+	"internal/xmlparser"
+	"task-3/internal/config"
+	"task-3/internal/sorter"
+	"task-3/internal/writer"
 )
 
 func main() {
