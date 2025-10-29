@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"sort"
 
 	"github.com/myuser/go-task/internal/config"
+	"github.com/myuser/go-task/internal/sorter"
 	"github.com/myuser/go-task/internal/writer"
 	"github.com/myuser/go-task/internal/xmlparser"
 )
@@ -23,11 +23,9 @@ func main() {
 
 	valutes := xmlparser.LoadXML(cfg.InputFile)
 
-	sort.Slice(valutes, func(i, j int) bool {
-		return valutes[i].Value > valutes[j].Value
-	})
+	sortedValutes := sorter.SortByValueDesc(valutes)
 
-	writer.SaveToJSON(cfg.OutputFile, valutes)
+	writer.SaveToJSON(cfg.OutputFile, sortedValutes)
 
-	fmt.Printf("Обработка завершена. Результат сохранен в %s. Количество валют: %d\n", cfg.OutputFile, len(valutes))
+	fmt.Printf("✅ Успешно обработано %d валют. Результат сохранен в %s\n", len(sortedValutes), cfg.OutputFile)
 }
