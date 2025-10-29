@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Smolyaninoff/GoLang.git/task-3/internal/config"
-	"github.com/Smolyaninoff/GoLang.git/task-3/internal/sorter"
-	"github.com/Smolyaninoff/GoLang.git/task-3/internal/writer"
-	"github.com/Smolyaninoff/GoLang.git/task-3/internal/xmlparser"
+	"github.com/Smolyaninoff/GoLang.git/internal/config"
+	"github.com/Smolyaninoff/GoLang.git/internal/sorter"
+	"github.com/Smolyaninoff/GoLang.git/internal/writer"
+	"github.com/Smolyaninoff/GoLang.git/internal/xmlparser"
 )
 
 func main() {
