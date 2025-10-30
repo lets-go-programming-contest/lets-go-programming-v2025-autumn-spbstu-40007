@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -15,11 +16,18 @@ type Config struct {
 	OutputFormat string `yaml:"output-format"`
 }
 
-func FindAndRead() (*Config, error) {
+func FindAndRead(path string) (*Config, error) {
 
 	var configFile string
 
-	files, err := os.ReadDir(".")
+	exePath, err := os.Executable()
+	if err != nil {
+		return nil, fmt.Errorf("getting executable path: %w", err)
+	}
+
+	exeDir := filepath.Dir(exePath)
+
+	files, err := os.ReadDir(exeDir)
 	if err != nil {
 		return nil, fmt.Errorf("reading directory: %w", err)
 	}
@@ -29,7 +37,7 @@ func FindAndRead() (*Config, error) {
 			name := file.Name()
 			if strings.HasSuffix(strings.ToLower(name), ".yaml") ||
 				strings.HasSuffix(strings.ToLower(name), ".yml") {
-				configFile = name
+				configFile = filepath.Join(path, name)
 
 				break
 			}
