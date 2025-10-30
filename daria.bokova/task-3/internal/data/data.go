@@ -3,9 +3,13 @@ package data
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
+	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type ValCurs struct {
@@ -27,13 +31,23 @@ type Currency struct {
 }
 
 func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
-	data, err := os.ReadFile(inputFile)
+	file, err := os.Open(inputFile)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка чтения файла: %v", err)
+		return nil, fmt.Errorf("ошибка открытия файла: %v", err)
+	}
+	defer file.Close()
+
+	// Создаем декодер с поддержкой windows-1251
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		if strings.ToLower(charset) == "windows-1251" {
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		}
+		return input, nil
 	}
 
 	var valCurs ValCurs
-	err = xml.Unmarshal(data, &valCurs)
+	err = decoder.Decode(&valCurs)
 	if err != nil {
 		return nil, fmt.Errorf("ошибка декодирования XML: %v", err)
 	}
@@ -41,17 +55,16 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 	var currencies []Currency
 	for _, valute := range valCurs.Valutes {
 		// Преобразуем значение (заменяем запятую на точку для парсинга)
-		valueStr := valute.Value
-		valueStr = replaceCommaWithDot(valueStr)
+		valueStr := strings.Replace(valute.Value, ",", ".", -1)
 
 		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка преобразования значения валюты: %v", err)
+			return nil, fmt.Errorf("ошибка преобразования значения валюты '%s': %v", valute.Value, err)
 		}
 
 		numCode, err := strconv.Atoi(valute.NumCode)
 		if err != nil {
-			return nil, fmt.Errorf("ошибка преобразования числового кода валюты: %v", err)
+			return nil, fmt.Errorf("ошибка преобразования числового кода валюты '%s': %v", valute.NumCode, err)
 		}
 
 		currencies = append(currencies, Currency{
@@ -61,21 +74,10 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 		})
 	}
 
+	// Сортируем по убыванию значения
 	sort.Slice(currencies, func(i, j int) bool {
 		return currencies[i].Value > currencies[j].Value
 	})
 
 	return currencies, nil
-}
-
-func replaceCommaWithDot(s string) string {
-	result := make([]rune, len(s))
-	for i, r := range s {
-		if r == ',' {
-			result[i] = '.'
-		} else {
-			result[i] = r
-		}
-	}
-	return string(result)
 }
