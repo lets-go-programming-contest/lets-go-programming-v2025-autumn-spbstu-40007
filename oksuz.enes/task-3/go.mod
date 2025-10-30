@@ -1,4 +1,4 @@
-module task-3
+module github.com/Seeany1/task-3
 
 go 1.23.2
 
