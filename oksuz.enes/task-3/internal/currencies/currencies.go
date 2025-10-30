@@ -21,8 +21,8 @@ type Currency struct {
 }
 
 type ValCurs struct {
-	XMLName    xml.Name   `xml:"ValCurs"`
-	Currencies []Currency `xml:"Valute"`
+	XMLName    xml.Name   `xml:"ValCurs" json:"-"`
+	Currencies []Currency `xml:"Valute"  json:"currencies"`
 }
 
 type CurrencyService struct{}
@@ -66,6 +66,7 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	}
 
 	file, err := os.Create(path)
+
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
