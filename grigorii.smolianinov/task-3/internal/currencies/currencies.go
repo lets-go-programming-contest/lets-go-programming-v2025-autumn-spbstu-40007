@@ -17,9 +17,9 @@ import (
 )
 
 type Valute struct {
-	NumCode  string  `xml:"NumCode" json:"num_code"`
-	CharCode string  `xml:"CharCode" json:"char_code"`
-	Value    float64 `json:"value"`
+	NumCode  string  `json:"num_code" xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value" xml:"Value"`
 }
 
 func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -37,9 +37,11 @@ func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 	normalizedStr := strings.Replace(aux.ValueStr, ",", ".", 1)
 	f, err := strconv.ParseFloat(normalizedStr, 64)
+
 	if err != nil {
 		log.Panicf("Invalid number format in XML: %s (%v)", aux.ValueStr, err)
 	}
+
 	v.Value = f
 
 	return nil
@@ -61,7 +63,7 @@ func LoadAndSort(path string) []Valute {
 		if strings.EqualFold(charset, "windows-1251") {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
-		return nil, fmt.Errorf("unknown charset: %s", charset)
+		return nil, fmt.Errorf("unknown charset: %s", charset) //nolint:err113
 	}
 
 	var valCurs ValCurs
@@ -87,7 +89,7 @@ func SaveToJSON(path string, valutes []Valute) {
 		log.Panicf("Failed to marshal JSON: %v", err)
 	}
 
-	if err := os.WriteFile(path, jsonData, 0644); err != nil {
+	if err := os.WriteFile(path, jsonData, 0600); err != nil {
 		log.Panicf("Failed to write JSON: %v", err)
 	}
 }
