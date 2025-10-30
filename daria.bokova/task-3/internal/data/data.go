@@ -61,7 +61,6 @@ func ProcessXMLFile(filename string) []CurrencyItem {
 func readXMLFile(filename string) ([]byte, error) {
 	content, err := os.ReadFile(filename)
 	if err != nil {
-
 		return nil, fmt.Errorf("ошибка чтения файла '%s': %w", filename, err)
 	}
 
