@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html/charset"
@@ -31,10 +32,20 @@ func NewCurrencyService() *CurrencyService {
 func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
+	}
+
+	for i := range valCurs.Currencies {
+		strVal := strings.ReplaceAll(fmt.Sprintf("%v", valCurs.Currencies[i].Value), ",", ".")
+		if v, err := strconv.ParseFloat(strVal, 64); err == nil {
+			valCurs.Currencies[i].Value = v
+		} else {
+			return nil, fmt.Errorf("failed to parse xml: %w", err)
+		}
 	}
 
 	return valCurs.Currencies, nil
