@@ -33,6 +33,7 @@ func NewCurrencyService() *CurrencyService {
 
 func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
+
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
 	decoder.CharsetReader = charset.NewReaderLabel
 
@@ -40,12 +41,13 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
 	}
 
-	for i := range valCurs.Currencies {
+	for i := range valCurs.Currencies { //nolint:varnamelen
 		strVal := strings.ReplaceAll(valCurs.Currencies[i].ValueStr, ",", ".")
 		v, err := strconv.ParseFloat(strVal, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse xml: %w", err)
 		}
+
 		valCurs.Currencies[i].Value = v
 	}
 
@@ -67,12 +69,17 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			fmt.Println("close error:", cerr)
+		}
+	}()
 
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(list); err != nil {
+	if err := enc.Encode(list); err != nil { //nolint:musttag
 		return fmt.Errorf("failed to encode json: %w", err)
 	}
 
