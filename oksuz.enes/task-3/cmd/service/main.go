@@ -29,6 +29,7 @@ func main() {
 	}
 
 	svc := currencies.NewCurrencyService()
+
 	list, err := svc.ParseXML(data)
 	if err != nil {
 		log.Fatalf("failed to parse xml %v", err)
