@@ -1,104 +1,55 @@
 package data
 
 import (
-	"encoding/xml"
 	"fmt"
-	"io"
 	"os"
-	"sort"
-	"strconv"
-	"strings"
+	"slices"
 
-	"golang.org/x/text/encoding/charmap"
+	"gopkg.in/yaml.v3"
 )
 
-type ValCurs struct {
-	XMLName xml.Name `xml:"ValCurs"`
-	Date    string   `xml:"Date,attr"`
-	Name    string   `xml:"name,attr"`
-	Valutes []Valute `xml:"Valute"`
-}
-
-type Valute struct {
-	XMLName  xml.Name `xml:"Valute"`
-	ID       string   `xml:"ID,attr"`
-	NumCode  string   `xml:"NumCode"`
-	CharCode string   `xml:"CharCode"`
-	Nominal  string   `xml:"Nominal"`
-	Name     string   `xml:"Name"`
-	Value    string   `xml:"Value"`
-}
-
 type Currency struct {
-	NumCode  int     `json:"num_code"`
-	CharCode string  `json:"char_code"`
-	Value    float64 `json:"value"`
+	NumCode  int     `yaml:"num"`
+	CharCode string  `yaml:"code"`
+	Value    float64 `yaml:"value"`
 }
 
-func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
-	file, err := os.Open(inputFile)
+type Input struct {
+	Currencies []Currency `yaml:"currencies"`
+}
+
+func LoadAndSortCurrencies(path string) ([]Currency, error) {
+	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка открытия файла: %v", err)
-	}
-	defer file.Close()
-
-	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		if strings.ToLower(charset) == "windows-1251" {
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
-		}
-		return input, nil
+		return nil, fmt.Errorf("ошибка чтения файла: %v", err)
 	}
 
-	var valCurs ValCurs
-	err = decoder.Decode(&valCurs)
+	var input Input
+	err = yaml.Unmarshal(bytes, &input)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка декодирования XML: %v", err)
+		return nil, fmt.Errorf("ошибка парсинга YAML: %v", err)
 	}
 
-	var currencies []Currency
-	for _, valute := range valCurs.Valutes {
-		if valute.CharCode == "" {
-			continue
-		}
-
-		nominal := 1
-		if valute.Nominal != "" {
-			n, err := strconv.Atoi(valute.Nominal)
-			if err == nil && n > 0 {
-				nominal = n
-			}
-		}
-
-		valueStr := strings.Replace(valute.Value, ",", ".", -1)
-		value := 0.0
-		if valueStr != "" {
-			if v, err := strconv.ParseFloat(valueStr, 64); err == nil {
-				value = v
-			}
-		}
-
-		numCode := 0
-		if valute.NumCode != "" {
-			if n, err := strconv.Atoi(valute.NumCode); err == nil {
-				numCode = n
-			}
-		}
-
-		currencies = append(currencies, Currency{
-			NumCode:  numCode,
-			CharCode: valute.CharCode,
-			Value:    value / float64(nominal),
-		})
+	if len(input.Currencies) == 0 {
+		return nil, fmt.Errorf("файл не содержит валют")
 	}
 
-	if len(currencies) == 0 {
-		return nil, fmt.Errorf("не найдено корректных данных о валютах в файле")
-	}
-
-	sort.Slice(currencies, func(i, j int) bool {
-		return currencies[i].Value > currencies[j].Value
+	// сортировка: по убыванию Value, при равенстве — по возрастанию NumCode
+	slices.SortFunc(input.Currencies, func(a, b Currency) int {
+		if a.Value > b.Value {
+			return -1
+		}
+		if a.Value < b.Value {
+			return 1
+		}
+		if a.NumCode < b.NumCode {
+			return -1
+		}
+		if a.NumCode > b.NumCode {
+			return 1
+		}
+		return 0
 	})
 
-	return currencies, nil
+	return input.Currencies, nil
 }
