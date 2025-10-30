@@ -1,27 +1,35 @@
 package config
 
 import (
-	"log"
+	"errors"
+	"fmt"
 	"os"
 
 	yaml "github.com/goccy/go-yaml"
 )
+
+var ErrNoSuchFile = errors.New("no such file or directory")
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
 }
 
-func LoadConfig(path string) *Config {
+func LoadConfig(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Panicf("Failed to read config file: %v", err)
+		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	var cfg Config
+
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		log.Panicf("Failed to parse YAML: %v", err)
+		return nil, fmt.Errorf("failed to parse yaml: %w", err)
 	}
 
-	return &cfg
+	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
+		return nil, ErrNoSuchFile
+	}
+
+	return &cfg, nil
 }

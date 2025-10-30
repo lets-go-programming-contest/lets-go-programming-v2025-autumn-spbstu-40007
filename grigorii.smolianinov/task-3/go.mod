@@ -1,12 +1,10 @@
 module github.com/Smolyaninoff/GoLang
 
-go 1.22.7
+go 1.24.0
 
 require (
 	github.com/goccy/go-yaml v1.18.0
-	golang.org/x/text v0.14.0
+	golang.org/x/text v0.30.0 // indirect
 )
 
-replace github.com/Smolyaninoff/GoLang/internal/config => ./internal/config
-
-replace github.com/Smolyaninoff/GoLang/internal/currencies => ./internal/currencies
+require golang.org/x/net v0.46.0

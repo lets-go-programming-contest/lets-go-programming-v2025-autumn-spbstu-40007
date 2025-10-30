@@ -1,95 +1,79 @@
 package currencies
 
 import (
-	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 
-	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/net/html/charset"
 )
 
-type Valute struct {
-	NumCode  string  `json:"num_code" xml:"NumCode"`
+type Currency struct {
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float64 `json:"value" xml:"Value"`
-}
-
-func (v *Valute) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	type Alias Valute
-	aux := struct {
-		*Alias
-		ValueStr string `xml:"Value"`
-	}{
-		Alias: (*Alias)(v),
-	}
-
-	if err := d.DecodeElement(&aux, &start); err != nil {
-		return err
-	}
-
-	normalizedStr := strings.Replace(aux.ValueStr, ",", ".", 1)
-	f, err := strconv.ParseFloat(normalizedStr, 64)
-
-	if err != nil {
-		log.Panicf("Invalid number format in XML: %s (%v)", aux.ValueStr, err)
-	}
-
-	v.Value = f
-
-	return nil
+	ValueStr string  `xml:"Value"`
+	Value    float64 `json:"value"     xml:"-"`
 }
 
 type ValCurs struct {
-	Valutes []Valute `xml:"Valute"`
+	XMLName    xml.Name   `xml:"ValCurs" json:"-"`
+	Currencies []Currency `xml:"Valute"  json:"currencies"`
 }
 
-func LoadAndSort(path string) []Valute {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Panicf("Cannot open XML file: %v", err)
-	}
+type CurrencyService struct{}
 
-	decoder := xml.NewDecoder(bytes.NewReader(data))
+func NewCurrencyService() *CurrencyService {
+	return &CurrencyService{}
+}
 
-	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
-		if strings.EqualFold(charset, "windows-1251") {
-			return charmap.Windows1251.NewDecoder().Reader(input), nil
-		}
-		return nil, fmt.Errorf("unknown charset: %s", charset) //nolint:err113
-	}
-
+func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
+	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+	decoder.CharsetReader = charset.NewReaderLabel
+
 	if err := decoder.Decode(&valCurs); err != nil {
-		log.Panicf("Cannot parse XML: %v", err)
+		return nil, fmt.Errorf("failed to parse xml: %w", err)
 	}
 
-	sort.Slice(valCurs.Valutes, func(i, j int) bool {
-		return valCurs.Valutes[i].Value > valCurs.Valutes[j].Value
-	})
+	for i := range valCurs.Currencies {
+		strVal := strings.ReplaceAll(valCurs.Currencies[i].ValueStr, ",", ".")
+		v, err := strconv.ParseFloat(strVal, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse xml: %w", err)
+		}
+		valCurs.Currencies[i].Value = v
+	}
 
-	return valCurs.Valutes
+	return valCurs.Currencies, nil
 }
 
-func SaveToJSON(path string, valutes []Valute) {
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		log.Panicf("Failed to create directory: %v", err)
+func (s *CurrencyService) SortByValue(list []Currency) {
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Value > list[j].Value
+	})
+}
+
+func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
+	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	jsonData, err := json.MarshalIndent(valutes, "", "  ")
+	file, err := os.Create(path)
 	if err != nil {
-		log.Panicf("Failed to marshal JSON: %v", err)
+		return fmt.Errorf("failed to create json file: %w", err)
 	}
+	defer file.Close()
 
-	if err := os.WriteFile(path, jsonData, 0600); err != nil {
-		log.Panicf("Failed to write JSON: %v", err)
+	enc := json.NewEncoder(file)
+	enc.SetIndent("", "  ")
+
+	if err := enc.Encode(map[string]interface{}{"currencies": list}); err != nil {
+		return fmt.Errorf("failed to encode json: %w", err)
 	}
+	return nil
 }
