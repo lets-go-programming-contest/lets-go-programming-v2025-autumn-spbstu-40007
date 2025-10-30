@@ -15,27 +15,11 @@ type Config struct {
 	OutputFormat string `yaml:"output-format"`
 }
 
-func FindAndRead() (*Config, error) {
+func Read(configPath string) (*Config, error) {
 
-	exePath, err := os.Executable()
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("getting executable path: %w", err)
-	}
-
-	exeDir := filepath.Dir(exePath)
-
-	configFile, err := findYAMLFiles(exeDir)
-	if err != nil {
-		return nil, err
-	}
-
-	if configFile == "" {
-		return nil, fmt.Errorf("There are no YAML files in the current direcroty")
-	}
-
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to read input file %q: %w", configFile, err)
+		return nil, fmt.Errorf("Unable to read config %q: %w", configPath, err)
 	}
 
 	config := new(Config)
@@ -53,26 +37,6 @@ func FindAndRead() (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func findYAMLFiles(path string) (string, error) {
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return "", fmt.Errorf("reading directory: %w", path, err)
-	}
-
-	for _, file := range files {
-		if !file.IsDir() {
-			name := file.Name()
-			if strings.HasSuffix(strings.ToLower(name), ".yaml") ||
-				strings.HasSuffix(strings.ToLower(name), ".yml") {
-
-				return filepath.Join(path, name), nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("There are no YAML files in the directory %q", path)
 }
 
 func validateConfig(config *Config) error {

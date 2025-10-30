@@ -55,5 +55,5 @@ func main() {
 	}
 
 	log.Printf("Success! Converted %s → %s (%s format)",
-		cfg.InputFile, cfg.OutputFile, cfg.OutputFormat)
+		config.InputFile, config.OutputFile, config.OutputFormat)
 }
