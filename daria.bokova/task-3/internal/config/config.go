@@ -1,29 +1,61 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
 type AppSettings struct {
-	SourcePath string `yaml:"input-file"`
-	TargetPath string `yaml:"output-file"`
+	InputFile  string `yaml:"input-file"`
+	OutputFile string `yaml:"output-file"`
 }
 
-func ReadSettings(filepath string) AppSettings {
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		log.Printf("Configuration file reading error '%s': %v", filepath, err)
-		panic("configuration file access failed: " + err.Error())
+type ConfigurationManager struct{}
+
+func LoadSettings(filePath string) AppSettings {
+	fileContent, readErr := readFileContent(filePath)
+	if readErr != nil {
+		handleConfigError(filePath, readErr)
 	}
 
-	var settings AppSettings
-	if unmarshalErr := yaml.Unmarshal(content, &settings); unmarshalErr != nil {
-		log.Printf("YAML configuration parsing error: %v", unmarshalErr)
-		panic("YAML configuration parsing failed: " + unmarshalErr.Error())
+	settings, parseErr := parseYAMLConfig(fileContent)
+	if parseErr != nil {
+		handleParseError(parseErr)
 	}
 
 	return settings
+}
+
+func readFileContent(filePath string) ([]byte, error) {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("невозможно прочитать файл '%s': %w", filePath, err)
+	}
+	return content, nil
+}
+
+func parseYAMLConfig(content []byte) (AppSettings, error) {
+	var settings AppSettings
+	err := yaml.Unmarshal(content, &settings)
+	if err != nil {
+		return AppSettings{}, fmt.Errorf("ошибка разбора YAML: %w", err)
+	}
+	return settings, nil
+}
+
+func handleConfigError(filePath string, err error) {
+	errorMsg := fmt.Sprintf(
+		"Ошибка чтения конфигурационного файла '%s': %v",
+		filePath,
+		err,
+	)
+	fmt.Println(errorMsg)
+	panic(fmt.Errorf("ошибка загрузки конфигурации: %w", err))
+}
+
+func handleParseError(err error) {
+	fmt.Printf("Ошибка декодирования YAML конфигурации: %v\n", err)
+	panic(fmt.Errorf("ошибка обработки конфигурации: %w", err))
 }

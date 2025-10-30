@@ -3,48 +3,109 @@ package output
 import (
 	"encoding/json"
 	"encoding/xml"
-	"log"
+	"errors"
+	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
-	"currency-processor/data"
-
+	"github.com/bdshka/task-3/internal/data"
 	"gopkg.in/yaml.v3"
 )
 
-func WriteProcessedData(filepath string, format string, currencies []data.ProcessedCurrency) {
-	var serializedData []byte
-	var serializationErr error
+var ErrorFormatNotSupported = errors.New("неподдерживаемый формат вывода")
 
-	switch strings.ToLower(format) {
+type DataExporter struct{}
+
+func ExportData(filename string, formatType string, currencies []data.ProcessedCurrency) {
+	outputData, encodeErr := encodeToFormat(formatType, currencies)
+	if encodeErr != nil {
+		handleEncodingError(formatType, encodeErr)
+	}
+
+	dirErr := createOutputDirectory(filename)
+	if dirErr != nil {
+		handleDirectoryError(filepath.Dir(filename), dirErr)
+	}
+
+	writeErr := writeToFile(filename, outputData)
+	if writeErr != nil {
+		handleFileWriteError(filename, writeErr)
+	}
+}
+
+func encodeToFormat(format string, currencies []data.ProcessedCurrency) ([]byte, error) {
+	format = strings.ToLower(format)
+
+	switch format {
 	case "json":
-		serializedData, serializationErr = json.MarshalIndent(currencies, "", "  ")
+		return encodeToJSON(currencies)
 	case "yaml":
-		serializedData, serializationErr = yaml.Marshal(currencies)
+		return encodeToYAML(currencies)
 	case "xml":
-		xmlData := data.CurrencyCollection{
-			XMLName:    xml.Name{Space: "", Local: "ValCurs"},
-			Currencies: currencies,
-		}
-		serializedData, serializationErr = xml.MarshalIndent(xmlData, "", "  ")
-		serializedData = []byte(xml.Header + string(serializedData))
+		return encodeToXML(currencies)
 	default:
-		panic("unsupported output format: " + format + ". Supported: json, yaml, xml")
+		return nil, fmt.Errorf("%w: %s. Доступные: json, yaml, xml",
+			ErrorFormatNotSupported, format)
+	}
+}
+
+func encodeToJSON(currencies []data.ProcessedCurrency) ([]byte, error) {
+	jsonData, err := json.MarshalIndent(currencies, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("ошибка кодирования JSON: %w", err)
+	}
+	return jsonData, nil
+}
+
+func encodeToYAML(currencies []data.ProcessedCurrency) ([]byte, error) {
+	yamlData, err := yaml.Marshal(currencies)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка кодирования YAML: %w", err)
+	}
+	return yamlData, nil
+}
+
+func encodeToXML(currencies []data.ProcessedCurrency) ([]byte, error) {
+	xmlData := data.ProcessedCurrencyList{
+		XMLName: xml.Name{Space: "", Local: "ValCurs"},
+		Items:   currencies,
 	}
 
-	if serializationErr != nil {
-		log.Printf("Data serialization error to '%s': %v", format, serializationErr)
-		panic("data serialization failed: " + serializationErr.Error())
+	xmlBytes, err := xml.MarshalIndent(xmlData, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("ошибка кодирования XML: %w", err)
 	}
 
-	targetDir := filepath.Dir(filepath)
-	if dirErr := os.MkdirAll(targetDir, 0755); dirErr != nil {
-		log.Printf("Directory creation error '%s': %v", targetDir, dirErr)
-		panic("directory creation failed: " + dirErr.Error())
-	}
+	return []byte(xml.Header + string(xmlBytes)), nil
+}
 
-	if writeErr := os.WriteFile(filepath, serializedData, 0600); writeErr != nil {
-		log.Printf("File writing error '%s': %v", filepath, writeErr)
-		panic("file writing failed: " + writeErr.Error())
+func createOutputDirectory(filePath string) error {
+	directory := filepath.Dir(filePath)
+	if err := os.MkdirAll(directory, 0755); err != nil {
+		return fmt.Errorf("невозможно создать директорию: %w", err)
 	}
+	return nil
+}
+
+func writeToFile(filePath string, data []byte) error {
+	if err := os.WriteFile(filePath, data, 0600); err != nil {
+		return fmt.Errorf("ошибка записи в файл: %w", err)
+	}
+	return nil
+}
+
+func handleEncodingError(format string, err error) {
+	fmt.Printf("Ошибка кодирования данных в формат '%s': %v\n", format, err)
+	panic(fmt.Errorf("сбой преобразования данных: %w", err))
+}
+
+func handleDirectoryError(dirPath string, err error) {
+	fmt.Printf("Ошибка создания директории '%s': %v\n", dirPath, err)
+	panic(fmt.Errorf("невозможно создать директорию: %w", err))
+}
+
+func handleFileWriteError(filePath string, err error) {
+	fmt.Printf("Ошибка записи в файл '%s': %v\n", filePath, err)
+	panic(fmt.Errorf("сбой сохранения файла: %w", err))
 }
