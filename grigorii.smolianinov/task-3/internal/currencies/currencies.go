@@ -21,8 +21,8 @@ type Currency struct {
 }
 
 type ValCurs struct {
-	XMLName    xml.Name   `xml:"ValCurs" json:"-"`
-	Currencies []Currency `xml:"Valute"  json:"currencies"`
+	XMLName    xml.Name   `xml:"ValCurs"`
+	Currencies []Currency `xml:"Valute"`
 }
 
 type CurrencyService struct{}
