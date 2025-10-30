@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
+
+	"golang.org/x/net/html/charset"
 )
 
 type Currency struct {
@@ -27,7 +30,10 @@ func NewCurrencyService() *CurrencyService {
 
 func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
-	if err := xml.Unmarshal(data, &valCurs); err != nil {
+	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+	decoder.CharsetReader = charset.NewReaderLabel // 🩹 eklendi
+
+	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
 	}
 
