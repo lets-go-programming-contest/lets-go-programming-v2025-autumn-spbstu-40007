@@ -58,6 +58,7 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 
 	var currencies []Currency
 	for _, valute := range valCurs.Valutes {
+
 		if valute.NumCode == "" || valute.CharCode == "" || valute.Value == "" {
 			continue
 		}
