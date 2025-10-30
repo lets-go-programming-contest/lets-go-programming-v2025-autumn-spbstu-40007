@@ -8,6 +8,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	ErrNoSuchFile = errors.New("no such file or directory")
+)
+
 type Config struct {
 	InputFile  string `yaml:"input-file"`
 	OutputFile string `yaml:"output-file"`
@@ -25,7 +29,7 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		return nil, errors.New("no such file or directory")
+		return nil, ErrNoSuchFile
 	}
 
 	return &cfg, nil

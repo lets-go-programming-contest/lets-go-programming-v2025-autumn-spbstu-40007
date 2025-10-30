@@ -16,7 +16,7 @@ type Currency struct {
 	NumCode  int     `json:"num_code"  xml:"NumCode"`
 	CharCode string  `json:"char_code" xml:"CharCode"`
 	ValueStr string  `xml:"Value"`
-	Value    float64 `json:"value"`
+	Value    float64 `json:"value"     xml:"-"`
 }
 
 type ValCurs struct {
@@ -32,21 +32,21 @@ func NewCurrencyService() *CurrencyService {
 
 func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
-	decoder := xml.NewDecoder(strings.NewReader(string(data)))
 
+	decoder := xml.NewDecoder(strings.NewReader(string(data)))
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
 	}
 
-	for i := range valCurs.Currencies {
-		strVal := strings.ReplaceAll(valCurs.Currencies[i].ValueStr, ",", ".")
+	for idx := range valCurs.Currencies {
+		strVal := strings.ReplaceAll(valCurs.Currencies[idx].ValueStr, ",", ".")
 		v, err := strconv.ParseFloat(strVal, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse xml: %w", err)
 		}
-		valCurs.Currencies[i].Value = v
+		valCurs.Currencies[idx].Value = v
 	}
 
 	return valCurs.Currencies, nil
