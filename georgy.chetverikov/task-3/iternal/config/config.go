@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -16,9 +15,7 @@ type Config struct {
 	OutputFormat string `yaml:"output-format"`
 }
 
-func FindAndRead(path string) (*Config, error) {
-
-	var configFile string
+func FindAndRead() (*Config, error) {
 
 	exePath, err := os.Executable()
 	if err != nil {
@@ -27,21 +24,9 @@ func FindAndRead(path string) (*Config, error) {
 
 	exeDir := filepath.Dir(exePath)
 
-	files, err := os.ReadDir(exeDir)
+	configFile, err := findYAMLFiles(exeDir)
 	if err != nil {
-		return nil, fmt.Errorf("reading directory: %w", err)
-	}
-
-	for _, file := range files {
-		if !file.IsDir() {
-			name := file.Name()
-			if strings.HasSuffix(strings.ToLower(name), ".yaml") ||
-				strings.HasSuffix(strings.ToLower(name), ".yml") {
-				configFile = filepath.Join(path, name)
-
-				break
-			}
-		}
+		return nil, err
 	}
 
 	if configFile == "" {
@@ -68,6 +53,26 @@ func FindAndRead(path string) (*Config, error) {
 	}
 
 	return config, nil
+}
+
+func findYAMLFiles(path string) (string, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return "", fmt.Errorf("reading directory: %w", path, err)
+	}
+
+	for _, file := range files {
+		if !file.IsDir() {
+			name := file.Name()
+			if strings.HasSuffix(strings.ToLower(name), ".yaml") ||
+				strings.HasSuffix(strings.ToLower(name), ".yml") {
+
+				return filepath.Join(path, name), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("There are no YAML files in the directory %q", path)
 }
 
 func validateConfig(config *Config) error {
