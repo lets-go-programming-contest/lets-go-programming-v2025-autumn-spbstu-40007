@@ -43,6 +43,7 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 
 	for idx := range valCurs.Currencies {
 		strVal := strings.ReplaceAll(valCurs.Currencies[idx].ValueStr, ",", ".")
+
 		v, err := strconv.ParseFloat(strVal, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse xml: %w", err)
