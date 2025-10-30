@@ -12,7 +12,7 @@ type Config struct {
 	OutputFile string `yaml:"output-file"`
 }
 
-func LoadConfig(path string) Config {
+func LoadConfig(path string) *Config {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Panicf("Failed to read config file: %v", err)
@@ -23,5 +23,5 @@ func LoadConfig(path string) Config {
 		log.Panicf("Failed to parse YAML: %v", err)
 	}
 
-	return cfg
+	return &cfg
 }

@@ -4,28 +4,29 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/Smolyaninoff/GoLang.git/internal/config"
-	"github.com/Smolyaninoff/GoLang.git/internal/sorter"
-	"github.com/Smolyaninoff/GoLang.git/internal/writer"
-	"github.com/Smolyaninoff/GoLang.git/internal/xmlparser"
+	"github.com/Smolyaninoff/GoLang/internal/config"
+	"github.com/Smolyaninoff/GoLang/internal/currencies"
 )
 
 func main() {
-	configPath := flag.String("config", "", "Path to YAML config file")
+	log.SetFlags(0)
+	log.SetPrefix("ERROR: ")
+
+	configPath := flag.String("config", "", "Path to config file")
 	flag.Parse()
 
 	if *configPath == "" {
-		log.Panic("Missing --config flag with path to YAML config")
+		fmt.Fprintln(os.Stderr, "Error: config path is required")
+		os.Exit(1)
 	}
 
 	cfg := config.LoadConfig(*configPath)
 
-	valutes := xmlparser.LoadXML(cfg.InputFile)
+	valutes := currencies.LoadAndSort(cfg.InputFile)
 
-	sortedValutes := sorter.SortByValueDesc(valutes)
+	currencies.SaveToJSON(cfg.OutputFile, valutes)
 
-	writer.SaveToJSON(cfg.OutputFile, sortedValutes)
-
-	fmt.Printf("✅ Успешно обработано %d валют. Результат сохранен в %s\n", len(sortedValutes), cfg.OutputFile)
+	fmt.Println("Processing completed successfully.")
 }

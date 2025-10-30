@@ -1,4 +1,4 @@
-module github.com/Smolyaninoff/GoLang.git
+module github.com/Smolyaninoff/GoLang
 
 go 1.22.7
 
