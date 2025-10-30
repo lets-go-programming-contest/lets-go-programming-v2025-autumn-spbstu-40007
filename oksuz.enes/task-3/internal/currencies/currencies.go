@@ -45,6 +45,7 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
+
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
 			fmt.Println("close error:", cerr)
