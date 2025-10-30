@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +35,7 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
 
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&valCurs); err != nil {
@@ -59,6 +61,10 @@ func (s *CurrencyService) SortByValue(list []Currency) {
 }
 
 func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
+	if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
