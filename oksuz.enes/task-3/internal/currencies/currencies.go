@@ -44,7 +44,6 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	for idx := range valCurs.Currencies {
 		strVal := strings.ReplaceAll(valCurs.Currencies[idx].ValueStr, ",", ".")
 		v, err := strconv.ParseFloat(strVal, 64)
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse xml: %w", err)
 		}
@@ -67,7 +66,6 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	}
 
 	file, err := os.Create(path)
-
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
