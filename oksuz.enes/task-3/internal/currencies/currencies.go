@@ -31,7 +31,7 @@ func NewCurrencyService() *CurrencyService {
 func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	var valCurs ValCurs
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
-	decoder.CharsetReader = charset.NewReaderLabel // 🩹 eklendi
+	decoder.CharsetReader = charset.NewReaderLabel
 
 	if err := decoder.Decode(&valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
