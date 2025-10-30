@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,9 +11,14 @@ import (
 )
 
 func main() {
-	cfgPath := "config.yaml"
+	configPath := flag.String("config", "", "Path to config file")
+	flag.Parse()
 
-	cfg, err := config.LoadConfig(cfgPath)
+	if *configPath == "" {
+		log.Panicf("failed to load config: path not provided")
+	}
+
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		log.Panicf("failed to load config: %v", err)
 	}
@@ -24,7 +30,6 @@ func main() {
 
 	svc := currencies.NewCurrencyService()
 	list, err := svc.ParseXML(data)
-
 	if err != nil {
 		log.Fatalf("failed to parse xml %v", err)
 	}
