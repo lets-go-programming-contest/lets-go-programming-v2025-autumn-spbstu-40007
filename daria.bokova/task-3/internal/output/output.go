@@ -55,6 +55,7 @@ func encodeToJSON(currencies []data.ProcessedCurrency) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка кодирования JSON: %w", err)
 	}
+
 	return jsonData, nil
 }
 
@@ -82,14 +83,14 @@ func encodeToXML(currencies []data.ProcessedCurrency) ([]byte, error) {
 
 func createOutputDirectory(filePath string) error {
 	directory := filepath.Dir(filePath)
-	if err := os.MkdirAll(directory, 0755); err != nil {
+	if err := os.MkdirAll(directory, 0o755); err != nil {
 		return fmt.Errorf("невозможно создать директорию: %w", err)
 	}
 	return nil
 }
 
 func writeToFile(filePath string, data []byte) error {
-	if err := os.WriteFile(filePath, data, 0600); err != nil {
+	if err := os.WriteFile(filePath, data, 0o600); err != nil {
 		return fmt.Errorf("ошибка записи в файл: %w", err)
 	}
 	return nil

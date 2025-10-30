@@ -86,6 +86,7 @@ func createCharsetConverter() func(string, io.Reader) (io.Reader, error) {
 		if encoding == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(reader), nil
 		}
+
 		return nil, fmt.Errorf("%w: %s", ErrUnsupportedCharset, encoding)
 	}
 }
@@ -110,6 +111,7 @@ func convertCurrencyValue(item CurrencyItem) CurrencyItem {
 	}
 
 	item.NumericValue = convertedValue
+
 	return item
 }
 
