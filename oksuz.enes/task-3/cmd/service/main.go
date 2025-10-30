@@ -17,20 +17,17 @@ func main() {
 	}
 
 	cfg, err := config.LoadConfig(cfgPath)
-
 	if err != nil {
 		log.Panicf("failed to load config: %v", err)
 	}
 
 	data, err := os.ReadFile(cfg.InputFile)
-
 	if err != nil {
 		log.Fatalf("failed to read xml %v", err)
 	}
 
 	svc := currencies.NewCurrencyService()
 	list, err := svc.ParseXML(data)
-
 	if err != nil {
 		log.Fatalf("failed to parse xml %v", err)
 	}
