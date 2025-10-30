@@ -15,14 +15,19 @@ func New() *Converter {
 	return &Converter{}
 }
 
-func (c *Converter) Convert(valCourse *data.ValCourse, format string) ([]byte, error) {
+func (c *Converter) Convert(valutes data.Valutes, format string) ([]byte, error) {
 	switch format {
 	case "json":
-		return json.MarshalIndent(valCourse, "", " ")
+		return json.MarshalIndent(valutes, "", "  ")
 	case "yaml":
-		return yaml.Marshal(valCourse)
+		return yaml.Marshal(valutes)
 	case "xml":
-		return xml.MarshalIndent(valCourse, "", " ")
+		type ValCurs struct {
+			XMLName xml.Name     `xml:"ValCurs"`
+			Valutes data.Valutes `xml:"Valute"`
+		}
+		wrapper := ValCurs{Valutes: valutes}
+		return xml.MarshalIndent(wrapper, "", "  ")
 	default:
 		return nil, fmt.Errorf("Unsupported output format: %s", format)
 	}
