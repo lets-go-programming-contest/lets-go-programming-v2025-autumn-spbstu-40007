@@ -69,12 +69,10 @@ func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
 	}
 	defer file.Close()
 
-	data := map[string][]Currency{"currencies": list}
-
 	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
 
-	if err := enc.Encode(data); err != nil {
+	if err := enc.Encode(list); err != nil {
 		return fmt.Errorf("failed to encode json: %w", err)
 	}
 
