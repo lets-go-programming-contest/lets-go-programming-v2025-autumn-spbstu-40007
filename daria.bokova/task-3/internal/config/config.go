@@ -1,36 +1,29 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	InputFile  string `yaml:"input-file"`
-	OutputFile string `yaml:"output-file"`
+type AppSettings struct {
+	SourcePath string `yaml:"input-file"`
+	TargetPath string `yaml:"output-file"`
 }
 
-func LoadConfig(configPath string) (*Config, error) {
-	data, err := os.ReadFile(configPath)
+func ReadSettings(filepath string) AppSettings {
+	content, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("ошибка чтения конфигурационного файла: %v", err)
+		log.Printf("Configuration file reading error '%s': %v", filepath, err)
+		panic("configuration file access failed: " + err.Error())
 	}
 
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return nil, fmt.Errorf("ошибка декодирования YAML: %v", err)
+	var settings AppSettings
+	if unmarshalErr := yaml.Unmarshal(content, &settings); unmarshalErr != nil {
+		log.Printf("YAML configuration parsing error: %v", unmarshalErr)
+		panic("YAML configuration parsing failed: " + unmarshalErr.Error())
 	}
 
-	if config.InputFile == "" {
-		return nil, fmt.Errorf("поле input-file не может быть пустым")
-	}
-
-	if config.OutputFile == "" {
-		return nil, fmt.Errorf("поле output-file не может быть пустым")
-	}
-
-	return &config, nil
+	return settings
 }

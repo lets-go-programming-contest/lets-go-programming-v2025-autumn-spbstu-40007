@@ -1,4 +1,4 @@
-module currency-converter
+module currency-processor
 
 go 1.22.7
 
