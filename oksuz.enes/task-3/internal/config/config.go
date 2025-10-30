@@ -24,7 +24,7 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		return nil, fmt.Errorf("input file not found: %s", cfg.InputFile)
+		return nil, fmt.Errorf("input file not found: %w", os.ErrNotExist)
 	}
 
 	return &cfg, nil

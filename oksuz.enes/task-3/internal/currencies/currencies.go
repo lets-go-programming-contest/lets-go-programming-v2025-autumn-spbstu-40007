@@ -9,9 +9,9 @@ import (
 )
 
 type Currency struct {
-	NumCode  int     `xml:"NumCode" json:"num_code"`
-	CharCode string  `xml:"CharCode" json:"char_code"`
-	Value    float64 `xml:"Value" json:"value"`
+	NumCode  int     `json:"num_code"  xml:"NumCode"`
+	CharCode string  `json:"char_code" xml:"CharCode"`
+	Value    float64 `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
@@ -30,6 +30,7 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	if err := xml.Unmarshal(data, &valCurs); err != nil {
 		return nil, fmt.Errorf("failed to parse xml: %w", err)
 	}
+
 	return valCurs.Currencies, nil
 }
 
@@ -40,16 +41,22 @@ func (s *CurrencyService) SortByValue(list []Currency) {
 }
 
 func (s *CurrencyService) SaveToJSON(path string, list []Currency) error {
-	f, err := os.Create(path)
+	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("failed to create json file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			fmt.Println("close error:", cerr)
+		}
+	}()
 
-	enc := json.NewEncoder(f)
+	enc := json.NewEncoder(file)
 	enc.SetIndent("", "  ")
+
 	if err := enc.Encode(list); err != nil {
 		return fmt.Errorf("failed to encode json: %w", err)
 	}
+
 	return nil
 }
