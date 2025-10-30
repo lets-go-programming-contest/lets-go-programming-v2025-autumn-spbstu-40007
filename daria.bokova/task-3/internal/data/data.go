@@ -58,21 +58,26 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 
 	var currencies []Currency
 	for _, valute := range valCurs.Valutes {
-
-		if valute.NumCode == "" || valute.CharCode == "" || valute.Value == "" {
+		if valute.CharCode == "" {
 			continue
 		}
 
 		valueStr := strings.Replace(valute.Value, ",", ".", -1)
 
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			return nil, fmt.Errorf("ошибка преобразования значения валюты '%s': %v", valute.Value, err)
+		value := 0.0
+		if valueStr != "" {
+			value, err = strconv.ParseFloat(valueStr, 64)
+			if err != nil {
+				value = 0.0
+			}
 		}
 
-		numCode, err := strconv.Atoi(valute.NumCode)
-		if err != nil {
-			return nil, fmt.Errorf("ошибка преобразования числового кода валюты '%s': %v", valute.NumCode, err)
+		numCode := 0
+		if valute.NumCode != "" {
+			numCode, err = strconv.Atoi(valute.NumCode)
+			if err != nil {
+				numCode = 0
+			}
 		}
 
 		currencies = append(currencies, Currency{
