@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -24,7 +25,7 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	if _, err := os.Stat(cfg.InputFile); os.IsNotExist(err) {
-		return nil, fmt.Errorf("no such file or directory")
+		return nil, errors.New("no such file or directory")
 	}
 
 	return &cfg, nil
