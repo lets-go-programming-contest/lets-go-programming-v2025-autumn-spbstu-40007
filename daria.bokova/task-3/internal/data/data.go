@@ -61,6 +61,7 @@ func ProcessXMLFile(filename string) []CurrencyItem {
 func readXMLFile(filename string) ([]byte, error) {
 	content, err := os.ReadFile(filename)
 	if err != nil {
+
 		return nil, fmt.Errorf("ошибка чтения файла '%s': %w", filename, err)
 	}
 
@@ -75,6 +76,7 @@ func parseXMLData(content []byte) (CurrencyList, error) {
 
 	var currencyData CurrencyList
 	if err := parser.Decode(&currencyData); err != nil {
+
 		return CurrencyList{}, fmt.Errorf("ошибка декодирования XML: %w", err)
 	}
 
@@ -82,8 +84,10 @@ func parseXMLData(content []byte) (CurrencyList, error) {
 }
 
 func createCharsetConverter() func(string, io.Reader) (io.Reader, error) {
+
 	return func(encoding string, reader io.Reader) (io.Reader, error) {
 		if encoding == "windows-1251" {
+
 			return charmap.Windows1251.NewDecoder().Reader(reader), nil
 		}
 
@@ -127,6 +131,7 @@ func (item CurrencyItem) ConvertToOutputFormat() ProcessedCurrency {
 
 func convertNumberCode(code string) int {
 	if code == "" {
+
 		return 0
 	}
 

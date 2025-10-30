@@ -31,6 +31,7 @@ func LoadSettings(filePath string) AppSettings {
 func readFileContent(filePath string) ([]byte, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
+
 		return nil, fmt.Errorf("невозможно прочитать файл '%s': %w", filePath, err)
 	}
 
@@ -41,6 +42,7 @@ func parseYAMLConfig(content []byte) (AppSettings, error) {
 	var settings AppSettings
 	err := yaml.Unmarshal(content, &settings)
 	if err != nil {
+
 		return AppSettings{}, fmt.Errorf("ошибка разбора YAML: %w", err)
 	}
 
