@@ -24,7 +24,7 @@ type Valute struct {
 	ID       string   `xml:"ID,attr"`
 	NumCode  string   `xml:"NumCode"`
 	CharCode string   `xml:"CharCode"`
-	Nominal  int      `xml:"Nominal"`
+	Nominal  string   `xml:"Nominal"`
 	Name     string   `xml:"Name"`
 	Value    string   `xml:"Value"`
 }
@@ -62,28 +62,33 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 			continue
 		}
 
-		valueStr := strings.Replace(valute.Value, ",", ".", -1)
+		nominal := 1
+		if valute.Nominal != "" {
+			n, err := strconv.Atoi(valute.Nominal)
+			if err == nil && n > 0 {
+				nominal = n
+			}
+		}
 
+		valueStr := strings.Replace(valute.Value, ",", ".", -1)
 		value := 0.0
 		if valueStr != "" {
-			value, err = strconv.ParseFloat(valueStr, 64)
-			if err != nil {
-				value = 0.0
+			if v, err := strconv.ParseFloat(valueStr, 64); err == nil {
+				value = v
 			}
 		}
 
 		numCode := 0
 		if valute.NumCode != "" {
-			numCode, err = strconv.Atoi(valute.NumCode)
-			if err != nil {
-				numCode = 0
+			if n, err := strconv.Atoi(valute.NumCode); err == nil {
+				numCode = n
 			}
 		}
 
 		currencies = append(currencies, Currency{
 			NumCode:  numCode,
 			CharCode: valute.CharCode,
-			Value:    value,
+			Value:    value / float64(nominal),
 		})
 	}
 
