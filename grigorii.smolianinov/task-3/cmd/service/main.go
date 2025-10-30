@@ -19,13 +19,11 @@ func main() {
 	}
 
 	cfg, err := config.LoadConfig(*configPath)
-
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
 	data, err := os.ReadFile(cfg.InputFile)
-
 	if err != nil {
 		log.Fatalf("failed to read xml: %v", err)
 	}
