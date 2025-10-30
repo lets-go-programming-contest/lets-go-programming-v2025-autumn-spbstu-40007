@@ -3,8 +3,11 @@ package data
 import (
 	"encoding/xml"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 type ValCourse struct {
@@ -37,4 +40,23 @@ func (f *customFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 	*f = customFloat(parsedData)
 
 	return nil
+}
+
+func ParseXML(data []byte) (*ValCourse, error) {
+	decoder := xml.NewDecoder(strings.NewReader(string(data)))
+
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		if charset == "windows-1251" {
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		}
+		return nil, fmt.Errorf("unsupported charset: %s", charset)
+	}
+
+	var valCourse ValCourse
+	err := decoder.Decode(&valCourse)
+	if err != nil {
+		return nil, fmt.Errorf("XML decoding failed: %w", err)
+	}
+
+	return &valCourse, nil
 }

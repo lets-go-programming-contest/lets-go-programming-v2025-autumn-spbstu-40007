@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/xml"
 	"flag"
 	"log"
 	"os"
@@ -24,7 +23,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(config.InputFile); os.IsNotExist(err) {
-		log.Fatalf("no such file or directory")
+		log.Fatalf("input file %q does not exist", config.InputFile)
 	}
 
 	xmlData, err := os.ReadFile(config.InputFile)
@@ -32,14 +31,13 @@ func main() {
 		log.Fatal("Read file error:", err)
 	}
 
-	var valCourse data.ValCourse
-	err = xml.Unmarshal(xmlData, &valCourse)
+	valCourse, err := data.ParseXML(xmlData)
 	if err != nil {
 		log.Fatal("XML parse error:", err)
 	}
 
 	conv := converter.New()
-	outputData, err := conv.Convert(&valCourse, config.OutputFormat)
+	outputData, err := conv.Convert(valCourse, config.OutputFormat)
 	if err != nil {
 		log.Fatal("Conversion error:", err)
 	}
