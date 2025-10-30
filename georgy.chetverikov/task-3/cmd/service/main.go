@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.Read("config.yaml")
+	cfg, err := config.FindAndRead()
 	if err != nil {
 		log.Fatal("Config error:", err)
 	}

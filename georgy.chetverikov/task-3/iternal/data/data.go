@@ -15,7 +15,6 @@ type ValCourse struct {
 type Valute struct {
 	NumCode  string      `xml:"NumCode" json:"num_code"`
 	CharCode string      `xml:"CharCode" json:"char_code"`
-	Nominal  string      `xml:"Nominal" json:"nominal"`
 	Value    customFloat `xml:"Value" json:"value"`
 }
 
