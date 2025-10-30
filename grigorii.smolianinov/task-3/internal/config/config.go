@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	yaml "github.com/goccy/go-yaml"
+	"gopkg.in/yaml.v3"
 )
 
 var ErrNoSuchFile = errors.New("no such file or directory")
