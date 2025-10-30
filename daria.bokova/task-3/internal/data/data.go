@@ -19,8 +19,11 @@ type ValCurs struct {
 
 type Valute struct {
 	XMLName  xml.Name `xml:"Valute"`
+	ID       string   `xml:"ID,attr"`
 	NumCode  string   `xml:"NumCode"`
 	CharCode string   `xml:"CharCode"`
+	Nominal  string   `xml:"Nominal"`
+	Name     string   `xml:"Name"`
 	Value    string   `xml:"Value"`
 }
 
@@ -37,7 +40,6 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 	}
 	defer file.Close()
 
-	// Создаем декодер с поддержкой windows-1251
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if strings.ToLower(charset) == "windows-1251" {
@@ -54,7 +56,10 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 
 	var currencies []Currency
 	for _, valute := range valCurs.Valutes {
-		// Преобразуем значение (заменяем запятую на точку для парсинга)
+		if valute.NumCode == "" || valute.CharCode == "" || valute.Value == "" {
+			continue
+		}
+
 		valueStr := strings.Replace(valute.Value, ",", ".", -1)
 
 		value, err := strconv.ParseFloat(valueStr, 64)
@@ -74,7 +79,10 @@ func LoadAndSortCurrencies(inputFile string) ([]Currency, error) {
 		})
 	}
 
-	// Сортируем по убыванию значения
+	if len(currencies) == 0 {
+		return nil, fmt.Errorf("не найдено корректных данных о валютах в файле")
+	}
+
 	sort.Slice(currencies, func(i, j int) bool {
 		return currencies[i].Value > currencies[j].Value
 	})
