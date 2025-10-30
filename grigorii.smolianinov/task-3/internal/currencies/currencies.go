@@ -44,7 +44,6 @@ func (s *CurrencyService) ParseXML(data []byte) ([]Currency, error) {
 	for i := range valCurs.Currencies { //nolint:varnamelen
 		strVal := strings.ReplaceAll(valCurs.Currencies[i].ValueStr, ",", ".")
 		v, err := strconv.ParseFloat(strVal, 64) //nolint:varnamelen
-
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse xml: %w", err)
 		}
