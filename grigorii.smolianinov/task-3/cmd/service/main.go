@@ -30,8 +30,7 @@ func main() {
 
 	svc := currencies.NewCurrencyService()
 	list, err := svc.ParseXML(data)
-	//nolint:gofumpt
-	if err != nil {
+	if err != nil { //nolint:wsl
 		log.Fatalf("failed to parse xml: %v", err)
 	}
 
