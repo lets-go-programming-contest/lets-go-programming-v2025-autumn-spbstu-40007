@@ -24,7 +24,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(config.InputFile); os.IsNotExist(err) {
-		log.Fatalf("input file %q does not exist", config.InputFile)
+		log.Fatalf("no such file or directory")
 	}
 
 	xmlData, err := os.ReadFile(config.InputFile)
