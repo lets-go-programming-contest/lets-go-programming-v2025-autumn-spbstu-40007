@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/xml"
+	"flag"
 	"log"
 	"os"
 
@@ -12,12 +13,21 @@ import (
 )
 
 func main() {
-	cfg, err := config.FindAndRead()
+	var configPath string
+
+	flag.StringVar(&configPath, "config", "config.yaml", "Path to config file")
+	flag.Parse()
+
+	config, err := config.Read(configPath)
 	if err != nil {
 		log.Fatal("Config error:", err)
 	}
 
-	xmlData, err := os.ReadFile(cfg.InputFile)
+	if _, err := os.Stat(config.InputFile); os.IsNotExist(err) {
+		log.Fatalf("input file %q does not exist", config.InputFile)
+	}
+
+	xmlData, err := os.ReadFile(config.InputFile)
 	if err != nil {
 		log.Fatal("Read file error:", err)
 	}
@@ -29,17 +39,17 @@ func main() {
 	}
 
 	conv := converter.New()
-	outputData, err := conv.Convert(&valCourse, cfg.OutputFormat)
+	outputData, err := conv.Convert(&valCourse, config.OutputFormat)
 	if err != nil {
 		log.Fatal("Conversion error:", err)
 	}
 
-	err = pathmaker.CreateOutPath(cfg.OutputFile)
+	err = pathmaker.CreateOutPath(config.OutputFile)
 	if err != nil {
 		log.Fatal("Create path error:", err)
 	}
 
-	err = os.WriteFile(cfg.OutputFile, outputData, 0644)
+	err = os.WriteFile(config.OutputFile, outputData, 0644)
 	if err != nil {
 		log.Fatal("Write file error:", err)
 	}
