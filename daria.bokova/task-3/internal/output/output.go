@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var ErrorFormatNotSupported = errors.New("неподдерживаемый формат вывода")
+var ErrFormatNotSupported = errors.New("неподдерживаемый формат вывода")
 
 type DataExporter struct{}
 
@@ -46,7 +46,7 @@ func encodeToFormat(format string, currencies []data.ProcessedCurrency) ([]byte,
 		return encodeToXML(currencies)
 	default:
 		return nil, fmt.Errorf("%w: %s. Доступные: json, yaml, xml",
-			ErrorFormatNotSupported, format)
+			ErrFormatNotSupported, format)
 	}
 }
 

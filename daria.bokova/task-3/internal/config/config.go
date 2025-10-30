@@ -33,6 +33,7 @@ func readFileContent(filePath string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("невозможно прочитать файл '%s': %w", filePath, err)
 	}
+
 	return content, nil
 }
 
@@ -42,6 +43,7 @@ func parseYAMLConfig(content []byte) (AppSettings, error) {
 	if err != nil {
 		return AppSettings{}, fmt.Errorf("ошибка разбора YAML: %w", err)
 	}
+
 	return settings, nil
 }
 

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/text/encoding/charmap"
 )
 
-var ErrorUnsupportedCharset = errors.New("неподдерживаемая кодировка")
+var ErrUnsupportedCharset = errors.New("неподдерживаемая кодировка")
 
 type CurrencyList struct {
 	XMLName xml.Name       `xml:"ValCurs"`
@@ -63,6 +63,7 @@ func readXMLFile(filename string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ошибка чтения файла '%s': %w", filename, err)
 	}
+
 	return content, nil
 }
 
@@ -85,7 +86,7 @@ func createCharsetConverter() func(string, io.Reader) (io.Reader, error) {
 		if encoding == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(reader), nil
 		}
-		return nil, fmt.Errorf("%w: %s", ErrorUnsupportedCharset, encoding)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedCharset, encoding)
 	}
 }
 
