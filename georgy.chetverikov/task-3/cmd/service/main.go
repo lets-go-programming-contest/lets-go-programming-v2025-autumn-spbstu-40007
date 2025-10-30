@@ -23,7 +23,7 @@ func main() {
 	}
 
 	if _, err := os.Stat(config.InputFile); os.IsNotExist(err) {
-		log.Fatalf("input file %q does not exist", config.InputFile)
+		log.Fatalf("no such file or directorty")
 	}
 
 	xmlData, err := os.ReadFile(config.InputFile)
@@ -51,7 +51,4 @@ func main() {
 	if err != nil {
 		log.Fatal("Write file error:", err)
 	}
-
-	log.Printf("Success! Converted %s → %s (%s format)",
-		config.InputFile, config.OutputFile, config.OutputFormat)
 }
