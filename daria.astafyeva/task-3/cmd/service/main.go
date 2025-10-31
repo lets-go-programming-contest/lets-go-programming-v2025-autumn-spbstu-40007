@@ -51,6 +51,7 @@ func (p *CurrencyProcessor) Convert() {
 			if err != nil {
 				panic(fmt.Errorf("invalid NumCode '%s': %w", currency.NumCode, err))
 			}
+
 			num = val
 		}
 

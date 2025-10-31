@@ -36,10 +36,11 @@ func Save(results []data.OutputCurrency, path, format string) {
 		content, err = yaml.Marshal(results)
 	case "xml":
 		wrapper := xmlWrapper{
-			XMLName: xml.Name{Local: "ValCurs"},
+			XMLName: xml.Name{Space: "", Local: "ValCurs"},
 			Items:   results,
 		}
 		content, err = xml.MarshalIndent(wrapper, "", "  ")
+
 		if err == nil {
 			content = []byte(xml.Header + string(content))
 		}

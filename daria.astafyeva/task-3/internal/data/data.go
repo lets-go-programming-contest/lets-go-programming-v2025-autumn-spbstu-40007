@@ -54,6 +54,7 @@ func LoadCurrencies(path string) []Currency {
 		if err != nil {
 			panic(fmt.Errorf("invalid value '%s': %w", curr.ValueStr, err))
 		}
+
 		curr.Rate = val
 		currencies = append(currencies, curr)
 	}
