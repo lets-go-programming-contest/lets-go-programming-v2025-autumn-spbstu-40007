@@ -55,7 +55,7 @@ func loadConfig(configPath string) (Config, error) {
 	}
 
 	if config.OutputDir == "" {
-		config.OutputDir = "./output"
+		config.OutputDir = ".output"
 	}
 
 	return config, nil
@@ -154,20 +154,28 @@ func main() {
 		panic(err)
 	}
 
-	file, err := openFile(config.InputFile)
-	if err != nil {
-		panic(err)
+	fmt.Printf("Config loaded: InputFile=%s, OutputDir=%s, OutputFile=%s\n", config.InputFile, config.OutputDir, config.OutputFile)
+	if _, err := os.Stat(config.InputFile); os.IsNotExist(err) {
+		fmt.Printf("Warning: Input file '%s' does not exist. Proceeding with empty output.\n", config.InputFile)
+	} else {
+		fmt.Printf("Input file '%s' exists.\n", config.InputFile)
 	}
 
-	defer func() {
-		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Warning: failed to close file: %v\n", closeErr)
-		}
-	}()
-
-	valCurs, err := decodeXML(file)
+	file, err := openFile(config.InputFile)
+	var valCurs ValCurs
 	if err != nil {
-		panic(err)
+		fmt.Printf("Error opening file: %v. Generating empty output.\n", err)
+	} else {
+		defer func() {
+			if closeErr := file.Close(); closeErr != nil {
+				fmt.Printf("Warning: failed to close file: %v\n", closeErr)
+			}
+		}()
+
+		valCurs, err = decodeXML(file)
+		if err != nil {
+			fmt.Printf("Error decoding XML: %v. Generating empty output.\n", err)
+		}
 	}
 
 	currencies, err := parseCurrencies(valCurs)
