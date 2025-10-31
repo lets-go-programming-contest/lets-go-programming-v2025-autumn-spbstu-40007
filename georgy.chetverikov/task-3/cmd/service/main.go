@@ -12,9 +12,13 @@ import (
 )
 
 func main() {
-	var configPath string
+	var (
+		configPath   string
+		outputFormat string
+	)
 
 	flag.StringVar(&configPath, "config", "config.yaml", "Path to config file")
+	flag.StringVar(&outputFormat, "output-format", "json", "Output format: json, yaml, xml")
 	flag.Parse()
 
 	config, err := config.Read(configPath)
@@ -37,7 +41,7 @@ func main() {
 	}
 
 	conv := converter.New()
-	outputData, err := conv.Convert(valutes, config.OutputFormat)
+	outputData, err := conv.Convert(valutes, outputFormat)
 	if err != nil {
 		log.Fatal("Conversion error:", err)
 	}
@@ -47,7 +51,7 @@ func main() {
 		log.Fatal("Create path error:", err)
 	}
 
-	err = os.WriteFile(config.OutputFile, outputData, 0644)
+	err = os.WriteFile(config.OutputFile, outputData, 0o600)
 	if err != nil {
 		log.Fatal("Write file error:", err)
 	}
