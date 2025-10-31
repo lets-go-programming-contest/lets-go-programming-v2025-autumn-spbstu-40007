@@ -24,7 +24,7 @@ func main() {
 
 	settings := config.LoadSettings(cfgPath)
 
-	processor := &CurrencyProcessor{}
+	processor := new(CurrencyProcessor)
 	processor.Raw = data.LoadCurrencies(settings.SourceFile)
 
 	sort.Slice(processor.Raw, func(i, j int) bool {
@@ -39,19 +39,19 @@ func main() {
 }
 
 func (p *CurrencyProcessor) Convert() {
-	for _, c := range p.Raw {
+	for _, currency := range p.Raw {
 		num := 0
-		if c.NumCode != "" {
-			if n, err := strconv.Atoi(c.NumCode); err == nil {
-				num = n
-			} else {
-				panic(fmt.Errorf("invalid NumCode '%s': %w", c.NumCode, err))
+		if currency.NumCode != "" {
+			val, err := strconv.Atoi(currency.NumCode)
+			if err != nil {
+				panic(fmt.Errorf("invalid NumCode '%s': %w", currency.NumCode, err))
 			}
+			num = val
 		}
 		p.Result = append(p.Result, data.OutputCurrency{
 			Num:    num,
-			Char:   c.CharCode,
-			Amount: c.Rate,
+			Char:   currency.CharCode,
+			Amount: currency.Rate,
 		})
 	}
 }

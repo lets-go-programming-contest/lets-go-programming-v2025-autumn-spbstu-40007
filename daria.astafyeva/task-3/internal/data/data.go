@@ -23,9 +23,9 @@ type Currency struct {
 }
 
 type OutputCurrency struct {
-	Num    int     `json:"num_code" xml:"NumCode" yaml:"num_code"`
+	Num    int     `json:"num_code"  xml:"NumCode"  yaml:"num_code"`
 	Char   string  `json:"char_code" xml:"CharCode" yaml:"char_code"`
-	Amount float64 `json:"value" xml:"Value" yaml:"value"`
+	Amount float64 `json:"value"     xml:"Value"    yaml:"value"`
 }
 
 func LoadCurrencies(path string) []Currency {
@@ -45,19 +45,21 @@ func LoadCurrencies(path string) []Currency {
 	var wrapper struct {
 		Currencies []Currency `xml:"Valute"`
 	}
+
 	if err := decoder.Decode(&wrapper); err != nil {
 		panic(fmt.Errorf("XML decode failed: %w", err))
 	}
 
-	var list []Currency
-	for _, c := range wrapper.Currencies {
-		c.ValueStr = strings.ReplaceAll(c.ValueStr, ",", ".")
-		val, err := strconv.ParseFloat(c.ValueStr, 64)
+	currencies := make([]Currency, 0, len(wrapper.Currencies))
+	for _, curr := range wrapper.Currencies {
+		curr.ValueStr = strings.ReplaceAll(curr.ValueStr, ",", ".")
+		val, err := strconv.ParseFloat(curr.ValueStr, 64)
 		if err != nil {
-			panic(fmt.Errorf("invalid value '%s': %w", c.ValueStr, err))
+			panic(fmt.Errorf("invalid value '%s': %w", curr.ValueStr, err))
 		}
-		c.Rate = val
-		list = append(list, c)
+		curr.Rate = val
+		currencies = append(currencies, curr)
 	}
-	return list
+
+	return currencies
 }

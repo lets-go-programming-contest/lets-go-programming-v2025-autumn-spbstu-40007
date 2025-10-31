@@ -15,6 +15,9 @@ import (
 
 var ErrUnsupportedFormat = errors.New("unsupported format")
 
+const dirPerm = 0o755
+const filePerm = 0o600
+
 func Save(results []data.OutputCurrency, path, format string) {
 	var content []byte
 	var err error
@@ -25,13 +28,15 @@ func Save(results []data.OutputCurrency, path, format string) {
 	case "yaml":
 		content, err = yaml.Marshal(results)
 	case "xml":
-		wrapper := struct {
+		type wrapper struct {
 			XMLName xml.Name              `xml:"ValCurs"`
 			Items   []data.OutputCurrency `xml:"Valute"`
-		}{
-			Items: results,
 		}
-		content, err = xml.MarshalIndent(wrapper, "", "  ")
+		w := wrapper{
+			XMLName: xml.Name{Local: "ValCurs"},
+			Items:   results,
+		}
+		content, err = xml.MarshalIndent(w, "", "  ")
 		content = []byte(xml.Header + string(content))
 	default:
 		panic(fmt.Errorf("%w: %s", ErrUnsupportedFormat, format))
@@ -41,11 +46,11 @@ func Save(results []data.OutputCurrency, path, format string) {
 		panic(fmt.Errorf("encoding error: %w", err))
 	}
 
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		panic(fmt.Errorf("cannot create directory: %w", err))
 	}
 
-	if err := os.WriteFile(path, content, 0o600); err != nil {
+	if err := os.WriteFile(path, content, filePerm); err != nil {
 		panic(fmt.Errorf("cannot write file: %w", err))
 	}
 }
