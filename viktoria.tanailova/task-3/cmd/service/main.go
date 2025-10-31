@@ -22,7 +22,7 @@ func main() {
 
 	cfg, err := config.LoadCurrencies(confPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Can not load config: %w", err)
+		fmt.Fprintln(os.Stderr, "Can not load config: did not find expected key %w", err)
 		os.Exit(1)
 	}
 

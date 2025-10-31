@@ -36,8 +36,8 @@ func (float *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 type Currency struct {
-	NumCode  string `json:"num_code"  xml:"NumCode"`
-	CharCode int    `json:"char_code" xml:"CharCode"`
+	NumCode  int    `json:"num_code"  xml:"NumCode"`
+	CharCode string `json:"char_code" xml:"CharCode"`
 	Value    Float  `json:"value"     xml:"Value"`
 }
 
