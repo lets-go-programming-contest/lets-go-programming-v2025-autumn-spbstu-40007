@@ -3,6 +3,7 @@ package output
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,36 +13,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func SaveResults(filePath string, format string, result []data.ResultValute) {
-	var encodedData []byte
-	var marshalError error
+var ErrUnsupportedFormat = errors.New("unsupported format")
+
+func Save(results []data.OutputCurrency, path, format string) {
+	var content []byte
+	var err error
 
 	switch strings.ToLower(format) {
 	case "json":
-		encodedData, marshalError = json.MarshalIndent(result, "", "  ")
+		content, err = json.MarshalIndent(results, "", "  ")
 	case "yaml":
-		encodedData, marshalError = yaml.Marshal(result)
+		content, err = yaml.Marshal(results)
 	case "xml":
-
-		resultXML := data.ResultValutes{Valutes: result}
-		encodedData, marshalError = xml.MarshalIndent(resultXML, "", "  ")
-		if marshalError == nil {
-			encodedData = []byte(xml.Header + string(encodedData))
+		wrapper := struct {
+			XMLName xml.Name              `xml:"ValCurs"`
+			Items   []data.OutputCurrency `xml:"Valute"`
+		}{
+			Items: results,
 		}
+		content, err = xml.MarshalIndent(wrapper, "", "  ")
+		content = []byte(xml.Header + string(content))
 	default:
-		panic(fmt.Errorf("unsupported output format: %s. Available: json, yaml, xml", format))
+		panic(fmt.Errorf("%w: %s", ErrUnsupportedFormat, format))
 	}
 
-	if marshalError != nil {
-		panic(fmt.Errorf("data encoding error for format '%s': %w", format, marshalError))
+	if err != nil {
+		panic(fmt.Errorf("encoding error: %w", err))
 	}
 
-	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		panic(fmt.Errorf("failed to create directory '%s': %w", dir, err))
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		panic(fmt.Errorf("cannot create directory: %w", err))
 	}
 
-	if err := os.WriteFile(filePath, encodedData, 0o600); err != nil {
-		panic(fmt.Errorf("failed to write result to file '%s': %w", filePath, err))
+	if err := os.WriteFile(path, content, 0o600); err != nil {
+		panic(fmt.Errorf("cannot write file: %w", err))
 	}
 }

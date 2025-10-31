@@ -3,39 +3,55 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"sort"
+	"strconv"
 
 	"github.com/itsdasha/task-3/internal/config"
 	"github.com/itsdasha/task-3/internal/data"
 	"github.com/itsdasha/task-3/internal/output"
 )
 
-func main() {
-	configPathPtr := flag.String("config", "", "Path to the YAML configuration file")
-	outputFormatPtr := flag.String("output-format", "json", "Output file format (json, yaml, xml)")
+type CurrencyProcessor struct {
+	Raw    []data.Currency
+	Result []data.OutputCurrency
+}
 
+func main() {
+	var cfgPath, fmtType string
+	flag.StringVar(&cfgPath, "config", "config.yaml", "Path to YAML config")
+	flag.StringVar(&fmtType, "output-format", "json", "Output format: json, yaml, xml")
 	flag.Parse()
 
-	if *configPathPtr == "" {
-		log.Panicf("Missing --config flag with path to YAML config")
+	settings := config.LoadSettings(cfgPath)
+
+	processor := &CurrencyProcessor{}
+	processor.Raw = data.LoadCurrencies(settings.SourceFile)
+
+	sort.Slice(processor.Raw, func(i, j int) bool {
+		return processor.Raw[i].Rate > processor.Raw[j].Rate
+	})
+
+	processor.Convert()
+	output.Save(processor.Result, settings.TargetFile, fmtType)
+
+	fmt.Printf("Processed %d currencies -> '%s' [%s]\n",
+		len(processor.Result), settings.TargetFile, fmtType)
+}
+
+func (p *CurrencyProcessor) Convert() {
+	for _, c := range p.Raw {
+		num := 0
+		if c.NumCode != "" {
+			if n, err := strconv.Atoi(c.NumCode); err == nil {
+				num = n
+			} else {
+				panic(fmt.Errorf("invalid NumCode '%s': %w", c.NumCode, err))
+			}
+		}
+		p.Result = append(p.Result, data.OutputCurrency{
+			Num:    num,
+			Char:   c.CharCode,
+			Amount: c.Rate,
+		})
 	}
-
-	cfg := config.LoadConfig(*configPathPtr)
-
-	valutes := data.DecodeXMLData(cfg.InputFile)
-
-	sort.Sort(data.ByValueDesc(valutes))
-
-	resultValutes := make([]data.ResultValute, len(valutes))
-	for i, v := range valutes {
-		resultValutes[i] = v.ToResultValute()
-	}
-
-	output.SaveResults(cfg.OutputFile, *outputFormatPtr, resultValutes)
-
-	fmt.Printf(
-		"Successfully processed %d currencies and saved to '%s' in '%s' format.\n",
-		len(resultValutes), cfg.OutputFile, *outputFormatPtr,
-	)
 }
