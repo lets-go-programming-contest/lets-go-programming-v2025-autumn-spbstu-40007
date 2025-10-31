@@ -26,8 +26,10 @@ type xmlWrapper struct {
 }
 
 func Save(results []data.OutputCurrency, path, format string) {
-	var content []byte
-	var err error
+	var (
+		content []byte
+		err     error
+	)
 
 	switch strings.ToLower(format) {
 	case "json":

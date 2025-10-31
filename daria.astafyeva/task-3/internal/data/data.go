@@ -50,6 +50,8 @@ func LoadCurrencies(path string) []Currency {
 
 	for _, curr := range wrapper.Currencies {
 		curr.ValueStr = strings.ReplaceAll(curr.ValueStr, ",", ".")
+
+		var err error
 		val, err := strconv.ParseFloat(curr.ValueStr, 64)
 		if err != nil {
 			panic(fmt.Errorf("invalid value '%s': %w", curr.ValueStr, err))
