@@ -40,7 +40,7 @@ func main() {
 
 func (p *CurrencyProcessor) Convert() {
 	for _, currency := range p.Raw {
-		num := 0
+		var num int
 		if currency.NumCode != "" {
 			val, err := strconv.Atoi(currency.NumCode)
 			if err != nil {
@@ -48,6 +48,7 @@ func (p *CurrencyProcessor) Convert() {
 			}
 			num = val
 		}
+
 		p.Result = append(p.Result, data.OutputCurrency{
 			Num:    num,
 			Char:   currency.CharCode,

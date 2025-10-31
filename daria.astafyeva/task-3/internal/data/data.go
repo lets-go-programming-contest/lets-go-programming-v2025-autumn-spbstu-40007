@@ -51,12 +51,14 @@ func LoadCurrencies(path string) []Currency {
 	}
 
 	currencies := make([]Currency, 0, len(wrapper.Currencies))
+
 	for _, curr := range wrapper.Currencies {
 		curr.ValueStr = strings.ReplaceAll(curr.ValueStr, ",", ".")
 		val, err := strconv.ParseFloat(curr.ValueStr, 64)
 		if err != nil {
 			panic(fmt.Errorf("invalid value '%s': %w", curr.ValueStr, err))
 		}
+
 		curr.Rate = val
 		currencies = append(currencies, curr)
 	}

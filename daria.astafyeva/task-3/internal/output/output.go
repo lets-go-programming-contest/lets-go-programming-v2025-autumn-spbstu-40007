@@ -32,10 +32,9 @@ func Save(results []data.OutputCurrency, path, format string) {
 			XMLName xml.Name              `xml:"ValCurs"`
 			Items   []data.OutputCurrency `xml:"Valute"`
 		}
-		w := wrapper{
-			XMLName: xml.Name{Local: "ValCurs"},
-			Items:   results,
-		}
+		var w wrapper
+		w.XMLName = xml.Name{Space: "", Local: "ValCurs"}
+		w.Items = results
 		content, err = xml.MarshalIndent(w, "", "  ")
 		content = []byte(xml.Header + string(content))
 	default:
