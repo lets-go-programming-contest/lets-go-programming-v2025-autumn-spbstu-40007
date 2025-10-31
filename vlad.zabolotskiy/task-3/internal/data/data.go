@@ -46,7 +46,6 @@ func LoadFromXML(path string) ([]Currency, error) {
 	}
 
 	var currencies []Currency //nolint:prealloc
-
 	for _, xmlCurr := range valCurs.Currencies {
 		valueStr := strings.ReplaceAll(xmlCurr.Value, ",", ".")
 
@@ -91,5 +90,5 @@ func SaveToJSON(currencies []Currency, path string) error {
 
 	_, err = file.Write(jsonData)
 
-	return err //nolint:nlreturn,wrapcheck
+	return err //nolint:wrapcheck
 }
