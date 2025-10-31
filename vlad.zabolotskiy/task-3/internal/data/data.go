@@ -6,23 +6,30 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/html/charset"
 )
 
+type xmlCurrency struct {
+	NumCode  int    `xml:"NumCode"`
+	CharCode string `xml:"CharCode"`
+	Value    string `xml:"Value"`
+}
+
 type Currency struct {
-	NumCode  int     `json:"num_code" xml:"NumCode"`
-	CharCode string  `json:"char_code" xml:"CharCode"`
-	Value    float32 `json:"value" xml:"Value"`
+	NumCode  int     `json:"num_code"`
+	CharCode string  `json:"char_code"`
+	Value    float32 `json:"value"`
 }
 
 type ValCurs struct {
-	XMLName    xml.Name   `xml:"ValCurs"`
-	Currencies []Currency `xml:"Valute"`
+	XMLName    xml.Name      `xml:"ValCurs"`
+	Currencies []xmlCurrency `xml:"Valute"`
 }
 
-func LoadFromXML(path string) (*ValCurs, error) {
+func LoadFromXML(path string) ([]Currency, error) {
 	data, err := os.ReadFile(path)
 
 	if err != nil {
@@ -40,27 +47,38 @@ func LoadFromXML(path string) (*ValCurs, error) {
 		return nil, err
 	}
 
-	return &valCurs, nil
-}
+	var currencies []Currency
+	for _, xmlCurr := range valCurs.Currencies {
+		valueStr := strings.Replace(xmlCurr.Value, ",", ".", -1)
 
-func (vc *ValCurs) SortByValue() {
-	compareCurrencies := func(i, j int) bool {
-		valueI := vc.Currencies[i].Value
-		valueJ := vc.Currencies[j].Value
+		value, err := strconv.ParseFloat(valueStr, 32)
 
-		if valueI > valueJ {
-			return true
+		if err != nil {
+			return nil, err
 		}
 
-		return false
+		currencies = append(currencies, Currency{
+			NumCode:  xmlCurr.NumCode,
+			CharCode: xmlCurr.CharCode,
+			Value:    float32(value),
+		})
 	}
 
-	sort.Slice(vc.Currencies, compareCurrencies)
+	return currencies, nil
 }
 
-func (vc *ValCurs) SaveToJSON(path string) error {
+func SortByValue(currencies []Currency) {
+	sort.Slice(currencies, func(i, j int) bool {
+		return currencies[i].Value > currencies[j].Value
+	})
+}
+
+func SaveToJSON(currencies []Currency, path string) error {
 	folderPath := filepath.Dir(path)
-	os.MkdirAll(folderPath, 0755)
+
+	if err := os.MkdirAll(folderPath, 0755); err != nil {
+		return err
+	}
 
 	file, err := os.Create(path)
 
@@ -70,7 +88,7 @@ func (vc *ValCurs) SaveToJSON(path string) error {
 
 	defer file.Close()
 
-	jsonData, err := json.MarshalIndent(vc.Currencies, "", "  ")
+	jsonData, err := json.MarshalIndent(currencies, "", "  ")
 
 	if err != nil {
 		return err

@@ -17,25 +17,22 @@ func main() {
 	}
 
 	cfg, err := config.New(*configPath)
-
 	if err != nil {
 		panic(fmt.Sprintf("Error loading config: %v", err))
 	}
 
-	valCurs, err := data.LoadFromXML(cfg.InputFile)
-
+	currencies, err := data.LoadFromXML(cfg.InputFile)
 	if err != nil {
 		panic(fmt.Sprintf("Error loading currencies: %v", err))
 	}
 
-	valCurs.SortByValue()
+	data.SortByValue(currencies)
 
-	err = valCurs.SaveToJSON(cfg.OutputFile)
-
+	err = data.SaveToJSON(currencies, cfg.OutputFile)
 	if err != nil {
 		panic(fmt.Sprintf("Error saving JSON: %v", err))
 	}
 
 	fmt.Printf("Success! Processed %d currencies, saved to: %s\n",
-		len(valCurs.Currencies), cfg.OutputFile)
+		len(currencies), cfg.OutputFile)
 }
