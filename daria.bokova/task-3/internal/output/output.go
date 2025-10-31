@@ -53,7 +53,6 @@ func encodeToFormat(format string, currencies []data.ProcessedCurrency) ([]byte,
 func encodeToJSON(currencies []data.ProcessedCurrency) ([]byte, error) {
 	jsonData, err := json.MarshalIndent(currencies, "", "  ")
 	if err != nil {
-
 		return nil, fmt.Errorf("ошибка кодирования JSON: %w", err)
 	}
 
@@ -77,7 +76,6 @@ func encodeToXML(currencies []data.ProcessedCurrency) ([]byte, error) {
 
 	xmlBytes, err := xml.MarshalIndent(xmlData, "", "  ")
 	if err != nil {
-
 		return nil, fmt.Errorf("ошибка кодирования XML: %w", err)
 	}
 
@@ -87,7 +85,6 @@ func encodeToXML(currencies []data.ProcessedCurrency) ([]byte, error) {
 func createOutputDirectory(filePath string) error {
 	directory := filepath.Dir(filePath)
 	if err := os.MkdirAll(directory, 0o755); err != nil { //nolint:mnd
-
 		return fmt.Errorf("невозможно создать директорию: %w", err)
 	}
 
@@ -96,7 +93,6 @@ func createOutputDirectory(filePath string) error {
 
 func writeToFile(filePath string, data []byte) error {
 	if err := os.WriteFile(filePath, data, 0o600); err != nil { //nolint:mnd
-
 		return fmt.Errorf("ошибка записи в файл: %w", err)
 	}
 
