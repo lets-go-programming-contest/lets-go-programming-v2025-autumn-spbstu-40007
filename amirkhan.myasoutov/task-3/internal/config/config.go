@@ -13,7 +13,9 @@ type Config struct {
 
 func LoadConfig(configPath string) (*Config, error) {
 	file, err := os.Open(configPath)
+	
 	if err != nil {
+		
 		return nil, err
 	}
 	defer file.Close()
@@ -21,7 +23,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	var config Config
 	decoder := yaml.NewDecoder(file)
 	err = decoder.Decode(&config)
+
 	if err != nil {
+
 		return nil, err
 	}
 

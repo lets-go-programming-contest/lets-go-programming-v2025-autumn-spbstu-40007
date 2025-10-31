@@ -12,7 +12,9 @@ import (
 
 func DecodeXML(filePath string) ([]data.Valute, error) {
 	file, err := os.Open(filePath)
+	
 	if err != nil {
+		
 		return nil, err
 	}
 	defer file.Close()
@@ -23,14 +25,18 @@ func DecodeXML(filePath string) ([]data.Valute, error) {
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		switch charset {
 		case "windows-1251":
+			
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		default:
+			
 			return input, nil
 		}
 	}
 
 	err = decoder.Decode(&valCurs)
+	
 	if err != nil {
+	
 		return nil, err
 	}
 

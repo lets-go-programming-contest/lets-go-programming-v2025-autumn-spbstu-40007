@@ -16,6 +16,7 @@ func SortAndConvert(currencies []data.Valute) []data.CurrencyOutput {
 	for i, currency := range currencies {
 		valueStr := strings.Replace(currency.Value, ",", ".", -1)
 		value, err := strconv.ParseFloat(valueStr, 64)
+		
 		if err != nil {
 			panic(err)
 		}
@@ -28,6 +29,7 @@ func SortAndConvert(currencies []data.Valute) []data.CurrencyOutput {
 	}
 
 	sort.Slice(output, func(i, j int) bool {
+		
 		return output[i].Value > output[j].Value
 	})
 
@@ -36,7 +38,9 @@ func SortAndConvert(currencies []data.Valute) []data.CurrencyOutput {
 
 func SaveToJSON(currencies []data.CurrencyOutput, outputPath string) error {
 	file, err := os.Create(outputPath)
+	
 	if err != nil {
+		
 		return err
 	}
 	defer file.Close()

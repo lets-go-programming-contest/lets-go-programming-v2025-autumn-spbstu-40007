@@ -7,13 +7,16 @@ import (
 )
 
 func DecodeXMLFile(filePath string) ([]data.Valute, error) {
+
 	return xmldecoder.DecodeXML(filePath)
 }
 
 func SortCurrenciesByValue(currencies []data.Valute) []data.CurrencyOutput {
+	
 	return vp.SortAndConvert(currencies)
 }
 
 func SaveCurrenciesToJSON(currencies []data.CurrencyOutput, outputPath string) error {
+	
 	return vp.SaveToJSON(currencies, outputPath)
 }
