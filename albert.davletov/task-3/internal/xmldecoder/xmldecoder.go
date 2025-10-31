@@ -3,6 +3,7 @@ package xmldecoder
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/treadwave/task-3/internal/structs"
@@ -18,7 +19,7 @@ func XMLDecode(filepath string) (structs.Valutes, error) {
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
-			fmt.Printf("warning: error closing file: %v\n", closeErr)
+			log.Printf("error closing file: %v\n", closeErr)
 		}
 	}()
 

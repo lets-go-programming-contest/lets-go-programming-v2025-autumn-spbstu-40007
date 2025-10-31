@@ -3,6 +3,7 @@ package jsonencoder
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -31,7 +32,7 @@ func JSONEncoder(valutes []structs.Valute, outpath string) error {
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
-			fmt.Printf("warning: error closing file: %v\n", closeErr)
+			log.Printf("error closing file: %v\n", closeErr)
 		}
 	}()
 

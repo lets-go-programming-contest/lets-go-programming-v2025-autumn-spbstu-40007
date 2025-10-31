@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -19,9 +20,9 @@ func YamlDecoder(filepath string) (Config, error) {
 	}
 
 	defer func() {
-		err := file.Close()
-		if err != nil {
-			panic(err)
+		closeErr := file.Close()
+		if closeErr != nil {
+			log.Printf("error closing file: %v\n", closeErr)
 		}
 	}()
 
