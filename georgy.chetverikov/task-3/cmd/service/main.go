@@ -11,6 +11,8 @@ import (
 	"github.com/falsefeelings/task-3/iternal/pathmaker"
 )
 
+const filePermissions = 0o600
+
 func main() {
 	var (
 		configPath   string
@@ -51,7 +53,7 @@ func main() {
 		log.Fatal("Create path error:", err)
 	}
 
-	err = os.WriteFile(config.OutputFile, outputData, 0o600)
+	err = os.WriteFile(config.OutputFile, outputData, filePermissions)
 	if err != nil {
 		log.Fatal("Write file error:", err)
 	}

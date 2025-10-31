@@ -15,19 +15,17 @@ import (
 type Valutes []Valute
 
 type Valute struct {
-	ID       string      `json:"id"       xml:"ID,attr"`
-	NumCode  int         `json:"num_code" xml:"NumCode"`
+	ID       string      `json:"id"        xml:"ID,attr"`
+	NumCode  int         `json:"num_code"  xml:"NumCode"`
 	CharCode string      `json:"char_code" xml:"CharCode"`
-	Nominal  int         `json:"nominal" xml:"Nominal"`
-	Name     string      `json:"name" xml:"Name"`
-	Value    customFloat `json:"value" xml:"Value"`
+	Nominal  int         `json:"nominal"   xml:"Nominal"`
+	Name     string      `json:"name"      xml:"Name"`
+	Value    customFloat `json:"value"     xml:"Value"`
 }
 
 type customFloat float64
 
-var (
-	ErrUnsupportedCharset = errors.New("unsupported charset")
-)
+var ErrUnsupportedCharset = errors.New("unsupported charset")
 
 func (f *customFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
 	var XMLdata string
@@ -59,6 +57,7 @@ func ParseXML(data []byte) (Valutes, error) {
 		if charset == "windows-1251" {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
+
 		return nil, fmt.Errorf("%w: %s", ErrUnsupportedCharset, charset)
 	}
 
