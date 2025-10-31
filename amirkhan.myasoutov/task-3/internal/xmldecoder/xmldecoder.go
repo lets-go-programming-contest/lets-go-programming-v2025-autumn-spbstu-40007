@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/ami0-0/task-3/internal/data"
+	"golang.org/x/text/encoding/charmap"
 )
 
 func DecodeXML(filePath string) ([]data.Valute, error) {
@@ -19,7 +20,7 @@ func DecodeXML(filePath string) ([]data.Valute, error) {
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		switch charset {
 		case "windows-1251":
-			return input, nil
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		default:
 			return input, nil
 		}
