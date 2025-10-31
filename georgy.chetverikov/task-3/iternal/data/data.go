@@ -68,6 +68,7 @@ func ParseXML(data []byte) (Valutes, error) {
 	}
 
 	var temp tempValCourse
+
 	err := decoder.Decode(&temp)
 	if err != nil {
 		return nil, fmt.Errorf("XML decoding failed: %w", err)

@@ -43,6 +43,7 @@ func main() {
 	}
 
 	conv := converter.New()
+
 	outputData, err := conv.Convert(valutes, outputFormat)
 	if err != nil {
 		log.Fatal("Conversion error:", err)

@@ -46,12 +46,13 @@ func (c *Converter) Convert(valutes data.Valutes, format string) ([]byte, error)
 		return data, nil
 	case "xml":
 		type ValCurs struct {
-			XMLName xml.Name
+			XMLName xml.Name     `xml:"ValCurs"`
 			Valutes data.Valutes `xml:"Valute"`
 		}
 
 		wrapper := ValCurs{
-			XMLName: xml.Name{Local: "ValCurs"},
+			// there is no need to add space in the current situation
+			XMLName: xml.Name{Local: "ValCurs"}, // nolint:exhaustruct
 			Valutes: valutes,
 		}
 
