@@ -27,6 +27,7 @@ func DecodeXML(filePath string) ([]data.Valute, error) {
 	}
 
 	var valCurs data.ValCurs
+
 	err = decoder.Decode(&valCurs)
 	if err != nil {
 		_ = file.Close()
