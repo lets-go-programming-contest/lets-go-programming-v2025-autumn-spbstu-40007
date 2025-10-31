@@ -14,7 +14,7 @@ import (
 
 var ErrUnsupportedCharset = errors.New("unsupported charset")
 
-func DecodeXML(inputFile []byte, valCurls *data.ValCourse) error {
+func DecodeXML(inputFile []byte, valCurls *data.Valute) error {
 	decoder := xml.NewDecoder(bytes.NewReader(inputFile))
 
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
