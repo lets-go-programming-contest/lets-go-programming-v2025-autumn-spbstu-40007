@@ -17,7 +17,7 @@ func SortAndConvert(currencies []data.Valute) []data.CurrencyOutput {
 	for index, currency := range currencies {
 		valueStr := strings.ReplaceAll(currency.Value, ",", ".")
 		value, err := strconv.ParseFloat(valueStr, 64)
-		
+
 		if err != nil {
 			panic(err)
 		}
@@ -48,7 +48,7 @@ func SaveToJSON(currencies []data.CurrencyOutput, outputPath string) error {
 	err = encoder.Encode(currencies)
 	if err != nil {
 		_ = file.Close()
-		
+
 		return fmt.Errorf("encode json: %w", err)
 	}
 

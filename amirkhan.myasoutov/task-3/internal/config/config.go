@@ -22,10 +22,10 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	var config Config
 	err = decoder.Decode(&config)
-	
+
 	if err != nil {
 		_ = file.Close()
-		
+
 		return nil, fmt.Errorf("decode yaml: %w", err)
 	}
 

@@ -28,9 +28,10 @@ func DecodeXML(filePath string) ([]data.Valute, error) {
 
 	var valCurs data.ValCurs
 	err = decoder.Decode(&valCurs)
+	
 	if err != nil {
 		_ = file.Close()
-		
+
 		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
