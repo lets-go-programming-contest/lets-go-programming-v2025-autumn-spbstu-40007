@@ -31,7 +31,6 @@ type ValCurs struct {
 
 func LoadFromXML(path string) ([]Currency, error) {
 	data, err := os.ReadFile(path)
-
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
@@ -42,17 +41,16 @@ func LoadFromXML(path string) ([]Currency, error) {
 
 	var valCurs ValCurs
 	err = decoder.Decode(&valCurs)
-
 	if err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
 	var currencies []Currency //nolint:prealloc
+
 	for _, xmlCurr := range valCurs.Currencies {
 		valueStr := strings.ReplaceAll(xmlCurr.Value, ",", ".")
 
 		value, err := strconv.ParseFloat(valueStr, 32)
-
 		if err != nil {
 			return nil, err //nolint:wrapcheck
 		}
@@ -75,12 +73,11 @@ func SortByValue(currencies []Currency) {
 
 func SaveToJSON(currencies []Currency, path string) error {
 	folderPath := filepath.Dir(path)
-	if err := os.MkdirAll(folderPath, 0o755); err != nil {
+	if err := os.MkdirAll(folderPath, 0o755); err != nil { //nolint:mnd
 		return err //nolint:wrapcheck
 	}
 
 	file, err := os.Create(path)
-
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
@@ -88,12 +85,11 @@ func SaveToJSON(currencies []Currency, path string) error {
 	defer file.Close() //nolint:errcheck
 
 	jsonData, err := json.MarshalIndent(currencies, "", "  ")
-
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
 
 	_, err = file.Write(jsonData)
 
-	return err
+	return err //nolint:nlreturn,wrapcheck
 }
