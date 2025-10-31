@@ -22,5 +22,6 @@ func LoadCurrencies(path string) (*Config, error) {
 	if err := yaml.Unmarshal(data, &conf); err != nil {
 		return nil, fmt.Errorf("unmarshal yaml: %w", err)
 	}
+
 	return &conf, nil
 }
