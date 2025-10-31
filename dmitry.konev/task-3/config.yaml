@@ -1,0 +1,5 @@
+input-file: daily.xml
+output-dir: output
+output-file: currencies.json
+dir-permissions: 0755
+file-permissions: 0644          
