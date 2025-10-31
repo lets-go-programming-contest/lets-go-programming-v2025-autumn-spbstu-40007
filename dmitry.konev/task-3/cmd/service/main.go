@@ -18,6 +18,7 @@ import (
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
+	OutputDir  string `yaml:"output-dir"`
 	OutputFile string `yaml:"output-file"`
 }
 
@@ -81,9 +82,11 @@ func main() {
 
 	var currencies []CurrencyOutput
 	for _, valute := range valCurs.Valutes {
-		numCode, err := strconv.Atoi(valute.NumCode)
-		if err != nil {
-			panic(fmt.Sprintf("Invalid NumCode: %v", err))
+		numCode := 0
+		if valute.NumCode != "" {
+			if parsed, err := strconv.Atoi(valute.NumCode); err == nil {
+				numCode = parsed
+			}
 		}
 		value, err := strconv.ParseFloat(strings.Replace(valute.Value, ",", ".", 1), 64)
 		if err != nil {
@@ -100,21 +103,22 @@ func main() {
 		return currencies[i].Value > currencies[j].Value
 	})
 
-	outputDir := filepath.Dir(config.OutputFile)
-	err = os.MkdirAll(outputDir, 0755)
+	err = os.MkdirAll(config.OutputDir, 0755)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create output directory: %v", err))
 	}
+
+	outputFilePath := filepath.Join(config.OutputDir, config.OutputFile)
 
 	outputData, err := json.MarshalIndent(currencies, "", "  ")
 	if err != nil {
 		panic(fmt.Sprintf("Failed to marshal JSON: %v", err))
 	}
 
-	err = os.WriteFile(config.OutputFile, outputData, 0644)
+	err = os.WriteFile(outputFilePath, outputData, 0644)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to write output file: %v", err))
 	}
 
-	fmt.Println("Processing completed successfully! Output saved to:", config.OutputFile)
+	fmt.Println("Processing completed successfully! Output saved to:", outputFilePath)
 }
