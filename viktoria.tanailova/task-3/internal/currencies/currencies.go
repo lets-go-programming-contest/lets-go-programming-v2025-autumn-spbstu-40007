@@ -24,12 +24,14 @@ func (float *Float) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	if err := d.DecodeElement(&valStr, &start); err != nil {
 		return fmt.Errorf("decode xml value: %w", err)
 	}
+
 	valStr = strings.ReplaceAll(valStr, ",", ".")
 
 	f64, err := strconv.ParseFloat(valStr, 32)
 	if err != nil {
 		return fmt.Errorf("parse float: %w", err)
 	}
+
 	*float = Float(f64)
 
 	return nil
@@ -75,6 +77,7 @@ func (c *Currencies) WriteToFile(path string) error {
 
 	enc := json.NewEncoder(outFile)
 	enc.SetIndent("", "  ")
+
 	if err := enc.Encode(c.Currencies); err != nil {
 		return fmt.Errorf("encode json: %w", err)
 	}

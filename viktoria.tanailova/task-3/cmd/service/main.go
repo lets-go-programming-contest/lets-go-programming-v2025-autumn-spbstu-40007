@@ -11,16 +11,15 @@ import (
 )
 
 func main() {
-	var confPath string
-	flag.StringVar(&confPath, "config", "", "Path to config")
+	confPath := flag.String("config", "", "Path to config")
 	flag.Parse()
 
-	if confPath == "" {
+	if *confPath == "" {
 		fmt.Fprintln(os.Stderr, "Config path is required")
 		os.Exit(1)
 	}
 
-	cfg, err := config.LoadCurrencies(confPath)
+	cfg, err := config.LoadCurrencies(*confPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Can not load config: did not find expected key %w", err)
 		os.Exit(1)
