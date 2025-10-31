@@ -16,12 +16,12 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		fmt.Println("Usage: program --config <path_to_config.yaml>")
+		fmt.Fprintln(os.Stderr, "Usage: program --config <path_to_config.yaml>")
 		os.Exit(1)
 	}
 
 	if err := run(*configPath); err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
