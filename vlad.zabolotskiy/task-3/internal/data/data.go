@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"golang.org/x/net/html/charset"
 )
 
 type Currency struct {
@@ -27,10 +29,12 @@ func LoadFromXML(path string) (*ValCurs, error) {
 		return nil, err
 	}
 
-	xmlContent := strings.ReplaceAll(string(data), ",", ".")
+	reader := strings.NewReader(string(data))
+	decoder := xml.NewDecoder(reader)
+	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	err = xml.Unmarshal([]byte(xmlContent), &valCurs)
+	err = decoder.Decode(&valCurs)
 
 	if err != nil {
 		return nil, err
