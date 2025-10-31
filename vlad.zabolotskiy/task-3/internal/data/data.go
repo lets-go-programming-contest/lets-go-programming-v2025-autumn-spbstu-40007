@@ -33,7 +33,7 @@ func LoadFromXML(path string) ([]Currency, error) {
 	data, err := os.ReadFile(path)
 
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	reader := strings.NewReader(string(data))
@@ -44,17 +44,17 @@ func LoadFromXML(path string) ([]Currency, error) {
 	err = decoder.Decode(&valCurs)
 
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
-	var currencies []Currency
+	var currencies []Currency //nolint:prealloc
 	for _, xmlCurr := range valCurs.Currencies {
 		valueStr := strings.Replace(xmlCurr.Value, ",", ".", -1)
 
 		value, err := strconv.ParseFloat(valueStr, 32)
 
 		if err != nil {
-			return nil, err
+			return nil, err //nolint:wrapcheck
 		}
 
 		currencies = append(currencies, Currency{
@@ -75,25 +75,23 @@ func SortByValue(currencies []Currency) {
 
 func SaveToJSON(currencies []Currency, path string) error {
 	folderPath := filepath.Dir(path)
-
-	if err := os.MkdirAll(folderPath, 0755); err != nil {
-		return err
+	if err := os.MkdirAll(folderPath, 0755); err != nil { //nolint:mnd
+		return err //nolint:wrapcheck
 	}
 
 	file, err := os.Create(path)
-
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
-	defer file.Close()
+	defer file.Close() //nolint:errcheck
 
 	jsonData, err := json.MarshalIndent(currencies, "", "  ")
-
 	if err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 
 	_, err = file.Write(jsonData)
-	return err
+
+	return err //nolint:nlreturn
 }

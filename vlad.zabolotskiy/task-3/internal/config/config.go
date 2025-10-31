@@ -14,13 +14,13 @@ type Config struct {
 func New(path string) (*Config, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	var config Config
 	err = yaml.Unmarshal(content, &config)
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
 	return &config, nil
