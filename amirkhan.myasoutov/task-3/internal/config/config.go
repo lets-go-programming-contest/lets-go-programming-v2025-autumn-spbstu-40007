@@ -21,6 +21,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	decoder := yaml.NewDecoder(file)
 
 	var config Config
+
 	err = decoder.Decode(&config)
 	if err != nil {
 		_ = file.Close()
