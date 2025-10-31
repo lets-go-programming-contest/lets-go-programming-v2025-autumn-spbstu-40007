@@ -38,8 +38,10 @@ func readFileContent(filePath string) ([]byte, error) {
 }
 
 func parseYAMLConfig(content []byte) (AppSettings, error) {
-	var settings AppSettings
-	var err error
+	var (
+		settings AppSettings
+		err      error
+	)
 
 	err = yaml.Unmarshal(content, &settings)
 	if err != nil {
