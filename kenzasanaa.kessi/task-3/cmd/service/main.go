@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 
-	"kenzasanaa.kessi/task-3/internal"
+	"kenzasanaa.kessi/task-3/internal/config"
+	"kenzasanaa.kessi/task-3/internal/processor"
 )
 
 func main() {
