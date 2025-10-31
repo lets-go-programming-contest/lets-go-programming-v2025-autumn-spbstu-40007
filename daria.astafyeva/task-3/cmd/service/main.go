@@ -25,7 +25,10 @@ func main() {
 
 	settings := config.LoadSettings(cfgPath)
 
-	processor := &CurrencyProcessor{}
+	processor := &CurrencyProcessor{
+		Raw:    make([]data.Currency, 0),
+		Result: make([]data.OutputCurrency, 0),
+	}
 	processor.Raw = data.LoadCurrencies(settings.SourceFile)
 
 	sort.Slice(processor.Raw, func(i, j int) bool {

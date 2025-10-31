@@ -40,7 +40,9 @@ func LoadCurrencies(path string) []Currency {
 	var wrapper struct {
 		Currencies []Currency `xml:"Valute"`
 	}
-	if err := decoder.Decode(&wrapper); err != nil {
+
+	err = decoder.Decode(&wrapper)
+	if err != nil {
 		panic(fmt.Errorf("XML decode failed: %w", err))
 	}
 

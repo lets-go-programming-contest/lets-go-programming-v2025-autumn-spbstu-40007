@@ -35,7 +35,10 @@ func Save(results []data.OutputCurrency, path, format string) {
 	case "yaml":
 		content, err = yaml.Marshal(results)
 	case "xml":
-		wrapper := xmlWrapper{Items: results}
+		wrapper := xmlWrapper{
+			XMLName: xml.Name{Local: "ValCurs"},
+			Items:   results,
+		}
 		content, err = xml.MarshalIndent(wrapper, "", "  ")
 		if err == nil {
 			content = []byte(xml.Header + string(content))
@@ -50,12 +53,14 @@ func Save(results []data.OutputCurrency, path, format string) {
 
 	dir := filepath.Dir(path)
 	if dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, dirPerm); err != nil {
+		err = os.MkdirAll(dir, dirPerm)
+		if err != nil {
 			panic(fmt.Errorf("cannot create directory: %w", err))
 		}
 	}
 
-	if err := os.WriteFile(path, content, filePerm); err != nil {
+	err = os.WriteFile(path, content, filePerm)
+	if err != nil {
 		panic(fmt.Errorf("cannot write file: %w", err))
 	}
 }
