@@ -20,6 +20,11 @@ const (
 
 var ErrUnsupportedFormat = errors.New("unsupported format")
 
+type xmlWrapper struct {
+	XMLName xml.Name              `xml:"ValCurs"`
+	Items   []data.OutputCurrency `xml:"Valute"`
+}
+
 func Save(results []data.OutputCurrency, path, format string) {
 	var content []byte
 	var err error
@@ -30,12 +35,7 @@ func Save(results []data.OutputCurrency, path, format string) {
 	case "yaml":
 		content, err = yaml.Marshal(results)
 	case "xml":
-		wrapper := struct {
-			XMLName xml.Name              `xml:"ValCurs"`
-			Items   []data.OutputCurrency `xml:"Valute"`
-		}{
-			Items: results,
-		}
+		wrapper := xmlWrapper{Items: results}
 		content, err = xml.MarshalIndent(wrapper, "", "  ")
 		if err == nil {
 			content = []byte(xml.Header + string(content))
