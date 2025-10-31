@@ -49,7 +49,7 @@ func LoadFromXML(path string) ([]Currency, error) {
 
 	var currencies []Currency //nolint:prealloc
 	for _, xmlCurr := range valCurs.Currencies {
-		valueStr := strings.Replace(xmlCurr.Value, ",", ".", -1)
+		valueStr := strings.ReplaceAll(xmlCurr.Value, ",", ".")
 
 		value, err := strconv.ParseFloat(valueStr, 32)
 
@@ -75,11 +75,12 @@ func SortByValue(currencies []Currency) {
 
 func SaveToJSON(currencies []Currency, path string) error {
 	folderPath := filepath.Dir(path)
-	if err := os.MkdirAll(folderPath, 0755); err != nil { //nolint:mnd
+	if err := os.MkdirAll(folderPath, 0o755); err != nil {
 		return err //nolint:wrapcheck
 	}
 
 	file, err := os.Create(path)
+
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
@@ -87,11 +88,12 @@ func SaveToJSON(currencies []Currency, path string) error {
 	defer file.Close() //nolint:errcheck
 
 	jsonData, err := json.MarshalIndent(currencies, "", "  ")
+
 	if err != nil {
 		return err //nolint:wrapcheck
 	}
 
 	_, err = file.Write(jsonData)
 
-	return err //nolint:nlreturn
+	return err
 }
