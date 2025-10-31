@@ -13,10 +13,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var ErrUnsupportedFormat = errors.New("unsupported format")
+const (
+	dirPerm  = 0o755
+	filePerm = 0o600
+)
 
-const dirPerm = 0o755
-const filePerm = 0o600
+var ErrUnsupportedFormat = errors.New("unsupported format")
 
 func Save(results []data.OutputCurrency, path, format string) {
 	var content []byte
@@ -28,15 +30,16 @@ func Save(results []data.OutputCurrency, path, format string) {
 	case "yaml":
 		content, err = yaml.Marshal(results)
 	case "xml":
-		type wrapper struct {
+		wrapper := struct {
 			XMLName xml.Name              `xml:"ValCurs"`
 			Items   []data.OutputCurrency `xml:"Valute"`
+		}{
+			Items: results,
 		}
-		var w wrapper
-		w.XMLName = xml.Name{Space: "", Local: "ValCurs"}
-		w.Items = results
-		content, err = xml.MarshalIndent(w, "", "  ")
-		content = []byte(xml.Header + string(content))
+		content, err = xml.MarshalIndent(wrapper, "", "  ")
+		if err == nil {
+			content = []byte(xml.Header + string(content))
+		}
 	default:
 		panic(fmt.Errorf("%w: %s", ErrUnsupportedFormat, format))
 	}
@@ -45,8 +48,11 @@ func Save(results []data.OutputCurrency, path, format string) {
 		panic(fmt.Errorf("encoding error: %w", err))
 	}
 
-	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
-		panic(fmt.Errorf("cannot create directory: %w", err))
+	dir := filepath.Dir(path)
+	if dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, dirPerm); err != nil {
+			panic(fmt.Errorf("cannot create directory: %w", err))
+		}
 	}
 
 	if err := os.WriteFile(path, content, filePerm); err != nil {

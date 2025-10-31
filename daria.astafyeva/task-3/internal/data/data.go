@@ -35,17 +35,11 @@ func LoadCurrencies(path string) []Currency {
 	}
 
 	decoder := xml.NewDecoder(strings.NewReader(string(content)))
-	decoder.CharsetReader = func(charset string, r io.Reader) (io.Reader, error) {
-		if strings.EqualFold(charset, "windows-1251") {
-			return charmap.Windows1251.NewDecoder().Reader(r), nil
-		}
-		return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
-	}
+	decoder.CharsetReader = charsetReader
 
 	var wrapper struct {
 		Currencies []Currency `xml:"Valute"`
 	}
-
 	if err := decoder.Decode(&wrapper); err != nil {
 		panic(fmt.Errorf("XML decode failed: %w", err))
 	}
@@ -58,10 +52,17 @@ func LoadCurrencies(path string) []Currency {
 		if err != nil {
 			panic(fmt.Errorf("invalid value '%s': %w", curr.ValueStr, err))
 		}
-
 		curr.Rate = val
 		currencies = append(currencies, curr)
 	}
 
 	return currencies
+}
+
+func charsetReader(charset string, r io.Reader) (io.Reader, error) {
+	if strings.EqualFold(charset, "windows-1251") {
+		return charmap.Windows1251.NewDecoder().Reader(r), nil
+	}
+
+	return nil, fmt.Errorf("%w: %s", ErrUnknownCharset, charset)
 }

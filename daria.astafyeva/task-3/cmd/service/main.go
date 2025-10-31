@@ -18,13 +18,14 @@ type CurrencyProcessor struct {
 
 func main() {
 	var cfgPath, fmtType string
+
 	flag.StringVar(&cfgPath, "config", "config.yaml", "Path to YAML config")
 	flag.StringVar(&fmtType, "output-format", "json", "Output format: json, yaml, xml")
 	flag.Parse()
 
 	settings := config.LoadSettings(cfgPath)
 
-	processor := new(CurrencyProcessor)
+	processor := &CurrencyProcessor{}
 	processor.Raw = data.LoadCurrencies(settings.SourceFile)
 
 	sort.Slice(processor.Raw, func(i, j int) bool {
@@ -40,7 +41,8 @@ func main() {
 
 func (p *CurrencyProcessor) Convert() {
 	for _, currency := range p.Raw {
-		var num int
+		num := 0
+
 		if currency.NumCode != "" {
 			val, err := strconv.Atoi(currency.NumCode)
 			if err != nil {
