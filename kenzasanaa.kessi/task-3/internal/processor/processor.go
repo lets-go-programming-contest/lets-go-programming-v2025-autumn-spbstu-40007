@@ -1,4 +1,4 @@
-package writer
+package processor
 
 import (
 	"encoding/json"
@@ -9,7 +9,8 @@ import (
 	"sort"
 
 	"golang.org/x/net/html/charset"
-	"kenzasanaa.kessi/task-3/internal"
+	"kenzasanaa.kessi/task-3/internal/config"
+	"kenzasanaa.kessi/task-3/internal/models"
 )
 
 const (
@@ -36,12 +37,12 @@ func Run(cfg *config.Config) error {
 func readXMLData(path string) (*models.ValCurs, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("cannot open file: %w", err)
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
 
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf(" cannot close file: %v\n", closeErr)
+			fmt.Printf("warning: failed to close file: %v\n", closeErr)
 		}
 	}()
 
@@ -50,7 +51,7 @@ func readXMLData(path string) (*models.ValCurs, error) {
 
 	var valCurs models.ValCurs
 	if err := decoder.Decode(&valCurs); err != nil {
-		return nil, fmt.Errorf("we cant decode XML: %w", err)
+		return nil, fmt.Errorf("failed to decode XML: %w", err)
 	}
 
 	return &valCurs, nil
@@ -71,16 +72,16 @@ func writeJSONData(path string, data []models.Valute) error {
 	dir := filepath.Dir(path)
 
 	if err := os.MkdirAll(dir, dirPermissions); err != nil {
-		return fmt.Errorf("we cant create directory: %w", err)
+		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
 	jsonData, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
-		return fmt.Errorf("we cant marshal JSON: %w", err)
+		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 
 	if err := os.WriteFile(path, jsonData, filePermissions); err != nil {
-		return fmt.Errorf("we cant write file: %w", err)
+		return fmt.Errorf("failed to write file: %w", err)
 	}
 
 	return nil

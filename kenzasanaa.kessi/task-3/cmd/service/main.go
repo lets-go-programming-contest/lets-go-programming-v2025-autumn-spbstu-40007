@@ -20,7 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	err = writer.Run(cfg)
+	err = processor.Run(cfg)
 	if err != nil {
 		panic(err)
 	}
