@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -43,10 +42,6 @@ func (f *customFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 	return nil
 }
 
-func (v Valutes) Len() int           { return len(v) }
-func (v Valutes) Swap(i, j int)      { v[i], v[j] = v[j], v[i] }
-func (v Valutes) Less(i, j int) bool { return v[i].NumCode < v[j].NumCode }
-
 func ParseXML(data []byte) (Valutes, error) {
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
 
@@ -69,8 +64,5 @@ func ParseXML(data []byte) (Valutes, error) {
 		return nil, fmt.Errorf("XML decoding failed: %w", err)
 	}
 
-	valutes := temp.Valutes
-	sort.Sort(Valutes(valutes))
-
-	return valutes, nil
+	return temp.Valutes, nil
 }
