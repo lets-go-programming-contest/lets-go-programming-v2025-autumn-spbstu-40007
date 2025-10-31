@@ -15,14 +15,14 @@ type AppSettings struct {
 type ConfigurationManager struct{}
 
 func LoadSettings(filePath string) AppSettings {
-	fileContent, readErr := readFileContent(filePath)
-	if readErr != nil {
-		handleConfigError(filePath, readErr)
+	content, err := readFileContent(filePath)
+	if err != nil {
+		handleConfigError(filePath, err)
 	}
 
-	settings, parseErr := parseYAMLConfig(fileContent)
-	if parseErr != nil {
-		handleParseError(parseErr)
+	settings, err := parseYAMLConfig(content)
+	if err != nil {
+		handleParseError(err)
 	}
 
 	return settings
