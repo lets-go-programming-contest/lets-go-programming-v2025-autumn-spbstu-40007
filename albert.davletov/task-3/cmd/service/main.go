@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/treadwave/task-3/internal/config"
-	"github.com/treadwave/task-3/internal/converter"
 	"github.com/treadwave/task-3/internal/jsonencoder"
 	"github.com/treadwave/task-3/internal/xmldecoder"
 )
@@ -28,12 +27,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	convertedValutes, err := converter.Converter(xmlValutes.TempValutes)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	err = jsonencoder.JSONEncoder(convertedValutes, configStruct.OutputFile)
+	err = jsonencoder.JSONEncoder(xmlValutes.Valutes, configStruct.OutputFile)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -29,9 +29,9 @@ func JSONEncoder(valutes []structs.Valute, outpath string) error {
 	}
 
 	defer func() {
-		err := file.Close()
-		if err != nil {
-			panic(err)
+		closeErr := file.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("error closing file: %w", err)
 		}
 	}()
 
@@ -44,5 +44,5 @@ func JSONEncoder(valutes []structs.Valute, outpath string) error {
 		return fmt.Errorf("error encoding xml: %w", err)
 	}
 
-	return nil
+	return err
 }

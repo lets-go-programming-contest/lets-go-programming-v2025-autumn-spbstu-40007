@@ -9,30 +9,30 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-func XMLDecode(filepath string) (structs.TempValutes, error) {
+func XMLDecode(filepath string) (structs.Valutes, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
-		return structs.TempValutes{}, fmt.Errorf("failed to open config file: %w", err)
+		return structs.Valutes{}, fmt.Errorf("failed to open config file: %w", err)
 	}
 
 	defer func() {
-		err := file.Close()
-		if err != nil {
-			panic(err)
+		closeErr := file.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("error closing file: %w", err)
 		}
 	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = charset.NewReaderLabel
 
-	tempValutes := structs.TempValutes{
-		TempValutes: []structs.TempValute{},
+	Valutes := structs.Valutes{
+		Valutes: []structs.Valute{},
 	}
 
-	err = decoder.Decode(&tempValutes)
+	err = decoder.Decode(&Valutes)
 	if err != nil {
-		return structs.TempValutes{}, fmt.Errorf("failed to decode XML:  %w", err)
+		return structs.Valutes{}, fmt.Errorf("failed to decode XML:  %w", err)
 	}
 
-	return tempValutes, nil
+	return Valutes, err
 }
