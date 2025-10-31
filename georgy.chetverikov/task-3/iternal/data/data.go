@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -13,9 +14,11 @@ import (
 type Valutes []Valute
 
 type Valute struct {
+	ID       string      `xml:"ID,attr"`
 	NumCode  int         `xml:"NumCode" json:"num_code"`
 	CharCode string      `xml:"CharCode" json:"char_code"`
 	Nominal  int         `xml:"Nominal" json:"nominal"`
+	Name     string      `xml:"Name" json:"name"`
 	Value    customFloat `xml:"Value" json:"value"`
 }
 
@@ -42,7 +45,7 @@ func (f *customFloat) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement)
 
 func (v Valutes) Len() int           { return len(v) }
 func (v Valutes) Swap(i, j int)      { v[i], v[j] = v[j], v[i] }
-func (v Valutes) Less(i, j int) bool { return v[i].Value > v[j].Value }
+func (v Valutes) Less(i, j int) bool { return v[i].NumCode < v[j].NumCode }
 
 func ParseXML(data []byte) (Valutes, error) {
 	decoder := xml.NewDecoder(strings.NewReader(string(data)))
@@ -55,6 +58,8 @@ func ParseXML(data []byte) (Valutes, error) {
 	}
 
 	type tempValCourse struct {
+		Date    string   `xml:"Date,attr"`
+		Name    string   `xml:"name,attr"`
 		Valutes []Valute `xml:"Valute"`
 	}
 
@@ -64,5 +69,8 @@ func ParseXML(data []byte) (Valutes, error) {
 		return nil, fmt.Errorf("XML decoding failed: %w", err)
 	}
 
-	return temp.Valutes, nil
+	valutes := temp.Valutes
+	sort.Sort(Valutes(valutes))
+
+	return valutes, nil
 }
