@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,17 +16,23 @@ type Config struct {
 	OutputFormat string `yaml:"output-format"`
 }
 
-func Read(configPath string) (*Config, error) {
+var (
+	ErrInputFileRequired   = errors.New("input-file is required")
+	ErrOutputFileRequired  = errors.New("output-file is required")
+	ErrInvalidInputFile    = errors.New("input file must be a XML file")
+	ErrInvalidOutputFormat = errors.New("output-format must be one of: json, yaml, xml")
+)
 
+func Read(configPath string) (*Config, error) {
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to read config %q: %w", configPath, err)
+		return nil, fmt.Errorf("unable to read config %q: %w", configPath, err)
 	}
 
 	config := new(Config)
 
 	if err := yaml.Unmarshal(data, config); err != nil {
-		return nil, fmt.Errorf("Unable to unmarshall data: %w", err)
+		return nil, fmt.Errorf("unable to unmarshall data: %w", err)
 	}
 
 	if err := validateConfig(config); err != nil {
@@ -40,16 +47,16 @@ func Read(configPath string) (*Config, error) {
 }
 
 func validateConfig(config *Config) error {
-
 	if config.InputFile == "" {
-		return fmt.Errorf("input-file is required")
+		return ErrInputFileRequired
 	}
+
 	if config.OutputFile == "" {
-		return fmt.Errorf("output-file is required")
+		return ErrOutputFileRequired
 	}
 
 	if !isXMLFile(config.InputFile) {
-		return fmt.Errorf("input file must be a XML file, got: %s", config.InputFile)
+		return fmt.Errorf("%w, got: %s", ErrInvalidInputFile, config.InputFile)
 	}
 
 	validFormats := map[string]bool{
@@ -57,8 +64,9 @@ func validateConfig(config *Config) error {
 		"yaml": true,
 		"xml":  true,
 	}
+
 	if config.OutputFormat != "" && !validFormats[config.OutputFormat] {
-		return fmt.Errorf("output-format must be one of: json, yaml,xml, got: %s", config.OutputFormat)
+		return fmt.Errorf("%w, got: %s", ErrInvalidOutputFormat, config.OutputFormat)
 	}
 
 	return nil
@@ -66,5 +74,6 @@ func validateConfig(config *Config) error {
 
 func isXMLFile(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
+
 	return ext == ".xml"
 }
