@@ -18,7 +18,11 @@ func ReadConfig(path string) (*Config, error) {
 		return nil, fmt.Errorf("config: %w", err)
 	}
 
-	config := &Config{}
+	config := &Config{
+		InputFile:  "",
+		OutputFile: "",
+	}
+
 	if err := yaml.Unmarshal(data, config); err != nil {
 		return nil, fmt.Errorf("config: %w", err)
 	}

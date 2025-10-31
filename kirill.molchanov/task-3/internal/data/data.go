@@ -12,8 +12,10 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-const PermissionsMkdir = 0o755
-const PermissionsOpenFile = 0o600
+const (
+	PermissionsMkdir    = 0o755
+	PermissionsOpenFile = 0o600
+)
 
 type Valutes struct {
 	Valutes []Valute `xml:"Valute"`
@@ -63,7 +65,7 @@ func New(path string) (*Valutes, error) {
 	return Valutes, nil
 }
 
-func (Valutes *Valutes) SaveToOutputFile(path string) error {
+func (val *Valutes) SaveToOutputFile(path string) error {
 	dirs := filepath.Dir(path)
 
 	err := os.MkdirAll(dirs, PermissionsMkdir)
@@ -79,7 +81,7 @@ func (Valutes *Valutes) SaveToOutputFile(path string) error {
 	encoder := json.NewEncoder(output)
 	encoder.SetIndent("", "  ")
 
-	if err = encoder.Encode(Valutes.Valutes); err != nil {
+	if err = encoder.Encode(val.Valutes); err != nil {
 		fmt.Fprintln(os.Stderr, "Valutes: %w", err)
 	}
 

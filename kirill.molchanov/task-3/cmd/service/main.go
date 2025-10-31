@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"task-3/internal/config"
 
+	"task-3/internal/config"
 	"task-3/internal/data"
 )
 
