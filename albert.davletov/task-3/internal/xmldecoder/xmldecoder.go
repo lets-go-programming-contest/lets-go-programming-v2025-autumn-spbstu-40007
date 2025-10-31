@@ -18,7 +18,7 @@ func XMLDecode(filepath string) (structs.Valutes, error) {
 	defer func() {
 		closeErr := file.Close()
 		if closeErr != nil {
-			err = fmt.Errorf("error closing file: %w", err)
+			fmt.Printf("warning: error closing file: %v\n", closeErr)
 		}
 	}()
 
@@ -34,5 +34,5 @@ func XMLDecode(filepath string) (structs.Valutes, error) {
 		return structs.Valutes{}, fmt.Errorf("failed to decode XML:  %w", err)
 	}
 
-	return Valutes, err
+	return Valutes, nil
 }
