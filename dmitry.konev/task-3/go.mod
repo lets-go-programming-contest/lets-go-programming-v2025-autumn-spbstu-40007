@@ -1,6 +1,6 @@
 module task3
 
-go 1.22.0
+go 1.22.7
 
 toolchain go1.24.9
 
