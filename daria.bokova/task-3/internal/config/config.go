@@ -39,7 +39,9 @@ func readFileContent(filePath string) ([]byte, error) {
 
 func parseYAMLConfig(content []byte) (AppSettings, error) {
 	var settings AppSettings
-	err := yaml.Unmarshal(content, &settings)
+	var err error
+
+	err = yaml.Unmarshal(content, &settings)
 	if err != nil {
 		return AppSettings{}, fmt.Errorf("ошибка разбора YAML: %w", err)
 	}
