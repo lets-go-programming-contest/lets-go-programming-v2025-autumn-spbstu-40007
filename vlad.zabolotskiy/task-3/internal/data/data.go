@@ -40,12 +40,12 @@ func LoadFromXML(path string) ([]Currency, error) {
 	decoder.CharsetReader = charset.NewReaderLabel
 
 	var valCurs ValCurs
-	err = decoder.Decode(&valCurs)
-	if err != nil {
+	if err = decoder.Decode(&valCurs); err != nil {
 		return nil, err //nolint:wrapcheck
 	}
 
 	var currencies []Currency //nolint:prealloc
+
 	for _, xmlCurr := range valCurs.Currencies {
 		valueStr := strings.ReplaceAll(xmlCurr.Value, ",", ".")
 
@@ -72,7 +72,7 @@ func SortByValue(currencies []Currency) {
 
 func SaveToJSON(currencies []Currency, path string) error {
 	folderPath := filepath.Dir(path)
-	if err := os.MkdirAll(folderPath, 0o755); err != nil { //nolint:mnd
+	if err := os.MkdirAll(folderPath, 0o755); err != nil {
 		return err //nolint:wrapcheck
 	}
 
