@@ -88,7 +88,6 @@ func readFoodValues(reader *bufio.Reader, numberAll int) ([]string, bool) {
 func processFood(parts []string, intHeap *IntHeap) bool {
 	for _, part := range parts {
 		numberOfFood, err := strconv.Atoi(part)
-
 		if err != nil {
 			fmt.Println("Invalid value")
 
