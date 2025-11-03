@@ -65,7 +65,6 @@ func readNumberAll() (int, bool) {
 }
 
 func readFoodValues(reader *bufio.Reader, numberAll int) ([]string, bool) {
-
 	line, err3 := reader.ReadString('\n')
 
 	if err3 != nil {
@@ -139,13 +138,11 @@ func readEndProcessFood(reader *bufio.Reader, intHeap *IntHeap) (int, bool) {
 }
 
 func main() {
-
 	intHeap := &IntHeap{}
 
 	numberAll, ok := readNumberAll()
 
 	if !ok {
-
 		return
 	}
 
@@ -154,21 +151,18 @@ func main() {
 	parts, ok2 := readFoodValues(reader, numberAll)
 
 	if !ok2 {
-
 		return
 	}
 
 	ok3 := processFood(parts, intHeap)
 
 	if !ok3 {
-
 		return
 	}
 
 	valueFood, ok4 := readEndProcessFood(reader, intHeap)
 
 	if !ok4 {
-
 		return
 	}
 
