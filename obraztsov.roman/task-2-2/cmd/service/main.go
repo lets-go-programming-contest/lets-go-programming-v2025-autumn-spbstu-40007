@@ -50,33 +50,28 @@ func (h *IntHeap) Sort() {
 	}
 }
 
-func main() {
+func readNumberAll() (int, bool) {
 	var numberAll int
-
-	intHeap := &IntHeap{}
 
 	_, err1 := fmt.Scanln(&numberAll)
 
 	if err1 != nil {
 		fmt.Println("Invalid Value")
 
-		return
+		return 0, false
 	}
 
-	if numberAll < 1 || numberAll > 10000 {
-		fmt.Println("Number of food out of range")
+	return numberAll, true
+}
 
-		return
-	}
-
-	reader := bufio.NewReader(os.Stdin)
+func readFoodValues(reader *bufio.Reader, numberAll int) ([]string, bool) {
 
 	line, err3 := reader.ReadString('\n')
 
 	if err3 != nil {
 		fmt.Println("Error cant read food values")
 
-		return
+		return nil, false
 	}
 
 	line = strings.TrimSpace(line)
@@ -85,22 +80,26 @@ func main() {
 	if len(parts) != numberAll {
 		fmt.Println("Invalid input")
 
-		return
+		return nil, false
 	}
 
+	return parts, true
+}
+
+func processFood(parts []string, intHeap *IntHeap) bool {
 	for _, part := range parts {
 		numberOfFood, err := strconv.Atoi(part)
 
 		if err != nil {
 			fmt.Println("Invalid value")
 
-			return
+			return false
 		}
 
 		if numberOfFood < -10000 || numberOfFood > 10000 {
 			fmt.Println("Invalid value")
 
-			return
+			return false
 		}
 
 		heap.Push(intHeap, numberOfFood)
@@ -108,12 +107,16 @@ func main() {
 
 	intHeap.Sort()
 
+	return true
+}
+
+func readEndProcessFood(reader *bufio.Reader, intHeap *IntHeap) (int, bool) {
 	value, err4 := reader.ReadString('\n')
 
 	if err4 != nil {
 		fmt.Println("Error of value food")
 
-		return
+		return 0, false
 	}
 
 	value = strings.TrimSpace(value)
@@ -123,11 +126,48 @@ func main() {
 	if err5 != nil {
 		fmt.Println("Invalid value")
 
-		return
+		return 0, false
 	}
 
 	if valueFood <= 0 || valueFood > len(*intHeap) {
 		fmt.Println("Invalid value")
+
+		return 0, false
+	}
+
+	return valueFood, true
+}
+
+func main() {
+
+	intHeap := &IntHeap{}
+
+	numberAll, ok := readNumberAll()
+
+	if !ok {
+
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+
+	parts, ok2 := readFoodValues(reader, numberAll)
+
+	if !ok2 {
+
+		return
+	}
+
+	ok3 := processFood(parts, intHeap)
+
+	if !ok3 {
+
+		return
+	}
+
+	valueFood, ok4 := readEndProcessFood(reader, intHeap)
+
+	if !ok4 {
 
 		return
 	}
