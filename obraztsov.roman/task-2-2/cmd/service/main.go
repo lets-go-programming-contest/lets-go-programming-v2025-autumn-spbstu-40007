@@ -11,7 +11,8 @@ import (
 
 type IntHeap []int
 
-func (h IntHeap) Len() int           { return len(h) }
+func (h IntHeap) Len() int { return len(h) }
+
 func (h IntHeap) Less(i, j int) bool { return h[i] < h[j] }
 
 func (h IntHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
@@ -19,21 +20,21 @@ func (h IntHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 func (h *IntHeap) Push(x interface{}) {
 	value, ok := x.(int)
 	if !ok {
-		fmt.Println("Error use int ")
+		fmt.Println("Error use int")
 		return
 	}
+
 	*h = append(*h, value)
 }
+
 func (h *IntHeap) Pop() interface{} {
 	old := *h
 	n := len(old)
 	item := old[n-1]
-
 	old[n-1] = 0
+	*h = old[0 : n-1]
 
-	old = old[0 : n-1]
 	return item
-
 }
 
 func (h IntHeap) Sort() {
@@ -43,15 +44,13 @@ func (h IntHeap) Sort() {
 			if h.Less(j+1, j) {
 				h.Swap(j, j+1)
 			}
-
 		}
 	}
 }
 
 func main() {
-	var (
-		numberAll int
-	)
+	var numberAll int
+
 	intHeap := &IntHeap{}
 
 	_, err1 := fmt.Scanln(&numberAll)
@@ -60,40 +59,47 @@ func main() {
 		return
 	}
 
-	if !(numberAll >= 1 && numberAll <= 10000) {
+	if numberAll < 1 || numberAll > 10000 {
 		fmt.Println("Number of food out of range")
 		return
 	}
+
 	reader := bufio.NewReader(os.Stdin)
+
 	line, err3 := reader.ReadString('\n')
 	if err3 != nil {
 		fmt.Println("Error cant read food values")
 		return
 	}
+
 	line = strings.TrimSpace(line)
 	parts := strings.Split(line, " ")
+
 	if len(parts) != numberAll {
 		fmt.Println("Invalid input")
 		return
 	}
-	f := true
+
+	validInput := true
 
 	for _, part := range parts {
 		numberOfFood, err := strconv.Atoi(part)
 		if err != nil {
 			fmt.Println("Invalid value")
-			f = false
+			validInput = false
 			return
 		}
-		if !(numberOfFood >= -10000 && numberOfFood <= 10000) {
-			fmt.Println("Invalid value")
-			f = false
-			return
-		}
-		heap.Push(intHeap, numberOfFood)
 
+		if numberOfFood < -10000 || numberOfFood > 10000 {
+			fmt.Println("Invalid value")
+			validInput = false
+			return
+		}
+
+		heap.Push(intHeap, numberOfFood)
 	}
-	if f == false {
+
+	if !validInput {
 		return
 	}
 
@@ -101,21 +107,24 @@ func main() {
 
 	value, err4 := reader.ReadString('\n')
 	if err4 != nil {
-		fmt.Println("Error of value food ")
+		fmt.Println("Error of value food")
+		return
 	}
+
 	value = strings.TrimSpace(value)
 	valueFood, err5 := strconv.Atoi(value)
 	if err5 != nil {
 		fmt.Println("Invalid value")
+		return
 	}
 
-	if !(valueFood <= len(*intHeap) && valueFood > 0) {
+	if valueFood <= 0 || valueFood > len(*intHeap) {
 		fmt.Println("Invalid value")
-
+		return
 	}
-	heap := *intHeap
-	m := len(heap)
 
-	fmt.Println(heap[m-valueFood])
+	heapCopy := *intHeap
+	length := len(heapCopy)
 
+	fmt.Println(heapCopy[length-valueFood])
 }
