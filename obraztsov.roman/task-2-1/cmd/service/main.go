@@ -48,7 +48,6 @@ func takeTemperature(employees int) {
 }
 
 func main() {
-
 	var (
 		departments, employees int
 	)
@@ -72,6 +71,5 @@ func main() {
 
 		takeTemperature(employees)
 	}
-
 }
 
