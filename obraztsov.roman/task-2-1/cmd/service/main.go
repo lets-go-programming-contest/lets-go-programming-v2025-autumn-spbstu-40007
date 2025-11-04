@@ -9,7 +9,7 @@ func takeTemperature(employees int) {
 	minTemp := 15
 	maxTemp := 30
 
-	for range employees {
+	for i := 0; i < employees; i++ {
 		var (
 			operation string
 			value     string
@@ -59,7 +59,7 @@ func main() {
 		return
 	}
 
-	for range departments {
+	for i := 0; i < departments; i++ {
 		_, err2 := fmt.Scanln(&employees)
 		
 		if err2 != nil {
@@ -71,3 +71,4 @@ func main() {
 		takeTemperature(employees)
 	}
 }
+
