@@ -10,7 +10,6 @@ func takeTemperature(employees int) {
 	maxTemp := 30
 
 	for range employees {
-
 		var (
 			operation string
 			value     string
@@ -71,5 +70,6 @@ func main() {
 		takeTemperature(employees)
 	}
 }
+
 
 
