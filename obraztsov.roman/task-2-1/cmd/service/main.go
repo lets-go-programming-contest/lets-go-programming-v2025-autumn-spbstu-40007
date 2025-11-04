@@ -70,6 +70,3 @@ func main() {
 		takeTemperature(employees)
 	}
 }
-
-
-
