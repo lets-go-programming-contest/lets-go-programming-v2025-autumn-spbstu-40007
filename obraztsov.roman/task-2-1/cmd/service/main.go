@@ -67,7 +67,7 @@ func main() {
 			
 			return
 		}
+		
 		takeTemperature(employees)
 	}
 }
-
