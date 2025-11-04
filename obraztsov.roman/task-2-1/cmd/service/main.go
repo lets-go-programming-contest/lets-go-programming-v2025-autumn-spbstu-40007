@@ -37,12 +37,12 @@ func takeTemperature(employees int) {
 		case ">=":
 			minTemp = max(minTemp, tempInt)
 		}
+		
 		if minTemp > maxTemp {
 			fmt.Println(-1)
 		} else {
 			fmt.Println(minTemp)
 		}
-
 	}
 }
 
@@ -70,3 +70,4 @@ func main() {
 		takeTemperature(employees)
 	}
 }
+
