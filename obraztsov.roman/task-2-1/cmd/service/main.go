@@ -15,29 +15,29 @@ func takeTemperature(employees int) {
 			value     string
 		)
 
-		_, err3 := fmt.Scanln(&operation, &value)
-		
-		if err3 != nil {
+		_, err := fmt.Scanln(&operation, &value)
+		if err != nil {
 			fmt.Println("Invalid operation or value")
-			
 			return
 		}
 
 		tempInt, err := strconv.Atoi(value)
-		
 		if err != nil {
 			fmt.Println("Error invalid value")
-
 			return
 		}
 
 		switch operation {
 		case "<=":
-			maxTemp = min(maxTemp, tempInt)
+			if tempInt < maxTemp {
+				maxTemp = tempInt
+			}
 		case ">=":
-			minTemp = max(minTemp, tempInt)
+			if tempInt > minTemp {
+				minTemp = tempInt
+			}
 		}
-		
+
 		if minTemp > maxTemp {
 			fmt.Println(-1)
 		} else {
@@ -47,28 +47,21 @@ func takeTemperature(employees int) {
 }
 
 func main() {
-	var (
-		departments, employees int
-	)
+	var departments, employees int
 
-	_, err1 := fmt.Scanln(&departments)
-	
-	if err1 != nil {
+	_, err := fmt.Scanln(&departments)
+	if err != nil {
 		fmt.Println("Invalid departments")
-		
 		return
 	}
 
 	for i := 0; i < departments; i++ {
-		_, err2 := fmt.Scanln(&employees)
-		
-		if err2 != nil {
+		_, err := fmt.Scanln(&employees)
+		if err != nil {
 			fmt.Println("Invalid employees")
-			
 			return
 		}
-		
+
 		takeTemperature(employees)
 	}
 }
-
