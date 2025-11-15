@@ -84,7 +84,8 @@ func (conveyer *Conveyer) RegisterMultiplexer(
 	inputs []string,
 	output string,
 ) {
-	conveyer.makeChannels(output, inputs...)
+	conveyer.makeChannel(output)
+	conveyer.makeChannels(inputs...)
 	conveyer.addToPool(func(context context.Context) error {
 		return multiplexer(
 			context,
@@ -99,7 +100,8 @@ func (conveyer *Conveyer) RegisterSeparator(
 	input string,
 	outputs []string,
 ) {
-	conveyer.makeChannels(input, outputs...)
+	conveyer.makeChannel(input)
+	conveyer.makeChannels(outputs...)
 	conveyer.addToPool(func(context context.Context) error {
 		return separator(
 			context,
