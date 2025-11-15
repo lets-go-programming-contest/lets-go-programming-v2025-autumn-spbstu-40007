@@ -43,11 +43,15 @@ func (conveyer *Conveyer) addToPool(function func(context.Context) error) {
 	conveyer.pool = append(conveyer.pool, function)
 }
 
+func (conveyer *Conveyer) makeChannel(name string) {
+	if _, ok := conveyer.channels[name]; !ok {
+		conveyer.channels[name] = make(chan string, conveyer.channelSize)
+	}
+}
+
 func (conveyer *Conveyer) makeChannels(names ...string) {
 	for _, name := range names {
-		if _, ok := conveyer.channels[name]; !ok {
-			conveyer.channels[name] = make(chan string, conveyer.channelSize)
-		}
+		conveyer.makeChannel(name)
 	}
 }
 
