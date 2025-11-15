@@ -2,9 +2,15 @@ package conveyer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"golang.org/x/sync/errgroup"
+)
+
+var (
+    errSendChanNotFound = errors.New("conveyer.Send: chan not found")
+    errRecvChanNotFound = errors.New("conveyer.Recv: chan not found")
 )
 
 type Decorator func(
@@ -119,13 +125,14 @@ func (conveyer *Conveyer) Run(context context.Context) error {
 		})
 	}
 
-	return group.Wait()
+    /* Errors are mine anyway.  */
+	return group.Wait() //nolint:wrapcheck
 }
 
 func (conveyer *Conveyer) Send(input string, data string) error {
 	channel, ok := conveyer.channels[input]
 	if !ok {
-		return fmt.Errorf("conveyer.Send: chan not found")
+		return errSendChanNotFound
 	}
 
 	channel <- data
@@ -134,9 +141,9 @@ func (conveyer *Conveyer) Send(input string, data string) error {
 }
 
 func (conveyer *Conveyer) Recv(output string) (string, error) {
-	channel, ok := conveyer.channels[output]
+	channel, ok := conveyer.channels[output] //nolint:varnamelen
 	if !ok {
-		return "", fmt.Errorf("conveyer.Send: chan not found")
+		return "", errRecvChanNotFound
 	}
 
 	data, ok := <-channel

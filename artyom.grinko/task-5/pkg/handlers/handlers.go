@@ -18,16 +18,16 @@ func PrefixDecoratorFunc(
 		case <-context.Done():
 			return nil
 
-		case x, ok := <-input:
+		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(x, "no decorator") {
+			if strings.Contains(data, "no decorator") {
 				return fmt.Errorf("handlers.PrefixDecoratorFunc: can't be decorated")
 			}
 
-			if strings.HasPrefix(x, "decorated: ") {
+			if strings.HasPrefix(data, "decorated: ") {
 				output <- x
 
 				continue
@@ -37,7 +37,7 @@ func PrefixDecoratorFunc(
 			case <-context.Done():
 				return nil
 
-			case output <- "decorated: " + x:
+			case output <- "decorated: " + data:
 			}
 		}
 	}
@@ -64,7 +64,7 @@ func MultiplexerFunc(
 				case <-context.Done():
 					return nil
 
-				case x, ok := <-activeInputs[i]:
+				case data, ok := <-activeInputs[i]:
 					if !ok {
 						activeInputs = append(activeInputs[:i], activeInputs[i+1:]...)
 						i--
@@ -72,7 +72,7 @@ func MultiplexerFunc(
 						continue
 					}
 
-					if strings.Contains(x, "no multiplexer") {
+					if strings.Contains(data, "no multiplexer") {
 						continue
 					}
 
@@ -80,7 +80,7 @@ func MultiplexerFunc(
 					case <-context.Done():
 						return nil
 
-					case output <- x:
+					case output <- data:
 					}
 				default:
 				}
@@ -107,7 +107,7 @@ func SeparatorFunc(
 		case <-context.Done():
 			return nil
 
-		case x, ok := <-input:
+		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
@@ -116,7 +116,7 @@ func SeparatorFunc(
 			case <-context.Done():
 				return nil
 
-			case outputs[i%len(outputs)] <- x:
+			case outputs[i%len(outputs)] <- data:
 				i++
 			}
 		}
