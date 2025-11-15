@@ -8,8 +8,8 @@ import (
 )
 
 var (
-    errSendChanNotFound = errors.New("conveyer.Send: chan not found")
-    errRecvChanNotFound = errors.New("conveyer.Recv: chan not found")
+	errSendChanNotFound = errors.New("conveyer.Send: chan not found")
+	errRecvChanNotFound = errors.New("conveyer.Recv: chan not found")
 )
 
 type Decorator func(
@@ -124,7 +124,7 @@ func (conveyer *Conveyer) Run(context context.Context) error {
 		})
 	}
 
-    /* Errors are mine anyway.  */
+	/* Errors are mine anyway.  */
 	return group.Wait() //nolint:wrapcheck
 }
 
