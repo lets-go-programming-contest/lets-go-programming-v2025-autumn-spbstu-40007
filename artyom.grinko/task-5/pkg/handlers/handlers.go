@@ -50,34 +50,45 @@ func MultiplexerFunc(
 ) error {
 	defer close(output)
 
-	for {
+	activeInputs := make([]chan string, len(inputs))
+	copy(activeInputs, inputs)
+
+	for len(activeInputs) > 0 {
 		select {
 		case <-context.Done():
 			return nil
 
 		default:
-			for _, input := range inputs {
+			for i := 0; i < len(activeInputs); i++ {
 				select {
 				case <-context.Done():
 					return nil
 
-				case x, ok := <-input:
+				case x, ok := <-activeInputs[i]:
 					if !ok {
+						activeInputs = append(activeInputs[:i], activeInputs[i+1:]...)
+						i--
+
+						continue
+					}
+
+					if strings.Contains(x, "no multiplexer") {
+						continue
+					}
+
+					select {
+					case <-context.Done():
 						return nil
-					}
 
-					if !strings.Contains(x, "no multiplexer") {
-						select {
-						case <-context.Done():
-							return nil
-
-						case output <- x:
-						}
+					case output <- x:
 					}
+				default:
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
 func SeparatorFunc(
