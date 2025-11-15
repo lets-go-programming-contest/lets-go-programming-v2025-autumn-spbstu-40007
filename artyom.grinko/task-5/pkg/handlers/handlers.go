@@ -28,7 +28,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.HasPrefix(data, "decorated: ") {
-				output <- x
+				output <- data
 
 				continue
 			}
