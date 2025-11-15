@@ -35,7 +35,7 @@ func PrefixDecoratorFunc(
 
 			select {
 			case <-context.Done():
-				return context.Err()
+				return nil
 
 			case output <- "decorated: " + x:
 			}
@@ -59,7 +59,7 @@ func MultiplexerFunc(
 			for _, input := range inputs {
 				select {
 				case <-context.Done():
-					return context.Err()
+					return nil
 
 				case x, ok := <-input:
 					if !ok {
@@ -69,7 +69,7 @@ func MultiplexerFunc(
 					if !strings.Contains(x, "no multiplexer") {
 						select {
 						case <-context.Done():
-							return context.Err()
+							return nil
 
 						case output <- x:
 						}
@@ -103,7 +103,7 @@ func SeparatorFunc(
 
 			select {
 			case <-context.Done():
-				return context.Err()
+				return nil
 
 			case outputs[i%len(outputs)] <- x:
 				i++
