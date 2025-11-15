@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 )
+
+var errPrefixDecoratorFuncCantBeDecorated = errors.New("handlers.PrefixDecoratorFunc: can't be decorated")
 
 func PrefixDecoratorFunc(
 	context context.Context,
@@ -24,7 +27,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("handlers.PrefixDecoratorFunc: can't be decorated")
+				return errPrefixDecoratorFuncCantBeDecorated
 			}
 
 			if strings.HasPrefix(data, "decorated: ") {
@@ -59,7 +62,7 @@ func MultiplexerFunc(
 			return nil
 
 		default:
-			for i := 0; i < len(activeInputs); i++ {
+			for i := 0; i < len(activeInputs); i++ { //nolint:varnamelen
 				select {
 				case <-context.Done():
 					return nil
@@ -102,7 +105,7 @@ func SeparatorFunc(
 		}
 	})()
 
-	for i := 0; ; {
+	for i := 0; ; { //nolint:varnamelen
 		select {
 		case <-context.Done():
 			return nil
