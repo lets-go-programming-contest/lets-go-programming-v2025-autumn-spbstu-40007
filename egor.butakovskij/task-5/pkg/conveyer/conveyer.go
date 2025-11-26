@@ -56,7 +56,7 @@ func getChan(name string, c *Conveyer) chan string {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(
+	fun func(
 		ctx context.Context,
 		input chan string,
 		output chan string,
@@ -72,7 +72,7 @@ func (c *Conveyer) RegisterDecorator(
 
 	config := HandlerConfig{
 		Type:      DecoratorType,
-		Fn:        fn,
+		Fn:        fun,
 		InputIds:  []string{input},
 		OutputIds: []string{output},
 	}
@@ -81,7 +81,7 @@ func (c *Conveyer) RegisterDecorator(
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(
+	fun func(
 		ctx context.Context,
 		inputs []chan string,
 		output chan string,
@@ -100,7 +100,7 @@ func (c *Conveyer) RegisterMultiplexer(
 
 	config := HandlerConfig{
 		Type:      MultiplexerType,
-		Fn:        fn,
+		Fn:        fun,
 		InputIds:  inputs,
 		OutputIds: []string{output},
 	}
@@ -109,7 +109,7 @@ func (c *Conveyer) RegisterMultiplexer(
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(
+	fun func(
 		ctx context.Context,
 		input chan string,
 		outputs []chan string,
@@ -128,7 +128,7 @@ func (c *Conveyer) RegisterSeparator(
 
 	config := HandlerConfig{
 		Type:      SeparatorType,
-		Fn:        fn,
+		Fn:        fun,
 		InputIds:  []string{input},
 		OutputIds: outputs,
 	}
@@ -167,7 +167,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	return data, nil
 }
 
-func (c *Conveyer) runHndl(cfg HandlerConfig, in []chan string, out []chan string, errCh chan error, ctx context.Context) {
+func (c *Conveyer) Hndl(cfg HandlerConfig, in []chan string, out []chan string, errCh chan error, ctx context.Context) {
 	defer c.wg.Done()
 
 	var err error
@@ -195,6 +195,7 @@ func (c *Conveyer) runHndl(cfg HandlerConfig, in []chan string, out []chan strin
 		fun, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
 		if !ok {
 			errCh <- ErrInvalidHandler
+
 			return
 		}
 
@@ -230,16 +231,18 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 		c.wg.Add(1)
 
-		go c.runHndl(config, inputChans, outputChans, errChan, ctx)
+		go c.Hndl(config, inputChans, outputChans, errChan, ctx)
 	}
 	c.mu.Unlock()
 	select {
 	case err := <-errChan:
 		cancel()
 		c.wg.Wait()
+
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()
+
 		return nil
 	}
 }

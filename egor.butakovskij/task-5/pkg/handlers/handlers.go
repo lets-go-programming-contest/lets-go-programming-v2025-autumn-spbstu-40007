@@ -15,7 +15,7 @@ func PrefixDecoratorFunc(
 	output chan string,
 ) error {
 	defer close(output)
-	
+
 	prefix := "decorated: "
 
 	for {
@@ -141,6 +141,7 @@ func SeparatorFunc(
 			if !ok {
 				return nil
 			}
+			
 			targetIndex := counter % len(outputs)
 			targetChan := outputs[targetIndex]
 
