@@ -44,15 +44,13 @@ func New(size int) *Conveyer {
 	return conv
 }
 
-func getChan(name string, c *Conveyer) chan string {
-	if ch, exists := c.channels[name]; exists {
-		return ch
+func getChan(name string, c *Conveyer) {
+	if _, exists := c.channels[name]; exists {
+		return
 	}
 
 	ch := make(chan string, c.bufferSize)
 	c.channels[name] = ch
-
-	return ch
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -167,7 +165,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	return data, nil
 }
 
-func (c *Conveyer) Hndl(cfg HandlerConfig, in []chan string, out []chan string, errCh chan error, ctx context.Context) {
+func (c *Conveyer) Hndl(cfg HandlerConfig, ins []chan string, out []chan string, errC chan error, ctx context.Context) {
 	defer c.wg.Done()
 
 	var err error
@@ -176,34 +174,34 @@ func (c *Conveyer) Hndl(cfg HandlerConfig, in []chan string, out []chan string, 
 	case DecoratorType:
 		fun, ok := cfg.Fn.(func(context.Context, chan string, chan string) error)
 		if !ok {
-			errCh <- ErrInvalidHandler
+			errC <- ErrInvalidHandler
 
 			return
 		}
 
-		err = fun(ctx, in[0], out[0])
+		err = fun(ctx, ins[0], out[0])
 	case MultiplexerType:
 		fun, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
 		if !ok {
-			errCh <- ErrInvalidHandler
+			errC <- ErrInvalidHandler
 
 			return
 		}
 
-		err = fun(ctx, in, out[0])
+		err = fun(ctx, ins, out[0])
 	case SeparatorType:
 		fun, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
 		if !ok {
-			errCh <- ErrInvalidHandler
+			errC <- ErrInvalidHandler
 
 			return
 		}
 
-		err = fun(ctx, in[0], out)
+		err = fun(ctx, ins[0], out)
 	}
 
 	if err != nil {
-		errCh <- err
+		errC <- err
 	}
 }
 

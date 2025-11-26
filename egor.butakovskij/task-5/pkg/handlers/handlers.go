@@ -78,9 +78,11 @@ func MultiplexerFunc(
 
 	defer close(output)
 
+	fun := readInputToTransfer
+
 	for _, input := range inputs {
 		wgrp.Add(1)
-		go readInputToTransfer(ctx, input, transfer, &wgrp)
+		go fun(ctx, input, transfer, &wgrp)
 	}
 
 	go func() {
@@ -121,6 +123,7 @@ func SeparatorFunc(
 		for _, output := range outputs {
 			defer func() {
 				if r := recover(); r != nil {
+					_ = r
 				}
 			}()
 			close(output)
@@ -141,7 +144,7 @@ func SeparatorFunc(
 			if !ok {
 				return nil
 			}
-			
+
 			targetIndex := counter % len(outputs)
 			targetChan := outputs[targetIndex]
 
