@@ -33,14 +33,14 @@ const (
 )
 
 func New(size int) *Conveyer {
-	c := &Conveyer{
+	conv := &Conveyer{
 		channels:       make(map[string]chan string),
 		HandlerConfigs: make([]HandlerConfig, 0),
 		bufferSize:     size,
 		mu:             sync.Mutex{},
 		wg:             sync.WaitGroup{},
 	}
-	return c
+	return conv
 }
 
 func (c *Conveyer) getChan(name string) chan string {
@@ -56,10 +56,10 @@ func (c *Conveyer) getChan(name string) chan string {
 
 func (c *Conveyer) RegisterDecorator(
 	fn func(
-		ctx context.Context,
-		input chan string,
-		output chan string,
-	) error,
+	ctx context.Context,
+	input chan string,
+	output chan string,
+) error,
 	input string,
 	output string,
 ) {
@@ -81,10 +81,10 @@ func (c *Conveyer) RegisterDecorator(
 
 func (c *Conveyer) RegisterMultiplexer(
 	fn func(
-		ctx context.Context,
-		inputs []chan string,
-		output chan string,
-	) error,
+	ctx context.Context,
+	inputs []chan string,
+	output chan string,
+) error,
 	inputs []string,
 	output string,
 ) {
@@ -109,10 +109,10 @@ func (c *Conveyer) RegisterMultiplexer(
 
 func (c *Conveyer) RegisterSeparator(
 	fn func(
-		ctx context.Context,
-		input chan string,
-		outputs []chan string,
-	) error,
+	ctx context.Context,
+	input chan string,
+	outputs []chan string,
+) error,
 	input string,
 	outputs []string,
 ) {
@@ -164,6 +164,43 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	return data, nil
 }
 
+func (c *Conveyer) runHandler(cfg HandlerConfig, inputs []chan string, outputs []chan string, errChan chan error, ctx context.Context) {
+	defer c.wg.Done()
+	var err error
+	switch cfg.Type {
+	case DecoratorType:
+
+		fn, ok := cfg.Fn.(func(context.Context, chan string, chan string) error)
+		if !ok {
+			errChan <- ErrInvalidHandler
+			return
+		}
+		
+		err = fn(ctx, inputs[0], outputs[0])
+	case MultiplexerType:
+		fn, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
+		if !ok {
+			errChan <- ErrInvalidHandler
+			return
+		}
+
+		err = fn(ctx, inputs, outputs[0])
+	case SeparatorType:
+
+		fn, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
+		if !ok {
+			errChan <- ErrInvalidHandler
+			return
+		}
+
+		err = fn(ctx, inputs[0], outputs)
+	}
+
+	if err != nil {
+		errChan <- err
+	}
+}
+
 func (c *Conveyer) Run(ctx context.Context) error {
 	errChan := make(chan error, len(c.HandlerConfigs))
 
@@ -188,39 +225,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 		c.wg.Add(1)
 
-		go func(cfg HandlerConfig, inputs []chan string, outputs []chan string) {
-			defer c.wg.Done()
-			var err error
-			switch cfg.Type {
-			case DecoratorType:
-
-				fn, ok := cfg.Fn.(func(context.Context, chan string, chan string) error)
-				if !ok {
-					errChan <- ErrInvalidHandler
-					return
-				}
-				err = fn(ctx, inputs[0], outputs[0])
-			case MultiplexerType:
-				fn, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
-				if !ok {
-					errChan <- ErrInvalidHandler
-					return
-				}
-				err = fn(ctx, inputs, outputs[0])
-			case SeparatorType:
-
-				fn, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
-				if !ok {
-					errChan <- ErrInvalidHandler
-					return
-				}
-				err = fn(ctx, inputs[0], outputs)
-			}
-
-			if err != nil {
-				errChan <- err
-			}
-		}(config, inputChans, outputChans)
+		go c.runHandler(config, inputChans, outputChans, errChan, ctx)
 	}
 	c.mu.Unlock()
 	select {

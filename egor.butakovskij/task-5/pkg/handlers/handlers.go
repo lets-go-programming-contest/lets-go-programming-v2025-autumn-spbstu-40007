@@ -9,26 +9,6 @@ import (
 
 var errPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
 
-func readInputToTransfer(ctx context.Context, input chan string, transfer chan string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case data, ok := <-input:
-			if !ok {
-				return
-			}
-
-			select {
-			case transfer <- data:
-			case <-ctx.Done():
-				return
-			}
-		}
-	}
-}
-
 func PrefixDecoratorFunc(
 	ctx context.Context,
 	input chan string,
@@ -45,11 +25,13 @@ func PrefixDecoratorFunc(
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(data, "no decorator") {
 				return errPrefixDecoratorFuncCantBeDecorated
 			}
 
 			processedData := data
+
 			if !strings.HasPrefix(data, prefix) {
 				processedData = prefix + data
 			}
@@ -58,6 +40,27 @@ func PrefixDecoratorFunc(
 			case output <- processedData:
 			case <-ctx.Done():
 				return nil
+			}
+		}
+	}
+}
+
+func readInputToTransfer(ctx context.Context, input chan string, transfer chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case data, ok := <-input:
+			if !ok {
+				return
+			}
+
+			select {
+			case transfer <- data:
+			case <-ctx.Done():
+				return
 			}
 		}
 	}
@@ -78,11 +81,13 @@ func MultiplexerFunc(
 		wg.Add(1)
 		go readInputToTransfer(ctx, input, transfer, &wg)
 	}
+
 	go func() {
 		wg.Wait()
 
 		close(transfer)
 	}()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -122,6 +127,7 @@ func SeparatorFunc(
 	})()
 
 	var counter int
+
 	if len(outputs) == 0 {
 		return nil
 	}
