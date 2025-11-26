@@ -15,6 +15,7 @@ func PrefixDecoratorFunc(
 	output chan string,
 ) error {
 	defer close(output)
+	
 	prefix := "decorated: "
 
 	for {
@@ -71,19 +72,19 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
-	var wg sync.WaitGroup
+	var wgrp sync.WaitGroup
 
 	transfer := make(chan string)
 
 	defer close(output)
 
 	for _, input := range inputs {
-		wg.Add(1)
-		go readInputToTransfer(ctx, input, transfer, &wg)
+		wgrp.Add(1)
+		go readInputToTransfer(ctx, input, transfer, &wgrp)
 	}
 
 	go func() {
-		wg.Wait()
+		wgrp.Wait()
 
 		close(transfer)
 	}()
