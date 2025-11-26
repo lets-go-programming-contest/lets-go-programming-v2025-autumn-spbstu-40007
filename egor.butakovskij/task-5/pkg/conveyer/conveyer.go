@@ -56,10 +56,10 @@ func (c *Conveyer) getChan(name string) chan string {
 
 func (c *Conveyer) RegisterDecorator(
 	fn func(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error,
+		ctx context.Context,
+		input chan string,
+		output chan string,
+	) error,
 	input string,
 	output string,
 ) {
@@ -81,10 +81,10 @@ func (c *Conveyer) RegisterDecorator(
 
 func (c *Conveyer) RegisterMultiplexer(
 	fn func(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error,
+		ctx context.Context,
+		inputs []chan string,
+		output chan string,
+	) error,
 	inputs []string,
 	output string,
 ) {
@@ -109,10 +109,10 @@ func (c *Conveyer) RegisterMultiplexer(
 
 func (c *Conveyer) RegisterSeparator(
 	fn func(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error,
+		ctx context.Context,
+		input chan string,
+		outputs []chan string,
+	) error,
 	input string,
 	outputs []string,
 ) {
@@ -175,7 +175,7 @@ func (c *Conveyer) runHandler(cfg HandlerConfig, inputs []chan string, outputs [
 			errChan <- ErrInvalidHandler
 			return
 		}
-		
+
 		err = fn(ctx, inputs[0], outputs[0])
 	case MultiplexerType:
 		fn, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
