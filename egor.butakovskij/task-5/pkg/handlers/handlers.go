@@ -82,6 +82,7 @@ func MultiplexerFunc(
 
 	for _, input := range inputs {
 		wgrp.Add(1)
+		
 		go fun(ctx, input, transfer, &wgrp)
 	}
 

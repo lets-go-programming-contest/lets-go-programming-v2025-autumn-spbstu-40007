@@ -44,13 +44,13 @@ func New(size int) *Conveyer {
 	return conv
 }
 
-func getChan(name string, c *Conveyer) {
-	if _, exists := c.channels[name]; exists {
+func getChan(name string, conv *Conveyer) {
+	if _, exists := conv.channels[name]; exists {
 		return
 	}
 
-	ch := make(chan string, c.bufferSize)
-	c.channels[name] = ch
+	ch := make(chan string, conv.bufferSize)
+	conv.channels[name] = ch
 }
 
 func (c *Conveyer) RegisterDecorator(
