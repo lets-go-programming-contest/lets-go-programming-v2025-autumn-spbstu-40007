@@ -83,20 +83,18 @@ func MultiplexerFunc(
 	var wgrp sync.WaitGroup
 
 	transfer := make(chan string)
-
-	defer close(output)
+	
+	defer safelyCloseChannel(output)
 
 	fun := readInputToTransfer
 
 	for _, input := range inputs {
 		wgrp.Add(1)
-
 		go fun(ctx, input, transfer, &wgrp)
 	}
 
 	go func() {
 		wgrp.Wait()
-
 		close(transfer)
 	}()
 
