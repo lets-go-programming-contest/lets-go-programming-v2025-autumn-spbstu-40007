@@ -9,13 +9,20 @@ import (
 
 var errPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
 
+func safelyCloseChannel(ch chan string) {
+	defer func() {
+		if r := recover(); r != nil {
+			_ = r
+		}
+	}()
+	close(ch)
+}
+
 func PrefixDecoratorFunc(
 	ctx context.Context,
 	input chan string,
 	output chan string,
 ) error {
-	defer close(output)
-
 	prefix := "decorated: "
 
 	for {
@@ -24,6 +31,7 @@ func PrefixDecoratorFunc(
 			return nil
 		case data, ok := <-input:
 			if !ok {
+				safelyCloseChannel(output)
 				return nil
 			}
 
@@ -121,13 +129,13 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	defer (func() {
+		closedChans := make(map[chan string]struct{})
 		for _, output := range outputs {
-			defer func() {
-				if r := recover(); r != nil {
-					_ = r
-				}
-			}()
-			close(output)
+			if _, ok := closedChans[output]; ok {
+				continue
+			}
+			closedChans[output] = struct{}{}
+			safelyCloseChannel(output)
 		}
 	})()
 
