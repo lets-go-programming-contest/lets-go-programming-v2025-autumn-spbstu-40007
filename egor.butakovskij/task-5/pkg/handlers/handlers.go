@@ -23,6 +23,8 @@ func PrefixDecoratorFunc(
 	input chan string,
 	output chan string,
 ) error {
+	defer safelyCloseChannel(output)
+
 	prefix := "decorated: "
 
 	for {
@@ -31,7 +33,6 @@ func PrefixDecoratorFunc(
 			return nil
 		case data, ok := <-input:
 			if !ok {
-				safelyCloseChannel(output)
 				return nil
 			}
 
@@ -83,7 +84,7 @@ func MultiplexerFunc(
 	var wgrp sync.WaitGroup
 
 	transfer := make(chan string)
-	
+
 	defer safelyCloseChannel(output)
 
 	fun := readInputToTransfer
