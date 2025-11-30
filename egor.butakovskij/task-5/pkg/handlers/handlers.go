@@ -55,6 +55,27 @@ func PrefixDecoratorFunc(
 	}
 }
 
+func readInputToTransfer(ctx context.Context, input chan string, transfer chan string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case data, ok := <-input:
+			if !ok {
+				return
+			}
+
+			select {
+			case transfer <- data:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+}
+
 func MultiplexerFunc(
 	ctx context.Context,
 	inputs []chan string,
@@ -68,25 +89,7 @@ func MultiplexerFunc(
 
 	for _, input := range inputs {
 		wgrp.Add(1)
-		go func(inputChan chan string) {
-			defer wgrp.Done()
-
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				case data, ok := <-inputChan:
-					if !ok {
-						return
-					}
-					select {
-					case transfer <- data:
-					case <-ctx.Done():
-						return
-					}
-				}
-			}
-		}(input)
+		go readInputToTransfer(ctx, input, transfer, &wgrp) //nolint:wsl
 	}
 
 	go func() {
