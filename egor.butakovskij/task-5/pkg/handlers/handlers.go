@@ -9,13 +9,13 @@ import (
 
 var errPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
 
-func safelyCloseChannel(ch chan string) {
+func safelyCloseChannel(chnl chan string) {
 	defer func() {
 		if r := recover(); r != nil {
 			_ = r
 		}
 	}()
-	close(ch)
+	close(chnl)
 }
 
 func PrefixDecoratorFunc(
@@ -87,11 +87,9 @@ func MultiplexerFunc(
 
 	defer safelyCloseChannel(output)
 
-	fun := readInputToTransfer
-
 	for _, input := range inputs {
 		wgrp.Add(1)
-		go fun(ctx, input, transfer, &wgrp)
+		go readInputToTransfer(ctx, input, transfer, &wgrp)
 	}
 
 	go func() {
