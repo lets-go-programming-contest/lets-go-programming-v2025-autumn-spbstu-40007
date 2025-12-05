@@ -7,6 +7,8 @@ import (
 	"sync"
 )
 
+var ErrCannotBeDecorated = errors.New("can't be decorated")
+
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
@@ -18,7 +20,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(item, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCannotBeDecorated
 			}
 
 			prefix := "decorated: "
@@ -36,15 +38,16 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
-	merge := func(in chan string) {
-		defer wg.Done()
+	merge := func(inputChannel chan string) {
+		defer waitGroup.Done()
+
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case item, ok := <-in:
+			case item, ok := <-inputChannel:
 				if !ok {
 					return
 				}
@@ -62,18 +65,21 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}
 	}
 
-	for _, in := range inputs {
-		wg.Add(1)
-		go merge(in)
+	for _, inputChannel := range inputs {
+		waitGroup.Add(1)
+
+		go merge(inputChannel)
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
+
 	return nil
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	var i int
+	var index int
 	count := len(outputs)
+
 	if count == 0 {
 		return nil
 	}
@@ -87,8 +93,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			targetIndex := i % count
-			i++
+			targetIndex := index % count
+			index++
 
 			select {
 			case outputs[targetIndex] <- item:
