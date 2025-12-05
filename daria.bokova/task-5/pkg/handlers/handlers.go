@@ -44,7 +44,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	var counter int64 = 0
+	var idx int64 = 0
 
 	for {
 		select {
@@ -55,8 +55,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 				return nil
 			}
 
-			idx := atomic.AddInt64(&counter, 1) - 1
-			outputIdx := int(idx) % len(outputs)
+			// Используем атомарный счетчик
+			outputIdx := int(atomic.AddInt64(&idx, 1)-1) % len(outputs)
 
 			select {
 			case <-ctx.Done():
@@ -72,40 +72,36 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	done := make(chan struct{})
-	defer close(done)
-
-	// Для каждого входа создаем горутину
-	for _, input := range inputs {
-		go func(in chan string) {
-			for {
+	// Простой мультиплексор - читаем из всех входов по очереди
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			// Проверяем все входы
+			for _, input := range inputs {
 				select {
-				case <-done:
-					return
 				case <-ctx.Done():
-					return
-				case data, ok := <-in:
+					return nil
+				case data, ok := <-input:
 					if !ok {
-						return
+						continue
 					}
 
+					// Фильтрация
 					if strings.Contains(data, "no multiplexer") {
 						continue
 					}
 
 					select {
-					case <-done:
-						return
 					case <-ctx.Done():
-						return
+						return nil
 					case output <- data:
 					}
+				default:
+					// Нет данных в этом канале
 				}
 			}
-		}(input)
+		}
 	}
-
-	// Ждем отмены контекста
-	<-ctx.Done()
-	return nil
 }
