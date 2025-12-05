@@ -15,3 +15,7 @@ type Conveyer interface {
 	Send(input string, data string) error
 	Recv(output string) (string, error)
 }
+
+func New(size int) Conveyer {
+	return newConveyerImpl(size)
+}

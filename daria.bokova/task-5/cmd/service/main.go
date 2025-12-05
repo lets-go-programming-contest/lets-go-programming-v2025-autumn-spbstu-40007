@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 func main() {
-	// Пустая main - все тесты запускаются через go test
+	fmt.Println("Conveyer implementation")
 }
