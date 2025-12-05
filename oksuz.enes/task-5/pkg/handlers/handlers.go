@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var errPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
+var ErrPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
 
 func safelyCloseChannel(chnl chan string) {
 	defer func() {
@@ -37,16 +37,16 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(data, "no decorator") {
-				continue
+				return ErrPrefixDecoratorFuncCantBeDecorated
 			}
 
-			processed := data
+			processedData := data
 			if !strings.HasPrefix(data, prefix) {
-				processed = prefix + data
+				processedData = prefix + data
 			}
 
 			select {
-			case output <- processed:
+			case output <- processedData:
 			case <-ctx.Done():
 				return nil
 			}
@@ -57,11 +57,20 @@ func PrefixDecoratorFunc(
 func readInputToTransfer(ctx context.Context, input chan string, transfer chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for data := range input {
+	for {
 		select {
-		case transfer <- data:
 		case <-ctx.Done():
 			return
+		case data, ok := <-input:
+			if !ok {
+				return
+			}
+
+			select {
+			case transfer <- data:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }

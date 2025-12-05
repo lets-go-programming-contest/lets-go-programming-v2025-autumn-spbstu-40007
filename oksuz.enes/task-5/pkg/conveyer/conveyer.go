@@ -108,14 +108,14 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}()
 
 	select {
+	case <-ctx.Done():
+		wg.Wait()
+		return ctx.Err()
 	case err := <-errCh:
 		wg.Wait()
 		return err
 	case <-done:
 		return nil
-	case <-ctx.Done():
-		wg.Wait()
-		return ctx.Err()
 	}
 }
 
@@ -146,4 +146,17 @@ func (c *Conveyer) Recv(name string) (string, error) {
 		return valUndefined, nil
 	}
 	return val, nil
+}
+
+func (c *Conveyer) Close(name string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	ch, ok := c.channels[name]
+	if !ok {
+		return errChanNotFound
+	}
+
+	close(ch)
+	return nil
 }
