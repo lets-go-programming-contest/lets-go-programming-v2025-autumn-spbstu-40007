@@ -103,6 +103,7 @@ func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error) {
 	c.mu.RUnlock()
 
 	var waitGroup sync.WaitGroup
+
 	workerCount := len(runners)
 
 	waitGroup.Add(workerCount)
@@ -149,9 +150,11 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		runErr = ctx.Err()
+
 	case err := <-errChan:
 		runErr = err
 		cancel()
+
 	case <-done:
 	}
 
