@@ -275,6 +275,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) stopAll() {
 	c.stopOnce.Do(func() {
+        c.wg.Wait()
 		c.mu.Lock()
 		closedChannels := make(map[chan string]bool)
 		for name, ch := range c.channels {
@@ -285,6 +286,5 @@ func (c *Conveyer) stopAll() {
             delete(c.channels, name)
 		}
 		c.mu.Unlock()
-		c.wg.Wait()
 	})
 }
