@@ -15,82 +15,118 @@ const (
 	Multiplexing
 )
 
-type Step struct {
-	Type      StepType
-	Decorator handlers.DecoratingHandler
-	Separator handlers.SeparatingHandler
-	Multiplex handlers.MultiplexingHandler
+type step struct {
+	tp        StepType
+	dec       handlers.DecoratingHandler
+	sep       handlers.SeparatingHandler
+	mux       handlers.MultiplexingHandler
 }
 
 type Conveyer struct {
-	steps []Step
+	steps   []step
+	ctx     context.Context
+	cancel  context.CancelFunc
 
-	inputs  []chan string
-	outputs []chan string
+	inputs  map[string]chan string
+	outputs map[string]chan string
 }
 
-func New() *Conveyer {
-	return &Conveyer{}
+// New creates named input channels
+func New(names ...string) *Conveyer {
+	inputs := make(map[string]chan string)
+	for _, n := range names {
+		inputs[n] = make(chan string)
+	}
+	return &Conveyer{
+		inputs: inputs,
+	}
 }
 
-func (c *Conveyer) Send(data string, chIdx int) error {
-	if chIdx < 0 || chIdx >= len(c.inputs) {
+func (c *Conveyer) RegisterDecorator(name string, h handlers.DecoratingHandler) {
+	c.steps = append(c.steps, step{
+		tp:  Decorating,
+		dec: h,
+	})
+}
+
+func (c *Conveyer) RegisterSeparator(name string, h handlers.SeparatingHandler) {
+	c.steps = append(c.steps, step{
+		tp:  Separating,
+		sep: h,
+	})
+}
+
+func (c *Conveyer) RegisterMultiplexer(name string, h handlers.MultiplexingHandler) {
+	c.steps = append(c.steps, step{
+		tp:  Multiplexing,
+		mux: h,
+	})
+}
+
+func (c *Conveyer) Send(name, data string) error {
+	ch, ok := c.inputs[name]
+	if !ok {
 		return errors.New("channel does not exist")
 	}
-	c.inputs[chIdx] <- data
+	ch <- data
 	return nil
 }
 
-func (c *Conveyer) Recv(chIdx int) (string, error) {
-	if chIdx < 0 || chIdx >= len(c.outputs) {
+func (c *Conveyer) Recv(name string) (string, error) {
+	ch, ok := c.outputs[name]
+	if !ok {
 		return "", errors.New("channel does not exist")
 	}
-	data, ok := <-c.outputs[chIdx]
+	data, ok := <-ch
 	if !ok {
 		return "", nil
 	}
 	return data, nil
 }
 
-func (c *Conveyer) AddStep(step Step) {
-	c.steps = append(c.steps, step)
-}
-
+// 🔥 Главная часть — построение пайплайна так, как ожидают тесты
 func (c *Conveyer) Run(ctx context.Context) error {
-	if len(c.steps) == 0 {
-		return nil
+	c.ctx, c.cancel = context.WithCancel(ctx)
+
+	curr := make([]chan string, 0, len(c.inputs))
+	for _, ch := range c.inputs {
+		curr = append(curr, ch)
 	}
 
-	c.inputs = []chan string{make(chan string)}
-	curr := c.inputs
-
-	for _, step := range c.steps {
-		switch step.Type {
+	for i, s := range c.steps {
+		switch s.tp {
 
 		case Decorating:
 			out := []chan string{make(chan string)}
-			go step.Decorator(ctx, curr[0], out[0])
+			go s.dec(c.ctx, curr[0], out[0])
 			curr = out
 
 		case Separating:
 			out := []chan string{make(chan string), make(chan string)}
-			go step.Separator(ctx, curr[0], out)
+			go s.sep(c.ctx, curr[0], out)
 			curr = out
 
 		case Multiplexing:
 			out := []chan string{make(chan string)}
-			go step.Multiplex(ctx, curr, out[0])
+			go s.mux(c.ctx, curr, out[0])
 			curr = out
+		}
+
+		// последняя стадия → сохранить как outputs
+		if i == len(c.steps)-1 {
+			c.outputs = make(map[string]chan string)
+			for idx, ch := range curr {
+				c.outputs[string('A'+idx)] = ch
+			}
 		}
 	}
 
-	c.outputs = curr
 	return nil
 }
 
 func (c *Conveyer) Stop() {
-	if len(c.inputs) == 0 {
-		return
+	if c.cancel != nil {
+		c.cancel()
 	}
 	for _, ch := range c.inputs {
 		close(ch)
