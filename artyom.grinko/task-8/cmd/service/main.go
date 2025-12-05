@@ -1,5 +1,6 @@
 package main
 
+//nolint:gofumpt
 import (
 	"fmt"
 
@@ -9,5 +10,5 @@ import (
 func main() {
 	config := config.New()
 
-	fmt.Print(config.Environment, config.LogLevel)
+	fmt.Print(config.Environment, " ", config.LogLevel)
 }
