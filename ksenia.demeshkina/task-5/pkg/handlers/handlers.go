@@ -7,98 +7,115 @@ import (
 	"sync"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+var ErrCantBeDecorated = errors.New("can't be decorated")
+
+func PrefixDecoratorFunc(ctx context.Context, inputChannel chan string, outputChannel chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
+
+		case data, ok := <-inputChannel:
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(data, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCantBeDecorated
 			}
+
 			newData := data
 			if !strings.HasPrefix(data, "decorated: ") {
 				newData = "decorated: " + data
 			}
+
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- newData:
+			case outputChannel <- newData:
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
-	transfer := make(chan string)
+func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputChannel chan string) error {
+	var waitGroup sync.WaitGroup
+	transferChannel := make(chan string)
 
-	for _, in := range inputs {
-		wg.Add(1)
-		go func(c chan string) {
-			defer wg.Done()
+	for _, inputChan := range inputChannels {
+		waitGroup.Add(1)
+
+		go func(ch chan string) {
+			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-c:
+
+				case val, ok := <-ch:
 					if !ok {
 						return
 					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case transfer <- val:
+					case transferChannel <- val:
 					}
 				}
 			}
-		}(in)
+		}(inputChan)
 	}
 
 	go func() {
-		wg.Wait()
-		close(transfer)
+		waitGroup.Wait()
+		close(transferChannel)
 	}()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-transfer:
+
+		case data, ok := <-transferChannel:
 			if !ok {
 				return nil
 			}
+
 			if strings.Contains(data, "no multiplexer") {
 				continue
 			}
+
 			select {
 			case <-ctx.Done():
 				return nil
-			case output <- data:
+			case outputChannel <- data:
 			}
 		}
 	}
 }
 
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	var i int
+func SeparatorFunc(ctx context.Context, inputChannel chan string, outputChannels []chan string) error {
+	var index int
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, ok := <-input:
+
+		case data, ok := <-inputChannel:
 			if !ok {
 				return nil
 			}
-			targetIdx := i % len(outputs)
-			i++
+
+			targetIdx := index % len(outputChannels)
+			index++
+
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[targetIdx] <- data:
+			case outputChannels[targetIdx] <- data:
 			}
 		}
 	}
