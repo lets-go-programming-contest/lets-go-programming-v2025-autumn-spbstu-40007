@@ -155,6 +155,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	for _, handler := range c.handlers {
 		wg.Add(1)
 		go func(entry HandlerEntry) {
+			defer wg.Done()
 			if err := entry.RunFunc(ctx, &wg, currentChannels); err != nil {
 				errCh <- fmt.Errorf("%s failed: %w", entry.Name, err)
 				cancel()
