@@ -1,4 +1,4 @@
-module github.com/Smolyaninoff/GoLang
+module grigorii.smolianinov/task-5
 
 go 1.22.7
 
