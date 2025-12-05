@@ -113,16 +113,25 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
     wg.Add(numRunners)
 
     errChan := make(chan error, numRunners)
-
+    done := make(chan struct{}) 
+    
     ctx, cancel := context.WithCancel(ctx)
     defer cancel() 
+
+    go func() {
+        wg.Wait()
+        close(done)
+    }()
 
     c.mu.RLock()
     for _, runner := range c.runners {
         go func(r func(ctx context.Context) error) {
             defer wg.Done()
             if err := r(ctx); err != nil && !errors.Is(err, context.Canceled) {
-                errChan <- err
+                select {
+                case errChan <- err:
+                case <-ctx.Done():
+                }
                 cancel()
             }
         }(runner)
@@ -135,18 +144,26 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
         runErr = ctx.Err()
     case err := <-errChan:
         runErr = err
+    case <-done: 
+        runErr = nil
     }
-
-    wg.Wait()
-
+    
+    cancel()
+    <-done 
+    
     c.mu.Lock()
     defer c.mu.Unlock()
     for _, ch := range c.channels {
         close(ch)
     }
 
-    if runErr == nil && errors.Is(ctx.Err(), context.Canceled) && len(errChan) > 0 {
-         runErr = <-errChan
+    if runErr == context.Canceled {
+        select {
+        case internalErr := <-errChan:
+            return internalErr
+        default:
+            return nil 
+        }
     }
 
     return runErr
