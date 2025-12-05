@@ -97,15 +97,15 @@ func (c *ConveyerImpl) RegisterSeparator(
 	c.mu.Unlock()
 }
 
-func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error, done chan struct{}) {
+func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error) {
 	c.mu.RLock()
-	defer c.mu.RUnlock()
+	runners := c.runners
+	c.mu.RUnlock()
 
 	var waitGroup sync.WaitGroup
-	numWorkers := len(c.runners)
-	waitGroup.Add(numWorkers)
+	waitGroup.Add(len(runners))
 
-	for _, runner := range c.runners {
+	for _, runner := range runners {
 		go func(r func(ctx context.Context) error) {
 			defer waitGroup.Done()
 
@@ -119,10 +119,7 @@ func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error, done 
 		}(runner)
 	}
 
-	go func() {
-		waitGroup.Wait()
-		close(done)
-	}()
+	waitGroup.Wait()
 }
 
 func (c *ConveyerImpl) Run(ctx context.Context) error {
@@ -140,7 +137,10 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	c.runWorkers(ctx, errChan, done)
+	go func() {
+		c.runWorkers(ctx, errChan)
+		close(done)
+	}()
 
 	var runErr error
 
@@ -151,10 +151,7 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 		runErr = err
 		cancel()
 	case <-done:
-		runErr = nil
 	}
-
-	<-done
 
 	c.mu.Lock()
 	for _, channel := range c.channels {
@@ -164,7 +161,9 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 
 	select {
 	case internalErr := <-errChan:
-		runErr = internalErr
+		if runErr == nil {
+			runErr = internalErr
+		}
 	default:
 	}
 
