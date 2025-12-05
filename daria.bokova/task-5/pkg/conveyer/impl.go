@@ -121,6 +121,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 
 	if c.running {
 		c.mu.Unlock()
+
 		return fmt.Errorf("%w", ErrAlreadyRunning)
 	}
 

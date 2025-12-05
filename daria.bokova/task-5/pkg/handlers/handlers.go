@@ -69,53 +69,55 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
+func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			if strings.Contains(data, "no multiplexer") {
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
+				return nil
+			case output <- data:
+			}
+		}
+	}
+}
+
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
 		return nil
+	}
+
+	merged := make(chan string, len(inputs)*2)
+
+	for _, inputChan := range inputs {
+		go func(in <-chan string) {
+			_ = multiplexerWorker(ctx, in, merged)
+		}(inputChan)
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-
-		default:
-			// Пытаемся прочитать из каждого канала
-			readAny := false
-
-			for _, inputChan := range inputs {
-				select {
-				case <-ctx.Done():
-					return nil
-
-				case data, ok := <-inputChan:
-					if !ok {
-						continue
-					}
-
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-
-					readAny = true
-
-					select {
-					case <-ctx.Done():
-						return nil
-
-					case output <- data:
-					}
-
-				default:
-				}
+		case data, ok := <-merged:
+			if !ok {
+				return nil
 			}
 
-			if !readAny {
-				select {
-				case <-ctx.Done():
-					return nil
-				default:
-				}
+			select {
+			case <-ctx.Done():
+				return nil
+			case output <- data:
 			}
 		}
 	}
