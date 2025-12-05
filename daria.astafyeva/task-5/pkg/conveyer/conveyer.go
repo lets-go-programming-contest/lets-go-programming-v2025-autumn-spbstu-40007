@@ -123,8 +123,12 @@ func (c *Conveyor) Send(id, val string) error {
 	if !ok {
 		return ErrChannelMissing
 	}
-	ch <- val
-	return nil
+	select {
+	case ch <- val:
+		return nil
+	case <-c.getCtx().Done():
+		return c.getCtx().Err()
+	}
 }
 
 func (c *Conveyor) Recv(id string) (string, error) {
@@ -134,9 +138,22 @@ func (c *Conveyor) Recv(id string) (string, error) {
 	if !ok {
 		return "", ErrChannelMissing
 	}
-	v, ok := <-ch
-	if !ok {
-		return "undefined", nil
+	select {
+	case v, ok := <-ch:
+		if !ok {
+			return "undefined", nil
+		}
+		return v, nil
+	case <-c.getCtx().Done():
+		return "", c.getCtx().Err()
 	}
-	return v, nil
+}
+
+func (c *Conveyor) getCtx() context.Context {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.ctx == nil {
+		return context.Background()
+	}
+	return c.ctx
 }
