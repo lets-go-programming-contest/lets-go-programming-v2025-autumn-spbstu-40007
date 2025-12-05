@@ -19,7 +19,6 @@ func PrefixDecoratorFunc(ctx context.Context, in, out chan string) error {
 			return nil
 		case data, ok := <-in:
 			if !ok {
-				close(out)
 				return nil
 			}
 			if strings.Contains(data, "no decorator") {
@@ -39,8 +38,8 @@ func PrefixDecoratorFunc(ctx context.Context, in, out chan string) error {
 
 func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) error {
 	var wg sync.WaitGroup
+	wg.Add(len(ins))
 	for _, in := range ins {
-		wg.Add(1)
 		go func(ch <-chan string) {
 			defer wg.Done()
 			for {
@@ -63,18 +62,8 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			}
 		}(in)
 	}
-
-	go func() {
-		wg.Wait()
-		close(out)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		return nil
-	}
+	wg.Wait()
+	return nil
 }
 
 func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) error {
@@ -90,9 +79,8 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 			if !ok {
 				return nil
 			}
-			target := outs[i%len(outs)]
 			select {
-			case target <- data:
+			case outs[i%len(outs)] <- data:
 				i++
 			case <-ctx.Done():
 				return nil
