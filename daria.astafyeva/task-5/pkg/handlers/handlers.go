@@ -13,32 +13,33 @@ var (
 )
 
 const (
-	skipMux   = "no multiplexer"
-	skipDec   = "no decorator"
-	decPrefix = "decorated: "
+	skipMux = "no multiplexer"
+	skipDec = "no decorator"
+	prefix  = "decorated: "
 )
 
-func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, in chan string, out chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, open := <-inCh:
-			if !open {
-				close(outCh)
+		case data, ok := <-in:
+			if !ok {
+				close(out)
 				return nil
 			}
-
 			if strings.Contains(data, skipDec) {
-				return ErrCannotDecorate
+				select {
+				case out <- data:
+				case <-ctx.Done():
+				}
+				continue
 			}
-
-			if !strings.HasPrefix(data, decPrefix) {
-				data = decPrefix + data
+			if !strings.HasPrefix(data, prefix) {
+				data = prefix + data
 			}
-
 			select {
-			case outCh <- data:
+			case out <- data:
 			case <-ctx.Done():
 				return nil
 			}
@@ -46,11 +47,9 @@ func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan strin
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string) error {
+func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) error {
 	var wg sync.WaitGroup
-	done := make(chan struct{})
-
-	for _, in := range inChs {
+	for _, in := range ins {
 		wg.Add(1)
 		go func(ch <-chan string) {
 			defer wg.Done()
@@ -58,15 +57,15 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 				select {
 				case <-ctx.Done():
 					return
-				case data, open := <-ch:
-					if !open {
+				case data, ok := <-ch:
+					if !ok {
 						return
 					}
 					if strings.Contains(data, skipMux) {
 						continue
 					}
 					select {
-					case outCh <- data:
+					case out <- data:
 					case <-ctx.Done():
 						return
 					}
@@ -74,40 +73,31 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 			}
 		}(in)
 	}
-
 	go func() {
 		wg.Wait()
-		close(outCh)
-		close(done)
+		close(out)
 	}()
-
-	select {
-	case <-done:
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
+	<-ctx.Done()
+	return ctx.Err()
 }
 
-func SeparatorFunc(ctx context.Context, inCh chan string, outChs []chan string) error {
-	if len(outChs) == 0 {
+func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) error {
+	if len(outs) == 0 {
 		return ErrNoOutputChannels
 	}
-
-	pos := 0
+	i := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-		case data, open := <-inCh:
-			if !open {
+		case data, ok := <-in:
+			if !ok {
 				return nil
 			}
-
-			target := outChs[pos%len(outChs)]
+			target := outs[i%len(outs)]
 			select {
 			case target <- data:
-				pos++
+				i++
 			case <-ctx.Done():
 				return nil
 			}
