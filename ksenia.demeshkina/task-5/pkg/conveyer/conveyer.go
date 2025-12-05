@@ -200,6 +200,16 @@ func (c *Conveyer) Run(ctx context.Context) error {
 				err = fun(ctx, inputChans[0], outputChans)
 			}
 
+			c.mu.Lock()
+			for _, outID := range cfg.OutputIds {
+				ch, exists := c.channels[outID]
+				if exists && ch != nil {
+					close(ch)
+					delete(c.channels, outID)
+				}
+			}
+			c.mu.Unlock()
+
 			if err != nil && err != context.Canceled && err != context.DeadlineExceeded {
 				select {
 				case errChan <- err:
@@ -234,22 +244,16 @@ func (c *Conveyer) stopAll() {
 		if c.cancel != nil {
 			c.cancel()
 		}
-		
+
 		c.mu.Lock()
-		closedChannels := make(map[chan string]bool)
 		for name, ch := range c.channels {
-			if !closedChannels[ch] {
-				closedChannels[ch] = true
-				select {
-				case <-ch:
-				default:
-					close(ch)
-				}
+			if ch != nil {
+				close(ch)
 			}
 			delete(c.channels, name)
 		}
 		c.mu.Unlock()
-		
+
 		c.wg.Wait()
 	})
 }
