@@ -34,7 +34,6 @@ func (c *Conveyer) getOrInitChannel(name string) chan string {
 	defer c.mu.Unlock()
 
 	if channel, ok := c.channels[name]; ok {
-
 		return channel
 	}
 
@@ -170,7 +169,6 @@ func (c *Conveyer) Recv(name string) (string, error) {
 
 	value, isOpen := <-channel
 	if !isOpen {
-
 		return valUndefined, nil
 	}
 

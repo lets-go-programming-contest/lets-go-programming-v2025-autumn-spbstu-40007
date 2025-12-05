@@ -142,6 +142,7 @@ func SeparatorFunc(
 			}
 
 			closedChannels[output] = struct{}{}
+
 			safelyCloseChannel(output)
 		}
 	}()
