@@ -135,7 +135,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 		return err
 	case <-done:
-
 		return nil
 	case <-ctx.Done():
 		waitGroup.Wait()
