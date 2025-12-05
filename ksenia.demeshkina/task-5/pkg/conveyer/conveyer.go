@@ -202,22 +202,71 @@ func (c *Conveyer) Hndl(cfg HandlerConfig, ctx context.Context, errC chan error)
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
-	errChan := make(chan error, len(c.HandlerConfigs))
+	errChan := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	for _, config := range c.HandlerConfigs {
 		c.wg.Add(1)
-		go c.Hndl(config, ctx, errChan)
+		go func(cfg HandlerConfig) {
+			defer c.wg.Done()
+
+			c.mu.Lock()
+			inputChans := make([]chan string, len(cfg.InputIds))
+			for i, id := range cfg.InputIds {
+				inputChans[i] = c.channels[id]
+			}
+
+			outputChans := make([]chan string, len(cfg.OutputIds))
+			for i, id := range cfg.OutputIds {
+				outputChans[i] = c.channels[id]
+			}
+			c.mu.Unlock()
+
+			var err error
+			switch cfg.Type {
+			case DecoratorType:
+				fun, ok := cfg.Fn.(func(context.Context, chan string, chan string) error)
+				if !ok {
+					return
+				}
+				err = fun(ctx, inputChans[0], outputChans[0])
+			case MultiplexerType:
+				fun, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
+				if !ok {
+					return
+				}
+				err = fun(ctx, inputChans, outputChans[0])
+			case SeparatorType:
+				fun, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
+				if !ok {
+					return
+				}
+				err = fun(ctx, inputChans[0], outputChans)
+			}
+
+			if err != nil {
+				select {
+				case errChan <- err:
+					cancel()
+				default:
+				}
+			}
+		}(config)
 	}
 
+	done := make(chan struct{})
 	go func() {
 		c.wg.Wait()
-		close(errChan)
+		close(done)
 	}()
 
 	select {
 	case err := <-errChan:
 		c.stopAll()
 		return err
+	case <-done:
+		return nil
 	case <-ctx.Done():
 		c.stopAll()
 		return ctx.Err()
