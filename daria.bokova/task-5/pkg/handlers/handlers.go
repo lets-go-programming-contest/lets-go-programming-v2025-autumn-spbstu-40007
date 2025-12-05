@@ -58,7 +58,8 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			idx := atomic.AddUint64(&counter, 1) - 1
-			outputIdx := int(idx % uint64(len(outputs)))
+			channelCount := uint64(len(outputs))
+			outputIdx := int(idx % channelCount)
 
 			select {
 			case <-ctx.Done():
@@ -69,14 +70,14 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
-func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- string) error {
+func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- string) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return
 		case data, ok := <-input:
 			if !ok {
-				return nil
+				return
 			}
 
 			if strings.Contains(data, "no multiplexer") {
@@ -85,7 +86,7 @@ func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- s
 
 			select {
 			case <-ctx.Done():
-				return nil
+				return
 			case output <- data:
 			}
 		}
@@ -97,11 +98,12 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	merged := make(chan string, len(inputs)*2)
+	const bufferMultiplier = 2
+	merged := make(chan string, len(inputs)*bufferMultiplier)
 
 	for _, inputChan := range inputs {
 		go func(in <-chan string) {
-			_ = multiplexerWorker(ctx, in, merged)
+			multiplexerWorker(ctx, in, merged)
 		}(inputChan)
 	}
 
