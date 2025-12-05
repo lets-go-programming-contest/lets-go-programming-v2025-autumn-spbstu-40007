@@ -37,16 +37,16 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return errPrefixDecoratorFuncCantBeDecorated
+				continue
 			}
 
-			processedData := data
+			processed := data
 			if !strings.HasPrefix(data, prefix) {
-				processedData = prefix + data
+				processed = prefix + data
 			}
 
 			select {
-			case output <- processedData:
+			case output <- processed:
 			case <-ctx.Done():
 				return nil
 			}
