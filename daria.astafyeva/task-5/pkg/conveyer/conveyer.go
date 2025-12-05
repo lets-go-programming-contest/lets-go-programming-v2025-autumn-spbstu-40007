@@ -16,6 +16,9 @@ type Conveyor struct {
 	chMap     map[string]chan string
 	handlers  []handlerFn
 	syncMutex sync.Mutex
+	running   bool
+	ctx       context.Context
+	cancel    context.CancelFunc
 }
 
 func New(bufSize int) *Conveyor {
@@ -23,6 +26,7 @@ func New(bufSize int) *Conveyor {
 		bufSize:  bufSize,
 		chMap:    make(map[string]chan string),
 		handlers: make([]handlerFn, 0),
+		running:  false,
 	}
 }
 
@@ -91,22 +95,30 @@ func (c *Conveyor) RegisterSeparator(
 }
 
 func (c *Conveyor) Run(ctx context.Context) error {
+	if c.running {
+		return errors.New("conveyor already running")
+	}
+
+	c.ctx, c.cancel = context.WithCancel(ctx)
+	defer c.cancel()
+
+	c.running = true
+	defer func() { c.running = false }()
+
 	var wg sync.WaitGroup
-	errCh := make(chan error, 1)
-	runCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	errCh := make(chan error, len(c.handlers))
 
 	c.syncMutex.Lock()
 	for _, h := range c.handlers {
 		wg.Add(1)
 		go func(fn handlerFn) {
 			defer wg.Done()
-			if err := fn(runCtx); err != nil {
+			if err := fn(c.ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
 				}
-				cancel()
+				c.cancel()
 			}
 		}(h)
 	}
@@ -115,6 +127,12 @@ func (c *Conveyor) Run(ctx context.Context) error {
 	go func() {
 		wg.Wait()
 		close(errCh)
+
+		c.syncMutex.Lock()
+		for _, ch := range c.chMap {
+			close(ch)
+		}
+		c.syncMutex.Unlock()
 	}()
 
 	select {
@@ -137,8 +155,12 @@ func (c *Conveyor) Send(inID string, value string) error {
 		return ErrChannelMissing
 	}
 
-	ch <- value
-	return nil
+	select {
+	case ch <- value:
+		return nil
+	case <-c.ctx.Done():
+		return c.ctx.Err()
+	}
 }
 
 func (c *Conveyor) Recv(outID string) (string, error) {
@@ -150,10 +172,13 @@ func (c *Conveyor) Recv(outID string) (string, error) {
 		return "", ErrChannelMissing
 	}
 
-	val, ok := <-ch
-	if !ok {
-		return "undefined", nil
+	select {
+	case val, ok := <-ch:
+		if !ok {
+			return "undefined", nil
+		}
+		return val, nil
+	case <-c.ctx.Done():
+		return "", c.ctx.Err()
 	}
-
-	return val, nil
 }
