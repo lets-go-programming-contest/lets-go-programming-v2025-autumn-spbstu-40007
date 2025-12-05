@@ -104,18 +104,23 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
+		c.mu.Lock()
+		for _, ch := range c.channels {
+			close(ch)
+		}
+		c.mu.Unlock()
 		close(done)
 	}()
 
 	select {
-	case <-ctx.Done():
-		wg.Wait()
-		return ctx.Err()
 	case err := <-errCh:
 		wg.Wait()
 		return err
 	case <-done:
 		return nil
+	case <-ctx.Done():
+		wg.Wait()
+		return ctx.Err()
 	}
 }
 
