@@ -16,16 +16,13 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			return nil
 		case data, ok := <-input:
 			if !ok {
-				// Если входной канал закрыт, завершаем работу
 				return nil
 			}
 
-			// Проверяем наличие подстроки "no decorator"
 			if strings.Contains(data, "no decorator") {
 				return errors.New("can't be decorated")
 			}
 
-			// Добавляем префикс, если его еще нет
 			var result string
 			if strings.HasPrefix(data, prefix) {
 				result = data
@@ -33,7 +30,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				result = prefix + data
 			}
 
-			// Отправляем результат
 			select {
 			case <-ctx.Done():
 				return nil
@@ -56,11 +52,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			return nil
 		case data, ok := <-input:
 			if !ok {
-				// Если входной канал закрыт
 				return nil
 			}
 
-			// Выбираем выходной канал по порядку
 			idx := atomic.AddInt64(&counter, 1) - 1
 			outputIdx := int(idx) % len(outputs)
 
@@ -78,19 +72,16 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	// Для каждого входного канала создаем горутину
-	type result struct {
-		data string
-		ok   bool
-	}
+	done := make(chan struct{})
+	defer close(done)
 
-	merged := make(chan result, len(inputs)*10)
-
-	// Запускаем горутины для каждого входного канала
+	// Для каждого входа создаем горутину
 	for _, input := range inputs {
 		go func(in chan string) {
 			for {
 				select {
+				case <-done:
+					return
 				case <-ctx.Done():
 					return
 				case data, ok := <-in:
@@ -98,36 +89,23 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						return
 					}
 
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
 					select {
+					case <-done:
+						return
 					case <-ctx.Done():
 						return
-					case merged <- result{data: data, ok: ok}:
+					case output <- data:
 					}
 				}
 			}
 		}(input)
 	}
 
-	// Обрабатываем объединенные данные
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case res, ok := <-merged:
-			if !ok {
-				return nil
-			}
-
-			// Фильтрация данных с подстрокой "no multiplexer"
-			if strings.Contains(res.data, "no multiplexer") {
-				continue
-			}
-
-			select {
-			case <-ctx.Done():
-				return nil
-			case output <- res.data:
-			}
-		}
-	}
+	// Ждем отмены контекста
+	<-ctx.Done()
+	return nil
 }
