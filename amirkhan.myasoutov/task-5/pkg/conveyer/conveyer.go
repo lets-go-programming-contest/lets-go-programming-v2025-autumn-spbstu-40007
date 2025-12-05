@@ -10,7 +10,7 @@ import (
 
 const emptyPayload = "undefined"
 
-var ErrStreamNotFound = errors.New("stream not found")
+var ErrStreamNotFound = errors.New("chan not found")
 
 type Pipeline struct {
 	bufferSize int
