@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Smolyaninoff/GoLang/pkg/conveyer"
-	"github.com/Smolyaninoff/GoLang/pkg/handlers"
+	conveyer "github.com/Smolyaninoff/GoLang/pkg/conveyor"
+	handlers "github.com/Smolyaninoff/GoLang/pkg/handler"
 )
 
 func main() {

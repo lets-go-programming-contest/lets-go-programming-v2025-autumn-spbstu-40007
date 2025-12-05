@@ -2,7 +2,4 @@ module github.com/Smolyaninoff/GoLang
 
 go 1.22.7
 
-require (
-    github.com/stretchr/testify v1.11.1
-    golang.org/x/sync v0.11.0
-)
+require golang.org/x/sync v0.7.0

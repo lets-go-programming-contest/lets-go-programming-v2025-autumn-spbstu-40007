@@ -164,13 +164,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	go func() {
-		wg.Wait()
 		close(errCh)
 	}()
 
 	select {
 	case <-ctx.Done():
-		wg.Wait()
 		if err, ok := <-errCh; ok {
 			return err
 		}
