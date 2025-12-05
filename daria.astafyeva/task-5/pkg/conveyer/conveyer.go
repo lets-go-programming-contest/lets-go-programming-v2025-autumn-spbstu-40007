@@ -116,8 +116,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 		}
 
 		return nil
+
 	case <-c.ctx.Done():
-		return c.ctx.Err()
+		return nil
 	}
 }
 
