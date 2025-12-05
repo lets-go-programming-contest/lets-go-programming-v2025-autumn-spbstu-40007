@@ -157,15 +157,16 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
         close(ch)
     }
 
-    if runErr == context.Canceled {
-        select {
-        case internalErr := <-errChan:
-            return internalErr
-        default:
-            return nil 
-        }
+    select {
+    case internalErr := <-errChan:
+        runErr = internalErr
+    default:
     }
-
+    
+    if runErr == context.DeadlineExceeded || runErr == context.Canceled {
+        return nil
+    }
+    
     return runErr
 }
 
