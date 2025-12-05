@@ -1,3 +1,5 @@
-module github.com/Seeany1/task-5
+module github.com/oksuz.enes/task-5
 
 go 1.22.7
+
+require golang.org/x/sync v0.7.0

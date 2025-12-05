@@ -11,6 +11,8 @@ const (
 	valUndefined       = "undefined"
 )
 
+var errChanNotFound = errors.New(errMsgChanNotFound)
+
 type Conveyer struct {
 	mu       sync.RWMutex
 	channels map[string]chan string
@@ -44,7 +46,6 @@ func (c *Conveyer) RegisterDecorator(fn func(context.Context, chan string, chan 
 	outputCh := c.getOrInitChannel(outputName)
 
 	task := func(ctx context.Context) error {
-		defer close(outputCh)
 		return fn(ctx, inputCh, outputCh)
 	}
 
@@ -59,7 +60,6 @@ func (c *Conveyer) RegisterMultiplexer(fn func(context.Context, []chan string, c
 	outputCh := c.getOrInitChannel(outputName)
 
 	task := func(ctx context.Context) error {
-		defer close(outputCh)
 		return fn(ctx, inputs, outputCh)
 	}
 
@@ -74,11 +74,6 @@ func (c *Conveyer) RegisterSeparator(fn func(context.Context, chan string, []cha
 	}
 
 	task := func(ctx context.Context) error {
-		defer func() {
-			for _, ch := range outputs {
-				close(ch)
-			}
-		}()
 		return fn(ctx, inputCh, outputs)
 	}
 
@@ -114,8 +109,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
+		wg.Wait()
 		return ctx.Err()
 	case err := <-errCh:
+		wg.Wait()
 		return err
 	case <-done:
 		return nil
@@ -128,7 +125,7 @@ func (c *Conveyer) Send(name string, data string) error {
 	c.mu.RUnlock()
 
 	if !ok {
-		return errors.New(errMsgChanNotFound)
+		return errChanNotFound
 	}
 
 	ch <- data
@@ -141,7 +138,7 @@ func (c *Conveyer) Recv(name string) (string, error) {
 	c.mu.RUnlock()
 
 	if !ok {
-		return "", errors.New(errMsgChanNotFound)
+		return "", errChanNotFound
 	}
 
 	val, isOpen := <-ch
