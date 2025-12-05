@@ -7,9 +7,7 @@ import (
 	"sync"
 )
 
-var (
-	ErrCantBeDecorated = errors.New("can't be decorated: input data contains 'no decorator'")
-)
+var ErrCantBeDecorated = errors.New("can't be decorated: input data contains 'no decorator'")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
