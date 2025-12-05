@@ -27,6 +27,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			case <-ctx.Done():
 				return ctx.Err()
 			case output <- newData:
+			default:
 			}
 		}
 	}
@@ -80,6 +81,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			case <-ctx.Done():
 				return ctx.Err()
 			case output <- data:
+			default:
 			}
 		}
 	}
@@ -103,6 +105,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			case <-ctx.Done():
 				return ctx.Err()
 			case outputs[targetIdx] <- data:
+			default:
 			}
 		}
 	}

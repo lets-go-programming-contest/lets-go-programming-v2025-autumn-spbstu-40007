@@ -27,6 +27,7 @@ type Conveyer struct {
 	configs    []handlerConfig
 	bufferSize int
 	wg         sync.WaitGroup
+	done       chan struct{} 
 }
 
 func New(size int) *Conveyer {
@@ -112,6 +113,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	defer cancel()
 
 	errChan := make(chan error, 1)
+	c.done = make(chan struct{})
 
 	for _, cfg := range c.configs {
 		c.wg.Add(1)
@@ -153,10 +155,9 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		}(cfg)
 	}
 
-	done := make(chan struct{})
 	go func() {
 		c.wg.Wait()
-		close(done)
+		close(c.done)
 	}()
 
 	var resultErr error
@@ -165,13 +166,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case resultErr = <-errChan:
 	case <-ctx.Done():
 		resultErr = ctx.Err()
-	case <-done:
+	case <-c.done:
 		resultErr = nil
 	}
-
-	if resultErr != nil {
-		<-done
-	}
+	
+	<-c.done
 
 	c.mu.Lock()
 	for _, ch := range c.channels {
