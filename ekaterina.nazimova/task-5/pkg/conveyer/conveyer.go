@@ -102,7 +102,8 @@ func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error, done 
 	defer c.mu.RUnlock()
 
 	var waitGroup sync.WaitGroup
-	waitGroup.Add(len(c.runners))
+	numWorkers := len(c.runners)
+	waitGroup.Add(numWorkers)
 
 	for _, runner := range c.runners {
 		go func(r func(ctx context.Context) error) {
