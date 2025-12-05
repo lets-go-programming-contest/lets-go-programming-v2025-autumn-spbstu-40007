@@ -19,7 +19,6 @@ type Conveyor struct {
 	wg       sync.WaitGroup
 	ctx      context.Context
 	cancel   context.CancelFunc
-	started  bool
 }
 
 func New(size int) *Conveyor {
@@ -38,17 +37,6 @@ func (c *Conveyor) getChan(id string) chan string {
 	ch := make(chan string, c.bufSize)
 	c.chans[id] = ch
 	return ch
-}
-
-func (c *Conveyor) ensureStarted() {
-	c.mu.Lock()
-	if c.started || len(c.handlers) == 0 {
-		c.mu.Unlock()
-		return
-	}
-	c.started = true
-	c.mu.Unlock()
-	go c.Run(context.Background())
 }
 
 func (c *Conveyor) RegisterDecorator(fn func(context.Context, chan string, chan string) error, inID, outID string) {
@@ -87,12 +75,12 @@ func (c *Conveyor) RegisterSeparator(fn func(context.Context, chan string, []cha
 	c.mu.Unlock()
 }
 
-func (c *Conveyor) Run(ctx context.Context) error {
+func (c *Conveyor) Run(parentCtx context.Context) error {
 	c.mu.Lock()
 	if c.ctx != nil {
 		c.mu.Unlock()
-		<-ctx.Done()
-		return ctx.Err()
+		<-parentCtx.Done()
+		return parentCtx.Err()
 	}
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 	handlers := append([]handlerFn(nil), c.handlers...)
@@ -126,45 +114,65 @@ func (c *Conveyor) Run(ctx context.Context) error {
 	select {
 	case err := <-errCh:
 		if err != nil {
+			c.cancel()
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
 		return nil
-	case <-ctx.Done():
+	case <-parentCtx.Done():
 		c.cancel()
-		return ctx.Err()
+		return parentCtx.Err()
 	}
 }
 
 func (c *Conveyor) Send(id, value string) error {
 	ch := c.getChan(id)
-	c.ensureStarted()
-	select {
-	case ch <- value:
-		return nil
-	case <-c.getCtx().Done():
-		return c.getCtx().Err()
+
+	for {
+		c.mu.Lock()
+		if c.ctx != nil {
+			c.mu.Unlock()
+			select {
+			case ch <- value:
+				return nil
+			case <-c.ctx.Done():
+				return c.ctx.Err()
+			}
+		}
+		c.mu.Unlock()
+
+		select {
+		case ch <- value:
+			return nil
+		default:
+		}
 	}
 }
 
 func (c *Conveyor) Recv(id string) (string, error) {
 	ch := c.getChan(id)
-	c.ensureStarted()
-	select {
-	case v, ok := <-ch:
-		if !ok {
-			return "undefined", nil
-		}
-		return v, nil
-	case <-c.getCtx().Done():
-		return "", c.getCtx().Err()
-	}
-}
 
-func (c *Conveyor) getCtx() context.Context {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.ctx == nil {
-		return context.Background()
+	for {
+		select {
+		case v, ok := <-ch:
+			if !ok {
+				return "undefined", nil
+			}
+			return v, nil
+		default:
+			c.mu.Lock()
+			running := c.ctx != nil
+			c.mu.Unlock()
+			if running {
+				select {
+				case v, ok := <-ch:
+					if !ok {
+						return "undefined", nil
+					}
+					return v, nil
+				case <-c.ctx.Done():
+					return "", c.ctx.Err()
+				}
+			}
+		}
 	}
-	return c.ctx
 }
