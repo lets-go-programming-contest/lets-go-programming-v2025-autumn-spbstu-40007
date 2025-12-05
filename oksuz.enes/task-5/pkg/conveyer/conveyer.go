@@ -22,6 +22,7 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
+		mu:       sync.RWMutex{},
 		channels: make(map[string]chan string),
 		tasks:    make([]func(context.Context) error, 0),
 		size:     size,
@@ -32,60 +33,64 @@ func (c *Conveyer) getOrInitChannel(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, ok := c.channels[name]; ok {
-		return ch
+	if channel, ok := c.channels[name]; ok {
+
+		return channel
 	}
 
-	ch := make(chan string, c.size)
-	c.channels[name] = ch
-	return ch
+	channel := make(chan string, c.size)
+	c.channels[name] = channel
+
+	return channel
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(context.Context, chan string, chan string) error,
+	handlerFunc func(context.Context, chan string, chan string) error,
 	inputName, outputName string,
 ) {
-	inputCh := c.getOrInitChannel(inputName)
-	outputCh := c.getOrInitChannel(outputName)
+	inputChannel := c.getOrInitChannel(inputName)
+	outputChannel := c.getOrInitChannel(outputName)
 
 	task := func(ctx context.Context) error {
-		return fn(ctx, inputCh, outputCh)
+		return handlerFunc(ctx, inputChannel, outputChannel)
 	}
 
 	c.tasks = append(c.tasks, task)
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(context.Context, []chan string, chan string) error,
+	handlerFunc func(context.Context, []chan string, chan string) error,
 	inputNames []string,
 	outputName string,
 ) {
-	var inputs []chan string
+	inputs := make([]chan string, 0, len(inputNames))
 	for _, name := range inputNames {
 		inputs = append(inputs, c.getOrInitChannel(name))
 	}
-	outputCh := c.getOrInitChannel(outputName)
+
+	outputChannel := c.getOrInitChannel(outputName)
 
 	task := func(ctx context.Context) error {
-		return fn(ctx, inputs, outputCh)
+		return handlerFunc(ctx, inputs, outputChannel)
 	}
 
 	c.tasks = append(c.tasks, task)
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(context.Context, chan string, []chan string) error,
+	handlerFunc func(context.Context, chan string, []chan string) error,
 	inputName string,
 	outputNames []string,
 ) {
-	inputCh := c.getOrInitChannel(inputName)
-	var outputs []chan string
+	inputChannel := c.getOrInitChannel(inputName)
+
+	outputs := make([]chan string, 0, len(outputNames))
 	for _, name := range outputNames {
 		outputs = append(outputs, c.getOrInitChannel(name))
 	}
 
 	task := func(ctx context.Context) error {
-		return fn(ctx, inputCh, outputs)
+		return handlerFunc(ctx, inputChannel, outputs)
 	}
 
 	c.tasks = append(c.tasks, task)
@@ -95,66 +100,79 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var wg sync.WaitGroup
-	errCh := make(chan error, len(c.tasks))
+	var waitGroup sync.WaitGroup
+
+	errorChannel := make(chan error, len(c.tasks))
+
+	runTask := func(task func(context.Context) error) {
+		defer waitGroup.Done()
+
+		if err := task(ctx); err != nil {
+			select {
+			case errorChannel <- err:
+				cancel()
+			default:
+			}
+		}
+	}
 
 	for _, task := range c.tasks {
-		wg.Add(1)
-		go func(t func(context.Context) error) {
-			defer wg.Done()
-			if err := t(ctx); err != nil {
-				select {
-				case errCh <- err:
-					cancel()
-				default:
-				}
-			}
-		}(task)
+		waitGroup.Add(1)
+
+		localTask := task
+		go runTask(localTask)
 	}
 
 	done := make(chan struct{})
+
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(done)
 	}()
 
 	select {
-	case err := <-errCh:
-		wg.Wait()
+	case err := <-errorChannel:
+		waitGroup.Wait()
+
 		return err
-	case <-ctx.Done():
-		wg.Wait()
-		return nil
 	case <-done:
+
+		return nil
+	case <-ctx.Done():
+		waitGroup.Wait()
+
 		return nil
 	}
 }
 
 func (c *Conveyer) Send(name string, data string) error {
 	c.mu.RLock()
-	ch, ok := c.channels[name]
+	channel, ok := c.channels[name]
 	c.mu.RUnlock()
 
 	if !ok {
 		return errChanNotFound
 	}
 
-	ch <- data
+	channel <- data
+
 	return nil
 }
 
 func (c *Conveyer) Recv(name string) (string, error) {
 	c.mu.RLock()
-	ch, ok := c.channels[name]
+	channel, ok := c.channels[name]
 	c.mu.RUnlock()
 
 	if !ok {
 		return "", errChanNotFound
 	}
 
-	val, isOpen := <-ch
+	value, isOpen := <-channel
 	if !isOpen {
+
 		return valUndefined, nil
 	}
-	return val, nil
+
+	return value, nil
 }

@@ -9,13 +9,14 @@ import (
 
 var ErrPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
 
-func safelyCloseChannel(chnl chan string) {
+func safelyCloseChannel(channel chan string) {
 	defer func() {
 		if r := recover(); r != nil {
 			_ = r
 		}
 	}()
-	close(chnl)
+
+	close(channel)
 }
 
 func PrefixDecoratorFunc(
@@ -58,9 +59,9 @@ func readInputToTransfer(
 	ctx context.Context,
 	input chan string,
 	transfer chan string,
-	wg *sync.WaitGroup,
+	waitGroup *sync.WaitGroup,
 ) {
-	defer wg.Done()
+	defer waitGroup.Done()
 
 	for {
 		select {
@@ -85,18 +86,23 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
-	var wg sync.WaitGroup
+	var waitGroup sync.WaitGroup
+
 	transfer := make(chan string)
 
 	defer safelyCloseChannel(output)
 
-	for _, input := range inputs {
-		wg.Add(1)
-		go readInputToTransfer(ctx, input, transfer, &wg)
+	readFn := readInputToTransfer
+
+	for _, inputChan := range inputs {
+		waitGroup.Add(1)
+
+		localInput := inputChan
+		go readFn(ctx, localInput, transfer, &waitGroup)
 	}
 
 	go func() {
-		wg.Wait()
+		waitGroup.Wait()
 		close(transfer)
 	}()
 
@@ -128,21 +134,23 @@ func SeparatorFunc(
 	outputs []chan string,
 ) error {
 	defer func() {
-		closedChans := make(map[chan string]struct{})
+		closedChannels := make(map[chan string]struct{})
+
 		for _, output := range outputs {
-			if _, ok := closedChans[output]; ok {
+			if _, exists := closedChannels[output]; exists {
 				continue
 			}
-			closedChans[output] = struct{}{}
+
+			closedChannels[output] = struct{}{}
 			safelyCloseChannel(output)
 		}
 	}()
 
-	var counter int
-
 	if len(outputs) == 0 {
 		return nil
 	}
+
+	var counter int
 
 	for {
 		select {
@@ -154,10 +162,10 @@ func SeparatorFunc(
 			}
 
 			targetIndex := counter % len(outputs)
-			targetChan := outputs[targetIndex]
+			targetChannel := outputs[targetIndex]
 
 			select {
-			case targetChan <- data:
+			case targetChannel <- data:
 				counter++
 			case <-ctx.Done():
 				return nil
