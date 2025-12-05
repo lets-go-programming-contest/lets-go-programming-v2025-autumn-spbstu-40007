@@ -154,7 +154,6 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	case err := <-errChan:
 		runErr = err
 		cancel()
-
 	case <-done:
 	}
 
