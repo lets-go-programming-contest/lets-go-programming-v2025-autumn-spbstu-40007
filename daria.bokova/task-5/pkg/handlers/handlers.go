@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"reflect"
 	"strings"
 	"sync/atomic"
 )
@@ -13,16 +14,19 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				// Входной канал закрыт
 				return nil
 			}
 
+			// Проверяем наличие подстроки "no decorator"
 			if strings.Contains(data, "no decorator") {
 				return errors.New("can't be decorated")
 			}
 
+			// Добавляем префикс, если его еще нет
 			var result string
 			if strings.HasPrefix(data, prefix) {
 				result = data
@@ -30,10 +34,12 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 				result = prefix + data
 			}
 
+			// Отправляем результат
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case output <- result:
+				// Успешно отправлено
 			}
 		}
 	}
@@ -44,24 +50,28 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
-	var idx int64 = 0
+	var counter uint64
 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				// Входной канал закрыт
 				return nil
 			}
 
-			// Используем атомарный счетчик
-			outputIdx := int(atomic.AddInt64(&idx, 1)-1) % len(outputs)
+			// Выбираем выходной канал по порядку
+			idx := atomic.AddUint64(&counter, 1) - 1
+			outputIdx := int(idx) % len(outputs)
 
+			// Отправляем в выбранный канал
 			select {
 			case <-ctx.Done():
-				return nil
+				return ctx.Err()
 			case outputs[outputIdx] <- data:
+				// Успешно отправлено
 			}
 		}
 	}
@@ -72,36 +82,48 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	// Простой мультиплексор - читаем из всех входов по очереди
+	// Используем select для чтения из всех каналов
+	cases := make([]reflect.SelectCase, len(inputs)+1)
+	for i, ch := range inputs {
+		cases[i] = reflect.SelectCase{
+			Dir:  reflect.SelectRecv,
+			Chan: reflect.ValueOf(ch),
+		}
+	}
+	// Добавляем case для контекста
+	cases[len(inputs)] = reflect.SelectCase{
+		Dir:  reflect.SelectRecv,
+		Chan: reflect.ValueOf(ctx.Done()),
+	}
+
 	for {
+		chosen, value, ok := reflect.Select(cases)
+
+		if chosen == len(inputs) {
+			// Контекст завершен
+			return ctx.Err()
+		}
+
+		if !ok {
+			// Канал закрыт
+			// Заменяем его на nil, чтобы больше не выбирать
+			cases[chosen].Chan = reflect.ValueOf(nil)
+			continue
+		}
+
+		data := value.String()
+
+		// Фильтрация
+		if strings.Contains(data, "no multiplexer") {
+			continue
+		}
+
+		// Отправляем в выходной канал
 		select {
 		case <-ctx.Done():
-			return nil
-		default:
-			// Проверяем все входы
-			for _, input := range inputs {
-				select {
-				case <-ctx.Done():
-					return nil
-				case data, ok := <-input:
-					if !ok {
-						continue
-					}
-
-					// Фильтрация
-					if strings.Contains(data, "no multiplexer") {
-						continue
-					}
-
-					select {
-					case <-ctx.Done():
-						return nil
-					case output <- data:
-					}
-				default:
-					// Нет данных в этом канале
-				}
-			}
+			return ctx.Err()
+		case output <- data:
+			// Успешно
 		}
 	}
 }
