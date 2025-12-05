@@ -19,6 +19,7 @@ type Conveyor struct {
 	wg       sync.WaitGroup
 	ctx      context.Context
 	cancel   context.CancelFunc
+	closed   bool
 }
 
 func New(size int) *Conveyor {
@@ -92,7 +93,7 @@ func (c *Conveyor) Run(parentCtx context.Context) error {
 		<-parentCtx.Done()
 		return parentCtx.Err()
 	}
-	c.ctx, c.cancel = context.WithCancel(context.Background())
+	c.ctx, c.cancel = context.WithCancel(parentCtx)
 	handlers := append([]handlerFn(nil), c.handlers...)
 	c.mu.Unlock()
 
@@ -115,8 +116,11 @@ func (c *Conveyor) Run(parentCtx context.Context) error {
 		c.wg.Wait()
 		close(errCh)
 		c.mu.Lock()
-		for _, ch := range c.chans {
-			close(ch)
+		if !c.closed {
+			c.closed = true
+			for _, ch := range c.chans {
+				close(ch)
+			}
 		}
 		c.mu.Unlock()
 	}()
