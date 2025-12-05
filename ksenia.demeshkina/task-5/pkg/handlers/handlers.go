@@ -39,6 +39,10 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+	
 	var wg sync.WaitGroup
 	transfer := make(chan string, len(inputs))
 
