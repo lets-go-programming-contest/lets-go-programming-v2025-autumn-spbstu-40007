@@ -14,7 +14,7 @@ const (
 	skipMuxKeyword        = "no multiplexer"
 )
 
-func AddPrefixProcessor(ctx context.Context, inStream chan string, outStream chan string) error {
+func PrefixDecoratorFunc(ctx context.Context, inStream chan string, outStream chan string) error {
 	defer close(outStream)
 
 	for {
@@ -44,7 +44,7 @@ func AddPrefixProcessor(ctx context.Context, inStream chan string, outStream cha
 	}
 }
 
-func MergeStreamsProcessor(ctx context.Context, inStreams []chan string, outStream chan string) error {
+func MultiplexerFunc(ctx context.Context, inStreams []chan string, outStream chan string) error {
 	defer close(outStream)
 
 	if len(inStreams) == 0 {
@@ -84,7 +84,7 @@ func MergeStreamsProcessor(ctx context.Context, inStreams []chan string, outStre
 	return nil
 }
 
-func RoundRobinSplitter(ctx context.Context, inStream chan string, outStreams []chan string) error {
+func SeparatorFunc(ctx context.Context, inStream chan string, outStreams []chan string) error {
 	defer func() {
 		for _, outCh := range outStreams {
 			close(outCh)
