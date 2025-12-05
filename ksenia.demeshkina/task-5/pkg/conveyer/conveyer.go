@@ -277,10 +277,12 @@ func (c *Conveyer) stopAll() {
 	c.stopOnce.Do(func() {
 		c.mu.Lock()
 		closedChannels := make(map[chan string]bool)
-		for _, ch := range c.channels {
+		for name, ch := range c.channels {
 			if !closedChannels[ch] {
 				closedChannels[ch] = true
+                close(ch)
 			}
+            delete(c.channels, name)
 		}
 		c.mu.Unlock()
 		c.wg.Wait()
