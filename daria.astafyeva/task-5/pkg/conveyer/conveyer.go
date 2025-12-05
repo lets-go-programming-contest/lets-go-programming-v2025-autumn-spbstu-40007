@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var ErrChannelMissing = errors.New("channel missing")
+var ErrChannelMissing = errors.New("chan not found")
 
 type handlerFn func(ctx context.Context) error
 
@@ -20,19 +20,20 @@ type Conveyor struct {
 
 func New(bufSize int) *Conveyor {
 	return &Conveyor{
-		bufSize:   bufSize,
-		chMap:     make(map[string]chan string),
-		handlers:  make([]handlerFn, 0),
-		syncMutex: sync.Mutex{},
+		bufSize:  bufSize,
+		chMap:    make(map[string]chan string),
+		handlers: make([]handlerFn, 0),
 	}
 }
 
 func (c *Conveyor) createChanIfNeeded(id string) chan string {
 	c.syncMutex.Lock()
 	defer c.syncMutex.Unlock()
+
 	if ch, found := c.chMap[id]; found {
 		return ch
 	}
+
 	newCh := make(chan string, c.bufSize)
 	c.chMap[id] = newCh
 	return newCh
@@ -45,6 +46,7 @@ func (c *Conveyor) RegisterDecorator(
 ) {
 	inCh := c.createChanIfNeeded(inID)
 	outCh := c.createChanIfNeeded(outID)
+
 	c.syncMutex.Lock()
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		return decFn(ctx, inCh, outCh)
@@ -57,11 +59,12 @@ func (c *Conveyor) RegisterMultiplexer(
 	inIDs []string,
 	outID string,
 ) {
-	var inChs []chan string
+	inChs := make([]chan string, 0, len(inIDs))
 	for _, id := range inIDs {
 		inChs = append(inChs, c.createChanIfNeeded(id))
 	}
 	outCh := c.createChanIfNeeded(outID)
+
 	c.syncMutex.Lock()
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		return muxFn(ctx, inChs, outCh)
@@ -75,10 +78,11 @@ func (c *Conveyor) RegisterSeparator(
 	outIDs []string,
 ) {
 	inCh := c.createChanIfNeeded(inID)
-	var outChs []chan string
+	outChs := make([]chan string, 0, len(outIDs))
 	for _, id := range outIDs {
 		outChs = append(outChs, c.createChanIfNeeded(id))
 	}
+
 	c.syncMutex.Lock()
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
 		return sepFn(ctx, inCh, outChs)
@@ -118,25 +122,21 @@ func (c *Conveyor) Run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
+		return nil
 	case <-ctx.Done():
 		return ctx.Err()
 	}
-
-	c.syncMutex.Lock()
-	defer c.syncMutex.Unlock()
-	for _, ch := range c.chMap {
-		close(ch)
-	}
-	return nil
 }
 
 func (c *Conveyor) Send(inID string, value string) error {
 	c.syncMutex.Lock()
 	ch, found := c.chMap[inID]
 	c.syncMutex.Unlock()
+
 	if !found {
 		return ErrChannelMissing
 	}
+
 	ch <- value
 	return nil
 }
@@ -145,12 +145,15 @@ func (c *Conveyor) Recv(outID string) (string, error) {
 	c.syncMutex.Lock()
 	ch, found := c.chMap[outID]
 	c.syncMutex.Unlock()
+
 	if !found {
 		return "", ErrChannelMissing
 	}
+
 	val, ok := <-ch
 	if !ok {
 		return "undefined", nil
 	}
+
 	return val, nil
 }

@@ -13,9 +13,9 @@ var (
 )
 
 const (
-	skipMux     = "no multiplexer"
-	skipDec     = "no decorator"
-	decPrefix   = "decorated: "
+	skipMux   = "no multiplexer"
+	skipDec   = "no decorator"
+	decPrefix = "decorated: "
 )
 
 func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan string) error {
@@ -27,12 +27,15 @@ func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan strin
 			if !open {
 				return nil
 			}
+
 			if strings.Contains(data, skipDec) {
 				return ErrCannotDecorate
 			}
+
 			if !strings.HasPrefix(data, decPrefix) {
 				data = decPrefix + data
 			}
+
 			select {
 			case outCh <- data:
 			case <-ctx.Done():
@@ -44,6 +47,7 @@ func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan strin
 
 func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string) error {
 	var muxWg sync.WaitGroup
+
 	for _, in := range inChs {
 		muxWg.Add(1)
 		go func(ch <-chan string) {
@@ -56,9 +60,11 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 					if !open {
 						return
 					}
+
 					if strings.Contains(data, skipMux) {
 						continue
 					}
+
 					select {
 					case outCh <- data:
 					case <-ctx.Done():
@@ -68,14 +74,26 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 			}
 		}(in)
 	}
-	muxWg.Wait()
-	return nil
+
+	done := make(chan struct{})
+	go func() {
+		muxWg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func SeparatorFunc(ctx context.Context, inCh chan string, outChs []chan string) error {
 	if len(outChs) == 0 {
 		return ErrNoOutputChannels
 	}
+
 	var pos int
 	for {
 		select {
@@ -85,6 +103,7 @@ func SeparatorFunc(ctx context.Context, inCh chan string, outChs []chan string) 
 			if !open {
 				return nil
 			}
+
 			target := outChs[pos%len(outChs)]
 			select {
 			case target <- data:
