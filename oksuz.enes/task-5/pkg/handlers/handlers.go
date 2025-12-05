@@ -54,7 +54,12 @@ func PrefixDecoratorFunc(
 	}
 }
 
-func readInputToTransfer(ctx context.Context, input chan string, transfer chan string, wg *sync.WaitGroup) {
+func readInputToTransfer(
+	ctx context.Context,
+	input chan string,
+	transfer chan string,
+	wg *sync.WaitGroup,
+) {
 	defer wg.Done()
 
 	for {

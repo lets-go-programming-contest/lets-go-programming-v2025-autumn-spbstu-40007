@@ -41,7 +41,10 @@ func (c *Conveyer) getOrInitChannel(name string) chan string {
 	return ch
 }
 
-func (c *Conveyer) RegisterDecorator(fn func(context.Context, chan string, chan string) error, inputName, outputName string) {
+func (c *Conveyer) RegisterDecorator(
+	fn func(context.Context, chan string, chan string) error,
+	inputName, outputName string,
+) {
 	inputCh := c.getOrInitChannel(inputName)
 	outputCh := c.getOrInitChannel(outputName)
 
@@ -52,7 +55,11 @@ func (c *Conveyer) RegisterDecorator(fn func(context.Context, chan string, chan 
 	c.tasks = append(c.tasks, task)
 }
 
-func (c *Conveyer) RegisterMultiplexer(fn func(context.Context, []chan string, chan string) error, inputNames []string, outputName string) {
+func (c *Conveyer) RegisterMultiplexer(
+	fn func(context.Context, []chan string, chan string) error,
+	inputNames []string,
+	outputName string,
+) {
 	var inputs []chan string
 	for _, name := range inputNames {
 		inputs = append(inputs, c.getOrInitChannel(name))
@@ -66,7 +73,11 @@ func (c *Conveyer) RegisterMultiplexer(fn func(context.Context, []chan string, c
 	c.tasks = append(c.tasks, task)
 }
 
-func (c *Conveyer) RegisterSeparator(fn func(context.Context, chan string, []chan string) error, inputName string, outputNames []string) {
+func (c *Conveyer) RegisterSeparator(
+	fn func(context.Context, chan string, []chan string) error,
+	inputName string,
+	outputNames []string,
+) {
 	inputCh := c.getOrInitChannel(inputName)
 	var outputs []chan string
 	for _, name := range outputNames {
@@ -108,12 +119,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}()
 
 	select {
-	case <-ctx.Done():
-		wg.Wait()
-		return ctx.Err()
 	case err := <-errCh:
 		wg.Wait()
 		return err
+	case <-ctx.Done():
+		wg.Wait()
+		return nil
 	case <-done:
 		return nil
 	}
@@ -146,17 +157,4 @@ func (c *Conveyer) Recv(name string) (string, error) {
 		return valUndefined, nil
 	}
 	return val, nil
-}
-
-func (c *Conveyer) Close(name string) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	ch, ok := c.channels[name]
-	if !ok {
-		return errChanNotFound
-	}
-
-	close(ch)
-	return nil
 }
