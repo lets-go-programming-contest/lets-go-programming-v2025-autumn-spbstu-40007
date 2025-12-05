@@ -1,3 +1,5 @@
-module github.com/bdshka/go-conveyer
+module conveyer
 
-go 1.24.0
+go 1.21
+
+require golang.org/x/sync v0.7.0

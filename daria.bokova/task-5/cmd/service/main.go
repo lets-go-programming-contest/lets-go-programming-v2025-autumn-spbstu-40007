@@ -5,46 +5,61 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/bdshka/go-conveyer/pkg/conveyer"
-	"github.com/bdshka/go-conveyer/pkg/handlers"
+	"conveyer/pkg/conveyer"
+	"conveyer/pkg/handlers"
 )
 
 func main() {
-	c := conveyer.New(10)
+	// Создаем конвейер
+	c := conveyer.New(100)
 
-	c.RegisterDecorator(handlers.PrefixDecoratorFunc, "input1", "decorated")
-	c.RegisterSeparator(handlers.SeparatorFunc, "decorated", []string{"out1", "out2"})
-	c.RegisterMultiplexer(handlers.MultiplexerFunc, []string{"out1", "out2"}, "final")
+	// Регистрируем обработчики
+	c.RegisterDecorator(handlers.PrefixDecoratorFunc, "input1", "decorated1")
+	c.RegisterDecorator(handlers.PrefixDecoratorFunc, "input2", "decorated2")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	c.RegisterSeparator(handlers.SeparatorFunc, "decorated1", []string{"sep_out1", "sep_out2"})
+
+	c.RegisterMultiplexer(handlers.MultiplexerFunc, []string{"sep_out1", "sep_out2"}, "final_output")
+
+	// Запускаем конвейер в отдельной горутине
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	go func() {
 		if err := c.Run(ctx); err != nil {
-			fmt.Printf("Conveyer error: %v\n", err)
+			fmt.Printf("Conveyer stopped: %v\n", err)
 		}
 	}()
 
+	// Даем время на запуск
 	time.Sleep(100 * time.Millisecond)
 
-	fmt.Println("Sending data...")
-	c.Send("input1", "hello")
-	c.Send("input1", "world")
-	c.Send("input1", "test without decorator")
+	// Отправляем данные
+	c.Send("input1", "Hello World")
+	c.Send("input2", "Test message")
+	c.Send("input1", "Another message")
+	c.Send("input2", "message with no multiplexer")
 
-	fmt.Println("\nReceiving data...")
+	// Получаем результаты
 	for i := 0; i < 3; i++ {
-		val, err := c.Recv("final")
-		if err != nil {
-			fmt.Printf("Error receiving: %v\n", err)
-		} else {
-			fmt.Printf("Received: %s\n", val)
+		if data, err := c.Recv("final_output"); err == nil {
+			fmt.Printf("Received: %s\n", data)
 		}
 	}
 
-	fmt.Println("\nSending data that should cause error...")
-	c.Send("input1", "no decorator test")
+	// Тест с ошибкой
+	err := c.Send("input1", "This has no decorator in it")
+	if err != nil {
+		fmt.Printf("Expected error: %v\n", err)
+	}
 
-	time.Sleep(1 * time.Second)
-	fmt.Println("\nDone!")
+	// Даем время на обработку
+	time.Sleep(500 * time.Millisecond)
+	cancel()
+	time.Sleep(100 * time.Millisecond)
+
+	// Пробуем получить данные из закрытого канала
+	if data, err := c.Recv("final_output"); err == nil {
+		fmt.Printf("From closed channel: %s\n", data)
+	}
 }
