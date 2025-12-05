@@ -78,6 +78,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	var index int
+
 	count := len(outputs)
 
 	if count == 0 {
