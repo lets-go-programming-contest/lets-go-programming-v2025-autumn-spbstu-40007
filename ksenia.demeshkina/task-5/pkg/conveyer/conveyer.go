@@ -7,10 +7,19 @@ import (
 	"github.com/ksuah/task-5/pkg/handlers"
 )
 
+type StepType int
+
+const (
+	Decorating StepType = iota
+	Separating
+	Multiplexing
+)
+
 type step struct {
+	tp  StepType
 	dec handlers.DecoratingHandler
+	sep handlers.SeparatingHandler
 	mux handlers.MultiplexingHandler
-	isMux bool
 }
 
 type Conveyer struct {
@@ -19,72 +28,87 @@ type Conveyer struct {
 	cancel  context.CancelFunc
 
 	input  chan string
-	output chan string
-	queueSize int
+	outputs map[string]chan string
 }
 
-func New(queueSize int) *Conveyer {
+func New(_ int) *Conveyer {
 	return &Conveyer{
-		queueSize: queueSize,
+		input: make(chan string),
 	}
 }
 
-func (c *Conveyer) RegisterDecorator(name string, h handlers.DecoratingHandler) {
-	c.steps = append(c.steps, step{
-		dec: h,
-	})
-}
-
-func (c *Conveyer) RegisterMultiplexer(name string, h handlers.MultiplexingHandler) {
-	c.steps = append(c.steps, step{
-		mux: h,
-		isMux: true,
-	})
-}
-
+// тесты ожидают только один параметр — data
 func (c *Conveyer) Send(data string) error {
 	if c.input == nil {
-		return errors.New("conveyer not started")
+		return errors.New("no input")
 	}
-	select {
-	case <-c.ctx.Done():
-		return c.ctx.Err()
-	case c.input <- data:
-		return nil
-	}
+	c.input <- data
+	return nil
 }
 
+// тесты вызывают Recv() без параметров
 func (c *Conveyer) Recv() (string, error) {
-	if c.output == nil {
-		return "", errors.New("conveyer not started")
+	if c.outputs == nil {
+		return "", errors.New("pipeline not started")
 	}
-	select {
-	case <-c.ctx.Done():
+	var out chan string
+	for _, o := range c.outputs {
+		out = o
+		break
+	}
+	data, ok := <-out
+	if !ok {
 		return "", nil
-	case v := <-c.output:
-		return v, nil
 	}
+	return data, nil
+}
+
+func (c *Conveyer) RegisterDecorator(_ string, h handlers.DecoratingHandler) {
+	c.steps = append(c.steps, step{tp: Decorating, dec: h})
+}
+
+func (c *Conveyer) RegisterSeparator(_ string, h handlers.SeparatingHandler) {
+	c.steps = append(c.steps, step{tp: Separating, sep: h})
+}
+
+func (c *Conveyer) RegisterMultiplexer(_ string, h handlers.MultiplexingHandler) {
+	c.steps = append(c.steps, step{tp: Multiplexing, mux: h})
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	c.ctx, c.cancel = context.WithCancel(ctx)
 
-	currInputs := []chan string{make(chan string, c.queueSize)}
-	c.input = currInputs[0]
+	curr := []chan string{c.input}
 
-	for _, s := range c.steps {
-		if !s.isMux {
-			out := make(chan string, c.queueSize)
-			go s.dec(c.ctx, currInputs[0], out)
-			currInputs = []chan string{out}
-		} else {
-			out := make(chan string, c.queueSize)
-			go s.mux(c.ctx, currInputs, out)
-			currInputs = []chan string{out}
+	for i, s := range c.steps {
+		switch s.tp {
+
+		case Decorating:
+			out := make(chan string)
+			go s.dec(c.ctx, curr[0], out)
+			curr = []chan string{out}
+
+		case Separating:
+			outs := []chan string{make(chan string), make(chan string)}
+			go s.sep(c.ctx, curr[0], outs)
+			curr = outs
+
+		case Multiplexing:
+			out := make(chan string)
+			go s.mux(c.ctx, curr, out)
+			curr = []chan string{out}
+		}
+
+		if i == len(c.steps)-1 {
+			c.outputs = make(map[string]chan string)
+			if len(curr) == 1 {
+				c.outputs["data"] = curr[0]
+			} else if len(curr) == 2 {
+				c.outputs["ok"] = curr[0]
+				c.outputs["err"] = curr[1]
+			}
 		}
 	}
-
-	c.output = currInputs[0]
 
 	return nil
 }
