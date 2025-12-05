@@ -33,7 +33,7 @@ func PrefixDecoratorFunc(ctx context.Context, in chan string, out chan string) e
 				return ErrCannotDecorate
 			}
 
-			if !strings.HasContains(data, prefix) {
+			if !strings.HasPrefix(data, prefix) {
 				data = prefix + data
 			}
 
