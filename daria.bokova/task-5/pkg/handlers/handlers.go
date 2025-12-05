@@ -7,23 +7,17 @@ import (
 	"sync/atomic"
 )
 
-// PrefixDecoratorFunc - модификатор данных
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	const prefix = "decorated: "
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
-				// Если входной канал закрыт, проверяем контекст
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				default:
-					return nil
-				}
+				// Если входной канал закрыт, завершаем работу
+				return nil
 			}
 
 			// Проверяем наличие подстроки "no decorator"
@@ -42,14 +36,13 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			// Отправляем результат
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case output <- result:
 			}
 		}
 	}
 }
 
-// SeparatorFunc - сепаратор по порядковому номеру
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
 		return nil
@@ -60,16 +53,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				// Если входной канал закрыт
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				default:
-					return nil
-				}
+				return nil
 			}
 
 			// Выбираем выходной канал по порядку
@@ -78,32 +66,31 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			case outputs[outputIdx] <- data:
 			}
 		}
 	}
 }
 
-// MultiplexerFunc - мультиплексор с фильтрацией
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
 		return nil
 	}
 
-	// Создаем канал для объединения входов
-	merged := make(chan string, 100)
+	// Для каждого входного канала создаем горутину
+	type result struct {
+		data string
+		ok   bool
+	}
+
+	merged := make(chan result, len(inputs)*10)
 
 	// Запускаем горутины для каждого входного канала
-	done := make(chan struct{})
-	defer close(done)
-
 	for _, input := range inputs {
 		go func(in chan string) {
 			for {
 				select {
-				case <-done:
-					return
 				case <-ctx.Done():
 					return
 				case data, ok := <-in:
@@ -112,11 +99,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 
 					select {
-					case <-done:
-						return
 					case <-ctx.Done():
 						return
-					case merged <- data:
+					case merged <- result{data: data, ok: ok}:
 					}
 				}
 			}
@@ -127,21 +112,21 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
-		case data, ok := <-merged:
+			return nil
+		case res, ok := <-merged:
 			if !ok {
 				return nil
 			}
 
 			// Фильтрация данных с подстрокой "no multiplexer"
-			if strings.Contains(data, "no multiplexer") {
+			if strings.Contains(res.data, "no multiplexer") {
 				continue
 			}
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case output <- data:
+				return nil
+			case output <- res.data:
 			}
 		}
 	}
