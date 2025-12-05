@@ -10,7 +10,7 @@ type Config struct {
 }
 
 func New() *Config {
-	config := &Config{}
+	config := &Config{} //nolint:exhaustruct
 	if err := yaml.Unmarshal([]byte(configContents), config); err != nil {
 		panic(err)
 	}
