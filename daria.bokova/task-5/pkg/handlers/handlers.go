@@ -49,7 +49,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	var counter uint64
-	outputsCount := len(outputs)
+	outputsCount := uint64(len(outputs))
 
 	for {
 		select {
@@ -62,11 +62,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			idx := atomic.AddUint64(&counter, 1) - 1
-
-			var outputIdx int
-			if outputsCount > 0 {
-				outputIdx = int(idx % uint64(outputsCount))
-			}
+			outputIdx := idx % outputsCount
 
 			select {
 			case <-ctx.Done():
