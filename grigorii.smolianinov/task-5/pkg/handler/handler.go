@@ -1,31 +1,35 @@
-package handlers
+package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
 )
 
+var ErrPrefixDecoratorFuncCantBeDecorated = errors.New("can't be decorated")
+
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
+
 	prefix := "decorated: "
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("can’t be decorated: data contains 'no decorator'")
+				return fmt.Errorf("%w", ErrPrefixDecoratorFuncCantBeDecorated)
 			}
 
-			var decoratedData string
-			if strings.HasPrefix(data, prefix) {
-				decoratedData = data
-			} else {
+			decoratedData := data
+			if !strings.HasPrefix(data, prefix) {
 				decoratedData = prefix + data
 			}
 
@@ -44,10 +48,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	index := 0
+
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -72,25 +77,19 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	var wg sync.WaitGroup
 
-	openInputChans := len(inputs)
-
-	var mu sync.Mutex
-
 	for _, input := range inputs {
+		in := input
+
 		wg.Add(1)
-		go func(input chan string) {
+
+		go func(ch chan string) {
 			defer wg.Done()
-			defer func() {
-				mu.Lock()
-				openInputChans--
-				mu.Unlock()
-			}()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-input:
+				case data, ok := <-ch:
 					if !ok {
 						return
 					}
@@ -106,7 +105,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-		}(input)
+		}(in)
 	}
 
 	wg.Wait()
