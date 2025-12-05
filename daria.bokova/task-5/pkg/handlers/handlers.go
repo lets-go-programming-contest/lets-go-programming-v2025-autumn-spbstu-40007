@@ -16,6 +16,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
@@ -35,6 +36,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			select {
 			case <-ctx.Done():
 				return nil
+
 			case output <- result:
 			}
 		}
@@ -61,7 +63,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			idx := atomic.AddUint64(&counter, 1) - 1
 
-			// Безопасное вычисление индекса
 			var outputIdx int
 			if outputsCount > 0 {
 				outputIdx = int(idx % uint64(outputsCount))
