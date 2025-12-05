@@ -77,14 +77,8 @@ func (c *Conveyor) Run(parent context.Context) error {
 		return parent.Err()
 	}
 
-	c.ctx, c.cancel = context.WithCancel(context.Background())
+	c.ctx, c.cancel = context.WithCancel(parent)
 	c.mu.Unlock()
-
-	select {
-	case <-parent.Done():
-		c.cancel()
-	default:
-	}
 
 	handlers := append([]handlerFn(nil), c.handlers...)
 
