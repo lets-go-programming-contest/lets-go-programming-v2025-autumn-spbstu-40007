@@ -16,7 +16,7 @@ type Conveyor struct {
 	chMap     map[string]chan string
 	handlers  []handlerFn
 	syncMutex sync.Mutex
-	running   bool
+	wg        sync.WaitGroup
 	ctx       context.Context
 	cancel    context.CancelFunc
 }
@@ -26,7 +26,6 @@ func New(bufSize int) *Conveyor {
 		bufSize:  bufSize,
 		chMap:    make(map[string]chan string),
 		handlers: make([]handlerFn, 0),
-		running:  false,
 	}
 }
 
@@ -95,24 +94,16 @@ func (c *Conveyor) RegisterSeparator(
 }
 
 func (c *Conveyor) Run(ctx context.Context) error {
-	if c.running {
-		return errors.New("conveyor already running")
-	}
-
 	c.ctx, c.cancel = context.WithCancel(ctx)
 	defer c.cancel()
 
-	c.running = true
-	defer func() { c.running = false }()
-
-	var wg sync.WaitGroup
 	errCh := make(chan error, len(c.handlers))
 
 	c.syncMutex.Lock()
 	for _, h := range c.handlers {
-		wg.Add(1)
+		c.wg.Add(1)
 		go func(fn handlerFn) {
-			defer wg.Done()
+			defer c.wg.Done()
 			if err := fn(c.ctx); err != nil {
 				select {
 				case errCh <- err:
@@ -125,7 +116,7 @@ func (c *Conveyor) Run(ctx context.Context) error {
 	c.syncMutex.Unlock()
 
 	go func() {
-		wg.Wait()
+		c.wg.Wait()
 		close(errCh)
 
 		c.syncMutex.Lock()
@@ -155,6 +146,11 @@ func (c *Conveyor) Send(inID string, value string) error {
 		return ErrChannelMissing
 	}
 
+	if c.ctx == nil {
+		ch <- value
+		return nil
+	}
+
 	select {
 	case ch <- value:
 		return nil
@@ -170,6 +166,14 @@ func (c *Conveyor) Recv(outID string) (string, error) {
 
 	if !found {
 		return "", ErrChannelMissing
+	}
+
+	if c.ctx == nil {
+		val, ok := <-ch
+		if !ok {
+			return "undefined", nil
+		}
+		return val, nil
 	}
 
 	select {
