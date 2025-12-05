@@ -15,13 +15,16 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
+			close(output)
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				close(output)
 				return nil
 			}
 
 			if strings.Contains(data, "no decorator") {
+				close(output)
 				return ErrCantBeDecorated
 			}
 
@@ -31,6 +34,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
+				close(output)
 				return ctx.Err()
 			case output <- data:
 			}
@@ -40,7 +44,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wg sync.WaitGroup
-	done := make(chan struct{})
 
 	for _, in := range inputs {
 		wg.Add(1)
@@ -49,8 +52,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			for {
 				select {
 				case <-ctx.Done():
-					return
-				case <-done:
 					return
 				case data, ok := <-inputChan:
 					if !ok {
@@ -64,8 +65,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					select {
 					case <-ctx.Done():
 						return
-					case <-done:
-						return
 					case output <- data:
 					}
 				}
@@ -73,13 +72,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}(in)
 	}
 
-	<-ctx.Done()
-
-	close(done)
-
 	wg.Wait()
-	return ctx.Err()
+	close(output)
+	return context.Canceled
 }
+
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	if len(outputs) == 0 {
@@ -91,9 +88,15 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
+			for _, out := range outputs {
+				close(out)
+			}
 			return ctx.Err()
 		case data, ok := <-input:
 			if !ok {
+				for _, out := range outputs {
+					close(out)
+				}
 				return nil
 			}
 
@@ -102,6 +105,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
+				for _, out := range outputs {
+					close(out)
+				}
 				return ctx.Err()
 			case outputs[targetIndex] <- data:
 			}

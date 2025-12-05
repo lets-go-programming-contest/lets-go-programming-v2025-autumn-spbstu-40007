@@ -15,6 +15,7 @@ type Conveyer struct {
 	mu             sync.Mutex
 	wg             sync.WaitGroup
 	stopOnce       sync.Once
+	cancel         context.CancelFunc
 }
 
 type HandlerConfig struct {
@@ -147,7 +148,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	select {
 	case data, ok := <-chann:
 		if !ok {
-			return "undefined", nil
+			return "", errors.New("channel closed")
 		}
 		return data, nil
 	default:
@@ -155,56 +156,10 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	}
 }
 
-func (c *Conveyer) Hndl(cfg HandlerConfig, ctx context.Context, errC chan error) {
-	defer c.wg.Done()
-
-	var err error
-	c.mu.Lock()
-
-	inputChans := make([]chan string, len(cfg.InputIds))
-	for i, id := range cfg.InputIds {
-		inputChans[i] = c.channels[id]
-	}
-
-	outputChans := make([]chan string, len(cfg.OutputIds))
-	for i, id := range cfg.OutputIds {
-		outputChans[i] = c.channels[id]
-	}
-	c.mu.Unlock()
-
-	switch cfg.Type {
-	case DecoratorType:
-		fun, ok := cfg.Fn.(func(context.Context, chan string, chan string) error)
-		if !ok {
-			return
-		}
-		err = fun(ctx, inputChans[0], outputChans[0])
-	case MultiplexerType:
-		fun, ok := cfg.Fn.(func(context.Context, []chan string, chan string) error)
-		if !ok {
-			return
-		}
-		err = fun(ctx, inputChans, outputChans[0])
-	case SeparatorType:
-		fun, ok := cfg.Fn.(func(context.Context, chan string, []chan string) error)
-		if !ok {
-			return
-		}
-		err = fun(ctx, inputChans[0], outputChans)
-	}
-
-	if err != nil {
-		select {
-		case errC <- err:
-		default:
-		}
-	}
-}
-
 func (c *Conveyer) Run(ctx context.Context) error {
 	errChan := make(chan error, 1)
 	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	c.cancel = cancel
 
 	for _, config := range c.HandlerConfigs {
 		c.wg.Add(1)
@@ -245,7 +200,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 				err = fun(ctx, inputChans[0], outputChans)
 			}
 
-			if err != nil {
+			if err != nil && err != context.Canceled && err != context.DeadlineExceeded {
 				select {
 				case errChan <- err:
 					cancel()
@@ -266,6 +221,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		c.stopAll()
 		return err
 	case <-done:
+		c.stopAll()
 		return nil
 	case <-ctx.Done():
 		c.stopAll()
@@ -275,16 +231,25 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 func (c *Conveyer) stopAll() {
 	c.stopOnce.Do(func() {
-        c.wg.Wait()
+		if c.cancel != nil {
+			c.cancel()
+		}
+		
 		c.mu.Lock()
 		closedChannels := make(map[chan string]bool)
 		for name, ch := range c.channels {
 			if !closedChannels[ch] {
 				closedChannels[ch] = true
-                close(ch)
+				select {
+				case <-ch:
+				default:
+					close(ch)
+				}
 			}
-            delete(c.channels, name)
+			delete(c.channels, name)
 		}
 		c.mu.Unlock()
+		
+		c.wg.Wait()
 	})
 }
