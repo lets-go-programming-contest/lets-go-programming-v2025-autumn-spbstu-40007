@@ -62,12 +62,9 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			}
 		}(in)
 	}
-	wg.Wait()
 
-	if err := ctx.Err(); err != nil && (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
-		return err
-	}
-	return nil
+	<-ctx.Done()
+	return ctx.Err()
 }
 
 func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) error {
