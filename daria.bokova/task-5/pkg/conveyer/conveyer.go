@@ -18,6 +18,8 @@ type Conveyer interface {
 	Recv(output string) (string, error)
 }
 
+// New создает новый конвейер с указанным размером буфера каналов
+// nolint:ireturn // Это требование задания - функция должна возвращать интерфейс
 func New(size int) Conveyer {
 	return newConveyerImpl(size)
 }

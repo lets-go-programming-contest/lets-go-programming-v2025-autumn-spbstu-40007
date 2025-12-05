@@ -47,23 +47,30 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 
 	var counter uint64
-	outputsCount := uint64(len(outputs))
+	outputsCount := len(outputs)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
 			idx := atomic.AddUint64(&counter, 1) - 1
-			outputIdx := idx % outputsCount
+
+			// Безопасное вычисление индекса
+			var outputIdx int
+			if outputsCount > 0 {
+				outputIdx = int(idx % uint64(outputsCount))
+			}
 
 			select {
 			case <-ctx.Done():
 				return nil
+
 			case outputs[outputIdx] <- data:
 			}
 		}
@@ -75,6 +82,7 @@ func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- s
 		select {
 		case <-ctx.Done():
 			return
+
 		case data, ok := <-input:
 			if !ok {
 				return
@@ -87,6 +95,7 @@ func multiplexerWorker(ctx context.Context, input <-chan string, output chan<- s
 			select {
 			case <-ctx.Done():
 				return
+
 			case output <- data:
 			}
 		}
@@ -111,6 +120,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case data, ok := <-merged:
 			if !ok {
 				return nil
@@ -119,6 +129,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			select {
 			case <-ctx.Done():
 				return nil
+
 			case output <- data:
 			}
 		}
