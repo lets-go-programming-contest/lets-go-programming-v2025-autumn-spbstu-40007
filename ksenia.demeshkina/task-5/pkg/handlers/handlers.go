@@ -92,11 +92,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	defer func() {
-		if r := recover(); r != nil {
-		}
-	}()
-
 	if len(outputs) == 0 {
 		return nil
 	}
