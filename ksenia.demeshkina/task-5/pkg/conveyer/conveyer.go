@@ -158,7 +158,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
     select {
     case resultErr = <-errChan:
     case <-ctx.Done():
-        resultErr = ctx.Err()
+        resultErr = nil
     case <-c.done:
         resultErr = nil
     }
