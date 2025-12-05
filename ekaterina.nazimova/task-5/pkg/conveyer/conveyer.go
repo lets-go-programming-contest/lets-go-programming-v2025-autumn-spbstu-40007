@@ -97,6 +97,33 @@ func (c *ConveyerImpl) RegisterSeparator(
 	c.mu.Unlock()
 }
 
+func (c *ConveyerImpl) runWorkers(ctx context.Context, errChan chan error, done chan struct{}) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(c.runners))
+
+	for _, runner := range c.runners {
+		go func(r func(ctx context.Context) error) {
+			defer waitGroup.Done()
+
+			err := r(ctx)
+			if err != nil && !errors.Is(err, context.Canceled) {
+				select {
+				case errChan <- err:
+				default:
+				}
+			}
+		}(runner)
+	}
+
+	go func() {
+		waitGroup.Wait()
+		close(done)
+	}()
+}
+
 func (c *ConveyerImpl) Run(ctx context.Context) error {
 	c.mu.RLock()
 	numRunners := len(c.runners)
@@ -106,36 +133,13 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 		return nil
 	}
 
-	var waitGroup sync.WaitGroup
-	waitGroup.Add(numRunners)
-
 	errChan := make(chan error, numRunners)
 	done := make(chan struct{})
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	go func() {
-		waitGroup.Wait()
-		close(done)
-	}()
-
-	c.mu.RLock()
-	for _, runner := range c.runners {
-		go func(r func(ctx context.Context) error) {
-			defer waitGroup.Done()
-
-			err := r(ctx)
-			if err != nil && !errors.Is(err, context.Canceled) {
-				select {
-				case errChan <- err:
-				case <-ctx.Done():
-				}
-				cancel()
-			}
-		}(runner)
-	}
-	c.mu.RUnlock()
+	c.runWorkers(ctx, errChan, done)
 
 	var runErr error
 
@@ -144,11 +148,11 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 		runErr = ctx.Err()
 	case err := <-errChan:
 		runErr = err
+		cancel()
 	case <-done:
 		runErr = nil
 	}
 
-	cancel()
 	<-done
 
 	c.mu.Lock()
