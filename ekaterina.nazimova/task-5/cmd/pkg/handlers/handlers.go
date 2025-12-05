@@ -13,21 +13,21 @@ func PrefixDecoratorFunc(
     output chan string,
 ) error {
     const prefix = "decorated: "
-    
+
     for {
         select {
         case <-ctx.Done():
             return ctx.Err()
-            
+
         case data, ok := <-input:
             if !ok {
                 return nil 
             }
-            
+
             if strings.Contains(data, "no decorator") {
                 return fmt.Errorf("can't be decorated: input data contains 'no decorator'")
             }
-            
+
             result := data
             if !strings.HasPrefix(data, prefix) {
                 result = prefix + data
@@ -50,21 +50,21 @@ func SeparatorFunc(
     if len(outputs) == 0 {
         return nil 
     }
-    
+
     index := 0 
-    
+
     for {
         select {
         case <-ctx.Done():
             return ctx.Err()
-            
+
         case data, ok := <-input:
             if !ok {
                 return nil 
             }
-            
+
             outChannel := outputs[index % len(outputs)]
-            
+
             select {
             case outChannel <- data:
                 index++
@@ -86,7 +86,7 @@ func MultiplexerFunc(
 
     var wg sync.WaitGroup
     wg.Add(len(inputs))
-    
+
     for _, input := range inputs {
         go func(ch chan string) {
             defer wg.Done()
@@ -98,11 +98,11 @@ func MultiplexerFunc(
                     if !ok {
                         return 
                     }
-                    
+
                     if strings.Contains(data, "no multiplexer") {
                         continue
                     }
-                    
+
                     select {
                     case output <- data:
                     case <-ctx.Done():
@@ -112,7 +112,7 @@ func MultiplexerFunc(
             }
         }(input)
     }
-    
+
     wg.Wait()
     return nil
 }

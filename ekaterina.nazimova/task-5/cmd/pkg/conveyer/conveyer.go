@@ -113,7 +113,7 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
     wg.Add(numRunners)
 
     errChan := make(chan error, numRunners)
-    
+
     ctx, cancel := context.WithCancel(ctx)
     defer cancel() 
 
@@ -136,9 +136,9 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
     case err := <-errChan:
         runErr = err
     }
-    
+
     wg.Wait()
-    
+
     c.mu.Lock()
     defer c.mu.Unlock()
     for _, ch := range c.channels {
