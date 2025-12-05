@@ -76,17 +76,25 @@ func (c *Conveyor) Run(parent context.Context) error {
 		<-parent.Done()
 		return parent.Err()
 	}
-	c.ctx, c.cancel = context.WithCancel(parent)
-	handlers := append([]handlerFn{}, c.handlers...)
+
+	c.ctx, c.cancel = context.WithCancel(context.Background())
 	c.mu.Unlock()
+
+	select {
+	case <-parent.Done():
+		c.cancel()
+	default:
+	}
+
+	handlers := append([]handlerFn(nil), c.handlers...)
 
 	errCh := make(chan error, len(handlers))
 
 	for _, h := range handlers {
 		c.wg.Add(1)
-		go func(h handlerFn) {
+		go func(fn handlerFn) {
 			defer c.wg.Done()
-			if err := h(c.ctx); err != nil {
+			if err := fn(c.ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -98,6 +106,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 	go func() {
 		c.wg.Wait()
 		close(errCh)
+
 		c.mu.Lock()
 		for _, ch := range c.chans {
 			close(ch)
@@ -108,11 +117,13 @@ func (c *Conveyor) Run(parent context.Context) error {
 	select {
 	case err := <-errCh:
 		if err != nil {
+			c.cancel()
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
+
 		return nil
-	case <-parent.Done():
-		return parent.Err()
+	case <-c.ctx.Done():
+		return c.ctx.Err()
 	}
 }
 
