@@ -69,8 +69,12 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 		close(out)
 	}()
 
-	<-ctx.Done()
-	return ctx.Err()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		return nil
+	}
 }
 
 func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) error {

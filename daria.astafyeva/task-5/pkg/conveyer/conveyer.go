@@ -105,16 +105,14 @@ func (c *Conveyor) Run(parent context.Context) error {
 	go func() {
 		c.wg.Wait()
 		close(errCh)
-
 		c.mu.Lock()
-		defer c.mu.Unlock()
-		if c.closed {
-			return
+		if !c.closed {
+			c.closed = true
+			for _, ch := range c.chans {
+				close(ch)
+			}
 		}
-		c.closed = true
-		for _, ch := range c.chans {
-			close(ch)
-		}
+		c.mu.Unlock()
 	}()
 
 	select {
