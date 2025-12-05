@@ -19,6 +19,7 @@ type Conveyor struct {
 	wg        sync.WaitGroup
 	ctx       context.Context
 	cancel    context.CancelFunc
+	started   bool
 }
 
 func New(bufSize int) *Conveyor {
@@ -33,19 +34,43 @@ func (c *Conveyor) createChanIfNeeded(id string) chan string {
 	c.syncMutex.Lock()
 	defer c.syncMutex.Unlock()
 
-	if ch, found := c.chMap[id]; found {
+	if ch, ok := c.chMap[id]; ok {
+
 		return ch
 	}
 
-	newCh := make(chan string, c.bufSize)
-	c.chMap[id] = newCh
-	return newCh
+	ch := make(chan string, c.bufSize)
+	c.chMap[id] = ch
+
+	return ch
+}
+
+func (c *Conveyor) getContext() context.Context {
+	c.syncMutex.Lock()
+	defer c.syncMutex.Unlock()
+	if c.ctx == nil {
+		return context.Background()
+	}
+
+	return c.ctx
+}
+
+func (c *Conveyor) ensureStarted() {
+	c.syncMutex.Lock()
+	defer c.syncMutex.Unlock()
+
+	if c.started || len(c.handlers) == 0 {
+
+		return
+	}
+
+	c.started = true
+	go c.Run(context.Background())
 }
 
 func (c *Conveyor) RegisterDecorator(
 	decFn func(ctx context.Context, in chan string, out chan string) error,
-	inID string,
-	outID string,
+	inID, outID string,
 ) {
 	inCh := c.createChanIfNeeded(inID)
 	outCh := c.createChanIfNeeded(outID)
@@ -70,8 +95,10 @@ func (c *Conveyor) RegisterMultiplexer(
 
 	c.syncMutex.Lock()
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
+
 		return muxFn(ctx, inChs, outCh)
 	})
+
 	c.syncMutex.Unlock()
 }
 
@@ -88,19 +115,33 @@ func (c *Conveyor) RegisterSeparator(
 
 	c.syncMutex.Lock()
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
+
 		return sepFn(ctx, inCh, outChs)
 	})
+
 	c.syncMutex.Unlock()
 }
 
 func (c *Conveyor) Run(ctx context.Context) error {
+	c.syncMutex.Lock()
+	if c.started {
+		c.syncMutex.Unlock()
+		<-ctx.Done()
+
+		return ctx.Err()
+	}
+
+	c.started = true
 	c.ctx, c.cancel = context.WithCancel(ctx)
-	defer c.cancel()
+	c.syncMutex.Unlock()
 
 	errCh := make(chan error, len(c.handlers))
 
 	c.syncMutex.Lock()
-	for _, h := range c.handlers {
+	handlers := append([]handlerFn(nil), c.handlers...)
+	c.syncMutex.Unlock()
+
+	for _, h := range handlers {
 		c.wg.Add(1)
 		go func(fn handlerFn) {
 			defer c.wg.Done()
@@ -113,7 +154,6 @@ func (c *Conveyor) Run(ctx context.Context) error {
 			}
 		}(h)
 	}
-	c.syncMutex.Unlock()
 
 	go func() {
 		c.wg.Wait()
@@ -131,8 +171,10 @@ func (c *Conveyor) Run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
+
 		return nil
 	case <-ctx.Done():
+
 		return ctx.Err()
 	}
 }
@@ -143,19 +185,19 @@ func (c *Conveyor) Send(inID string, value string) error {
 	c.syncMutex.Unlock()
 
 	if !found {
+
 		return ErrChannelMissing
 	}
 
-	if c.ctx == nil {
-		ch <- value
-		return nil
-	}
+	c.ensureStarted()
 
 	select {
 	case ch <- value:
+
 		return nil
-	case <-c.ctx.Done():
-		return c.ctx.Err()
+	case <-c.getContext().Done():
+
+		return c.getContext().Err()
 	}
 }
 
@@ -168,21 +210,17 @@ func (c *Conveyor) Recv(outID string) (string, error) {
 		return "", ErrChannelMissing
 	}
 
-	if c.ctx == nil {
-		val, ok := <-ch
-		if !ok {
-			return "undefined", nil
-		}
-		return val, nil
-	}
+	c.ensureStarted()
 
 	select {
 	case val, ok := <-ch:
 		if !ok {
+
 			return "undefined", nil
 		}
 		return val, nil
-	case <-c.ctx.Done():
-		return "", c.ctx.Err()
+	case <-c.getContext().Done():
+
+		return "", c.getContext().Err()
 	}
 }

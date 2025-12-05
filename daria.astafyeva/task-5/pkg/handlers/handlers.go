@@ -25,6 +25,7 @@ func PrefixDecoratorFunc(ctx context.Context, inCh chan string, outCh chan strin
 			return nil
 		case data, open := <-inCh:
 			if !open {
+				close(outCh)
 				return nil
 			}
 
@@ -61,11 +62,9 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 					if !open {
 						return
 					}
-
 					if strings.Contains(data, skipMux) {
 						continue
 					}
-
 					select {
 					case outCh <- data:
 					case <-ctx.Done():
@@ -78,6 +77,7 @@ func MultiplexerFunc(ctx context.Context, inChs []chan string, outCh chan string
 
 	go func() {
 		wg.Wait()
+		close(outCh)
 		close(done)
 	}()
 
@@ -94,7 +94,7 @@ func SeparatorFunc(ctx context.Context, inCh chan string, outChs []chan string) 
 		return ErrNoOutputChannels
 	}
 
-	var pos int
+	pos := 0
 	for {
 		select {
 		case <-ctx.Done():
