@@ -7,6 +7,8 @@ import (
 	"sync/atomic"
 )
 
+var ErrCantBeDecorated = errors.New("can't be decorated")
+
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	const prefix = "decorated: "
 
@@ -20,7 +22,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return errors.New("can't be decorated")
+				return ErrCantBeDecorated
 			}
 
 			var result string
@@ -56,6 +58,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			idx := atomic.AddUint64(&counter, 1) - 1
+
+			if int64(idx) < 0 {
+				continue
+			}
+
 			outputIdx := int(idx) % len(outputs)
 
 			select {
@@ -72,21 +79,20 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	// Простой мультиплексор
 	for {
-		// Проверяем контекст
 		select {
 		case <-ctx.Done():
 			return nil
 		default:
 		}
 
-		// Читаем из каждого канала
-		for _, input := range inputs {
+		hasData := false
+
+		for _, inputChan := range inputs {
 			select {
 			case <-ctx.Done():
 				return nil
-			case data, ok := <-input:
+			case data, ok := <-inputChan:
 				if !ok {
 					continue
 				}
@@ -95,13 +101,22 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					continue
 				}
 
+				hasData = true
+
 				select {
 				case <-ctx.Done():
 					return nil
 				case output <- data:
 				}
 			default:
-				// Нет данных в этом канале
+			}
+		}
+
+		if !hasData {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
 			}
 		}
 	}

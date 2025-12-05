@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
-
 func main() {
-	fmt.Println("Conveyer implementation")
+	// Конвейер обработки строк
+
 }
