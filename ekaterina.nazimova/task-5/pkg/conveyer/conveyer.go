@@ -107,10 +107,10 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	}
 
 	var waitGroup sync.WaitGroup
+	waitGroup.Add(numRunners)
+
 	errChan := make(chan error, numRunners)
 	done := make(chan struct{})
-
-	waitGroup.Add(numRunners)
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -124,7 +124,9 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 	for _, runner := range c.runners {
 		go func(r func(ctx context.Context) error) {
 			defer waitGroup.Done()
-			if err := r(ctx); err != nil && !errors.Is(err, context.Canceled) {
+
+			err := r(ctx)
+			if err != nil && !errors.Is(err, context.Canceled) {
 				select {
 				case errChan <- err:
 				case <-ctx.Done():
@@ -170,10 +172,10 @@ func (c *ConveyerImpl) Run(ctx context.Context) error {
 
 func (c *ConveyerImpl) Send(inputID string, data string) error {
 	c.mu.RLock()
-	channel, ok := c.channels[inputID]
+	channel, channelExists := c.channels[inputID]
 	c.mu.RUnlock()
 
-	if !ok {
+	if !channelExists {
 		return ErrChanNotFound
 	}
 
