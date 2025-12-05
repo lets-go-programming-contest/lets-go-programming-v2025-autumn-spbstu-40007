@@ -32,7 +32,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			select {
 			case output <- decoratedData:
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		}
 	}
@@ -59,7 +59,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			case outputCh <- data:
 				index++
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		}
 	}
