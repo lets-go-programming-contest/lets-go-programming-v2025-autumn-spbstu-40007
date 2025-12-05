@@ -58,12 +58,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			}
 
 			idx := atomic.AddUint64(&counter, 1) - 1
-
-			if int64(idx) < 0 {
-				continue
-			}
-
-			outputIdx := int(idx) % len(outputs)
+			outputIdx := int(idx % uint64(len(outputs)))
 
 			select {
 			case <-ctx.Done():
@@ -83,40 +78,44 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		select {
 		case <-ctx.Done():
 			return nil
+
 		default:
-		}
+			// Пытаемся прочитать из каждого канала
+			readAny := false
 
-		hasData := false
-
-		for _, inputChan := range inputs {
-			select {
-			case <-ctx.Done():
-				return nil
-			case data, ok := <-inputChan:
-				if !ok {
-					continue
-				}
-
-				if strings.Contains(data, "no multiplexer") {
-					continue
-				}
-
-				hasData = true
-
+			for _, inputChan := range inputs {
 				select {
 				case <-ctx.Done():
 					return nil
-				case output <- data:
-				}
-			default:
-			}
-		}
 
-		if !hasData {
-			select {
-			case <-ctx.Done():
-				return nil
-			default:
+				case data, ok := <-inputChan:
+					if !ok {
+						continue
+					}
+
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+
+					readAny = true
+
+					select {
+					case <-ctx.Done():
+						return nil
+
+					case output <- data:
+					}
+
+				default:
+				}
+			}
+
+			if !readAny {
+				select {
+				case <-ctx.Done():
+					return nil
+				default:
+				}
 			}
 		}
 	}

@@ -57,6 +57,7 @@ func newConveyerImpl(size int) *conveyerImpl {
 		errChan:      make(chan error, errChanBufferSize),
 		mu:           sync.RWMutex{},
 		running:      false,
+		cancel:       nil,
 		wg:           sync.WaitGroup{},
 	}
 }
@@ -139,6 +140,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 	select {
 	case <-runCtx.Done():
 		return nil
+
 	case err := <-c.errChan:
 		return err
 	}
@@ -270,6 +272,7 @@ func (c *conveyerImpl) Recv(output string) (string, error) {
 		}
 
 		return data, nil
+
 	default:
 		return "", fmt.Errorf("%w", ErrNoDataAvailable)
 	}
