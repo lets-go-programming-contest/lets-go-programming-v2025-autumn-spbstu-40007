@@ -1,4 +1,4 @@
-module github.com/UwUshkin/task-5
+module UwUshkin/task-5
 
 go 1.22.7
 
