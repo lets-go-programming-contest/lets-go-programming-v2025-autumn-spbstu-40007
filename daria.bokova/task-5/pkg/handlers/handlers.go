@@ -44,12 +44,13 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	if len(outputs) == 0 {
+	outputsCount := uint64(len(outputs))
+
+	if outputsCount == 0 {
 		return nil
 	}
 
 	var counter uint64
-	outputsCount := uint64(len(outputs))
 
 	for {
 		select {
