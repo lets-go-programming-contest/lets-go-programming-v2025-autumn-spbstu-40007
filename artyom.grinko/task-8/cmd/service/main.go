@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-    config := config.New()
+	config := config.New()
 
-    fmt.Println(config.Environment, config.LogLevel)
+	fmt.Println(config.Environment, config.LogLevel)
 }
