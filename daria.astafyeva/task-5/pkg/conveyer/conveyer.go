@@ -31,8 +31,6 @@ func New(bufSize int) *Conveyor {
 		bufSize:  bufSize,
 		chans:    make(map[string]chan string),
 		handlers: make([]handlerFn, 0),
-		mu:       sync.Mutex{},
-		wg:       sync.WaitGroup{},
 	}
 }
 
@@ -40,7 +38,7 @@ func (c *Conveyor) registerChan(channelID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, exists := c.chans[channelID]; exists {
+	if ch, ok := c.chans[channelID]; ok {
 		return ch
 	}
 
@@ -51,19 +49,19 @@ func (c *Conveyor) registerChan(channelID string) chan string {
 }
 
 func (c *Conveyor) RegisterDecorator(
-	fn func(context.Context, chan string, chan string) error,
+	decoratorFn func(context.Context, chan string, chan string) error,
 	inputID, outputID string,
 ) {
-	inCh := c.registerChan(inputID)
-	outCh := c.registerChan(outputID)
+	input := c.registerChan(inputID)
+	output := c.registerChan(outputID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inCh, outCh)
+		return decoratorFn(ctx, input, output)
 	})
 }
 
 func (c *Conveyor) RegisterMultiplexer(
-	fn func(context.Context, []chan string, chan string) error,
+	multiplexerFn func(context.Context, []chan string, chan string) error,
 	inputIDs []string,
 	outputID string,
 ) {
@@ -74,12 +72,12 @@ func (c *Conveyor) RegisterMultiplexer(
 	output := c.registerChan(outputID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, inputs, output)
+		return multiplexerFn(ctx, inputs, output)
 	})
 }
 
 func (c *Conveyor) RegisterSeparator(
-	fn func(context.Context, chan string, []chan string) error,
+	separatorFn func(context.Context, chan string, []chan string) error,
 	inputID string,
 	outputIDs []string,
 ) {
@@ -90,7 +88,7 @@ func (c *Conveyor) RegisterSeparator(
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, input, outputs)
+		return separatorFn(ctx, input, outputs)
 	})
 }
 
@@ -98,6 +96,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
 	if c.ctx != nil {
 		c.mu.Unlock()
+
 		if err := parent.Err(); err != nil {
 			return fmt.Errorf("parent context error: %w", err)
 		}
@@ -106,17 +105,16 @@ func (c *Conveyor) Run(parent context.Context) error {
 
 	c.ctx, c.cancel = context.WithCancel(parent)
 	c.mu.Unlock()
-
 	defer c.cancel()
 
-	handlersCopy := append([]handlerFn(nil), c.handlers...)
-	errCh := make(chan error, len(handlersCopy))
+	handlers := append([]handlerFn(nil), c.handlers...)
+	errCh := make(chan error, len(handlers))
 
-	for _, handler := range handlersCopy {
+	for _, handler := range handlers {
 		c.wg.Add(1)
-
 		go func(h handlerFn) {
 			defer c.wg.Done()
+
 			if err := h(c.ctx); err != nil {
 				select {
 				case errCh <- err:
@@ -149,9 +147,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 
 func (c *Conveyor) Send(channelID, value string) error {
 	c.mu.Lock()
-	ch, exists := c.chans[channelID]
+	ch, ok := c.chans[channelID]
 	c.mu.Unlock()
-	if !exists {
+	if !ok {
 		return ErrChannelMissing
 	}
 
@@ -171,9 +169,9 @@ func (c *Conveyor) Send(channelID, value string) error {
 
 func (c *Conveyor) Recv(channelID string) (string, error) {
 	c.mu.Lock()
-	ch, exists := c.chans[channelID]
+	ch, ok := c.chans[channelID]
 	c.mu.Unlock()
-	if !exists {
+	if !ok {
 		return "", ErrChannelMissing
 	}
 
@@ -208,6 +206,7 @@ func (c *Conveyor) Recv(channelID string) (string, error) {
 func (c *Conveyor) getContext() context.Context {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if c.ctx == nil {
 		return context.Background()
 	}
