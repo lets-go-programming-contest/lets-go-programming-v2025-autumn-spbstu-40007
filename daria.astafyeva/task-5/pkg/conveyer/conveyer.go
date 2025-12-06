@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrChannelMissing = errors.New("chan not found")
-	ErrAlreadyRunning = errors.New("conveyor already running")
+	ErrChannelMissing         = errors.New("chan not found")
+	ErrAlreadyRunning         = errors.New("conveyor already running")
+	ErrInternalContextMissing = errors.New("internal error: run context not available")
 )
 
 const closedChannelValue = "undefined"
@@ -98,19 +99,19 @@ func (c *Conveyor) RegisterSeparator(
 	})
 }
 
-func (c *Conveyor) Run(ctx context.Context) error {
+func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
 	if c.runCtx != nil {
 		c.mu.Unlock()
 
-		if err := ctx.Err(); err != nil {
+		if err := parent.Err(); err != nil {
 			return fmt.Errorf("parent context error: %w", err)
 		}
 
 		return ErrAlreadyRunning
 	}
 
-	c.runCtx, c.runCancel = context.WithCancel(ctx)
+	c.runCtx, c.runCancel = context.WithCancel(parent)
 	c.mu.Unlock()
 	defer c.runCancel()
 
@@ -119,7 +120,7 @@ func (c *Conveyor) Run(ctx context.Context) error {
 
 	runCtx, ok := c.runCtx.(context.Context)
 	if !ok {
-		return errors.New("internal error: run context not available")
+		return ErrInternalContextMissing
 	}
 
 	for _, handler := range handlers {
