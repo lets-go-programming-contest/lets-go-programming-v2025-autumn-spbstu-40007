@@ -118,6 +118,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 			c.cancel()
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
+
 		return nil
 
 	case <-c.ctx.Done():
