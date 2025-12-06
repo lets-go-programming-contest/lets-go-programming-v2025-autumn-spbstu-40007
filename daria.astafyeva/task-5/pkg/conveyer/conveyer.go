@@ -10,7 +10,6 @@ import (
 var (
 	ErrChannelMissing         = errors.New("chan not found")
 	ErrAlreadyRunning         = errors.New("conveyor already running")
-	ErrInternalContextMissing = errors.New("internal error: run context not available")
 )
 
 const closedChannelValue = "undefined"
@@ -23,19 +22,15 @@ type Conveyor struct {
 	handlers  []handlerFn
 	mu        sync.Mutex
 	wg        sync.WaitGroup
-	runCtx    interface{}
+	runCtx    context.Context
 	runCancel context.CancelFunc
 }
 
 func New(bufferSize int) *Conveyor {
 	return &Conveyor{
-		bufSize:   bufferSize,
-		chans:     make(map[string]chan string),
-		handlers:  make([]handlerFn, 0),
-		mu:        sync.Mutex{},
-		wg:        sync.WaitGroup{},
-		runCtx:    nil,
-		runCancel: nil,
+		bufSize:  bufferSize,
+		chans:    make(map[string]chan string),
+		handlers: make([]handlerFn, 0),
 	}
 }
 
@@ -118,18 +113,13 @@ func (c *Conveyor) Run(parent context.Context) error {
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
 
-	runCtx, ok := c.runCtx.(context.Context)
-	if !ok {
-		return ErrInternalContextMissing
-	}
-
 	for _, handler := range handlers {
 		c.wg.Add(1)
 
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			if err := h(runCtx); err != nil {
+			if err := h(c.runCtx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -235,13 +225,8 @@ func (c *Conveyor) getContext() context.Context {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.runCtx == nil {
-		return context.Background()
+	if c.runCtx != nil {
+		return c.runCtx
 	}
-
-	if runCtx, ok := c.runCtx.(context.Context); ok {
-		return runCtx
-	}
-
 	return context.Background()
 }
