@@ -17,24 +17,22 @@ const closedChannelValue = "undefined"
 type handlerFn func(context.Context) error
 
 type Conveyor struct {
-	bufSize     int
-	chans       map[string]chan string
-	handlers    []handlerFn
-	mu          sync.Mutex
-	wg          sync.WaitGroup
-	internalCtx context.Context
-	cancel      context.CancelFunc
+	bufSize  int
+	chans    map[string]chan string
+	handlers []handlerFn
+	mu       sync.Mutex
+	wg       sync.WaitGroup
+	ctx      context.Context
+	cancel   context.CancelFunc
 }
 
 func New(bufferSize int) *Conveyor {
 	return &Conveyor{
-		bufSize:     bufferSize,
-		chans:       make(map[string]chan string),
-		handlers:    make([]handlerFn, 0),
-		mu:          sync.Mutex{},
-		wg:          sync.WaitGroup{},
-		internalCtx: nil,
-		cancel:      nil,
+		bufSize:  bufferSize,
+		chans:    make(map[string]chan string),
+		handlers: make([]handlerFn, 0),
+		mu:       sync.Mutex{},
+		wg:       sync.WaitGroup{},
 	}
 }
 
@@ -52,10 +50,7 @@ func (c *Conveyor) registerChannel(id string) chan string {
 	return ch
 }
 
-func (c *Conveyor) RegisterDecorator(
-	fn func(context.Context, chan string, chan string) error,
-	inID, outID string,
-) {
+func (c *Conveyor) RegisterDecorator(fn func(context.Context, chan string, chan string) error, inID, outID string) {
 	in := c.registerChannel(inID)
 	out := c.registerChannel(outID)
 
@@ -64,11 +59,7 @@ func (c *Conveyor) RegisterDecorator(
 	})
 }
 
-func (c *Conveyor) RegisterMultiplexer(
-	fn func(context.Context, []chan string, chan string) error,
-	inIDs []string,
-	outID string,
-) {
+func (c *Conveyor) RegisterMultiplexer(fn func(context.Context, []chan string, chan string) error, inIDs []string, outID string) {
 	ins := make([]chan string, 0, len(inIDs))
 	for _, id := range inIDs {
 		ins = append(ins, c.registerChannel(id))
@@ -80,11 +71,7 @@ func (c *Conveyor) RegisterMultiplexer(
 	})
 }
 
-func (c *Conveyor) RegisterSeparator(
-	fn func(context.Context, chan string, []chan string) error,
-	inID string,
-	outIDs []string,
-) {
+func (c *Conveyor) RegisterSeparator(fn func(context.Context, chan string, []chan string) error, inID string, outIDs []string) {
 	in := c.registerChannel(inID)
 	outs := make([]chan string, 0, len(outIDs))
 	for _, id := range outIDs {
@@ -98,7 +85,7 @@ func (c *Conveyor) RegisterSeparator(
 
 func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
-	if c.internalCtx != nil {
+	if c.ctx != nil {
 		c.mu.Unlock()
 
 		if err := parent.Err(); err != nil {
@@ -108,7 +95,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 		return ErrAlreadyRunning
 	}
 
-	c.internalCtx, c.cancel = context.WithCancel(parent)
+	c.ctx, c.cancel = context.WithCancel(parent)
 	c.mu.Unlock()
 	defer c.cancel()
 
@@ -120,7 +107,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 		go func(handler handlerFn) {
 			defer c.wg.Done()
 
-			if err := handler(c.internalCtx); err != nil {
+			if err := handler(c.ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -212,8 +199,8 @@ func (c *Conveyor) getContext() context.Context {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.internalCtx == nil {
+	if c.ctx == nil {
 		return context.Background()
 	}
-	return c.internalCtx
+	return c.ctx
 }
