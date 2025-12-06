@@ -22,7 +22,7 @@ type Conveyor struct {
 	handlers  []handlerFn
 	mu        sync.Mutex
 	wg        sync.WaitGroup
-	runCtx    context.Context
+	runCtx    interface{}
 	runCancel context.CancelFunc
 }
 
@@ -117,13 +117,15 @@ func (c *Conveyor) Run(parent context.Context) error {
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
 
+	runCtx := c.runCtx.(context.Context)
+
 	for _, handler := range handlers {
 		c.wg.Add(1)
 
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			if err := h(c.runCtx); err != nil {
+			if err := h(runCtx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -139,6 +141,8 @@ func (c *Conveyor) Run(parent context.Context) error {
 	for _, ch := range c.chans {
 		close(ch)
 	}
+	c.runCtx = nil
+	c.runCancel = nil
 	c.mu.Unlock()
 
 	for err := range errCh {
@@ -169,11 +173,13 @@ func (c *Conveyor) Send(channelID, value string) error {
 	default:
 	}
 
+	ctx := c.getContext()
+
 	select {
 	case channel <- value:
 		return nil
-	case <-c.getContext().Done():
-		return fmt.Errorf("send blocked: %w", c.getContext().Err())
+	case <-ctx.Done():
+		return fmt.Errorf("send blocked: %w", ctx.Err())
 	}
 }
 
@@ -196,6 +202,8 @@ func (c *Conveyor) Recv(channelID string) (string, error) {
 	default:
 	}
 
+	ctx := c.getContext()
+
 	select {
 	case v, ok := <-channel:
 		if !ok {
@@ -203,7 +211,7 @@ func (c *Conveyor) Recv(channelID string) (string, error) {
 		}
 
 		return v, nil
-	case <-c.getContext().Done():
+	case <-ctx.Done():
 		select {
 		case v, ok := <-channel:
 			if !ok {
@@ -212,7 +220,7 @@ func (c *Conveyor) Recv(channelID string) (string, error) {
 
 			return v, nil
 		default:
-			return "", fmt.Errorf("recv timeout: %w", c.getContext().Err())
+			return "", fmt.Errorf("recv timeout: %w", ctx.Err())
 		}
 	}
 }
@@ -225,5 +233,5 @@ func (c *Conveyor) getContext() context.Context {
 		return context.Background()
 	}
 
-	return c.runCtx
+	return c.runCtx.(context.Context)
 }
