@@ -44,7 +44,6 @@ func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputCha
 
 	for _, ch := range inputChannels {
 		waitGroup.Add(1)
-		currentChannel := ch
 		go func(channel <-chan string) {
 			defer waitGroup.Done()
 
@@ -68,7 +67,7 @@ func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputCha
 					}
 				}
 			}
-		}(currentChannel)
+		}(ch)
 	}
 
 	waitGroup.Wait()

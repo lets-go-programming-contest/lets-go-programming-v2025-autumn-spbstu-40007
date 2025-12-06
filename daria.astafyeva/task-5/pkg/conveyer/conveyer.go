@@ -119,18 +119,16 @@ func (c *Conveyor) Run(parent context.Context) error {
 
 	for _, handler := range handlers {
 		c.wg.Add(1)
-		currentHandler := handler
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			err := h(c.ctx)
-			if err != nil {
+			if err := h(c.ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
 				}
 			}
-		}(currentHandler)
+		}(handler)
 	}
 
 	c.wg.Wait()
