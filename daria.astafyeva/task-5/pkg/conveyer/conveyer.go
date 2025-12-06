@@ -33,6 +33,8 @@ func New(bufferSize int) *Conveyor {
 		handlers: make([]handlerFn, 0),
 		mu:       sync.Mutex{},
 		wg:       sync.WaitGroup{},
+		ctx:      nil,
+		cancel:   nil,
 	}
 }
 
@@ -40,12 +42,13 @@ func (c *Conveyor) registerChannel(channelID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, ok := c.chans[channelID]; ok {
-		return ch
+	if existing, ok := c.chans[channelID]; ok {
+		return existing
 	}
 
 	channel := make(chan string, c.bufSize)
 	c.chans[channelID] = channel
+
 	return channel
 }
 
@@ -53,11 +56,11 @@ func (c *Conveyor) RegisterDecorator(
 	decoratorFn func(context.Context, chan string, chan string) error,
 	inID, outID string,
 ) {
-	inputCh := c.registerChannel(inID)
-	outputCh := c.registerChannel(outID)
+	inputChannel := c.registerChannel(inID)
+	outputChannel := c.registerChannel(outID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return decoratorFn(ctx, inputCh, outputCh)
+		return decoratorFn(ctx, inputChannel, outputChannel)
 	})
 }
 
@@ -70,10 +73,11 @@ func (c *Conveyor) RegisterMultiplexer(
 	for _, id := range inIDs {
 		inputChannels = append(inputChannels, c.registerChannel(id))
 	}
-	outputCh := c.registerChannel(outID)
+
+	outputChannel := c.registerChannel(outID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return multiplexerFn(ctx, inputChannels, outputCh)
+		return multiplexerFn(ctx, inputChannels, outputChannel)
 	})
 }
 
@@ -82,7 +86,7 @@ func (c *Conveyor) RegisterSeparator(
 	inID string,
 	outIDs []string,
 ) {
-	inputCh := c.registerChannel(inID)
+	inputChannel := c.registerChannel(inID)
 
 	outputChannels := make([]chan string, 0, len(outIDs))
 	for _, id := range outIDs {
@@ -90,7 +94,7 @@ func (c *Conveyor) RegisterSeparator(
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return separatorFn(ctx, inputCh, outputChannels)
+		return separatorFn(ctx, inputChannel, outputChannels)
 	})
 }
 
@@ -115,11 +119,12 @@ func (c *Conveyor) Run(parent context.Context) error {
 
 	for _, handler := range handlers {
 		c.wg.Add(1)
-
 		currentHandler := handler
 		go func(h handlerFn) {
 			defer c.wg.Done()
-			if err := h(c.ctx); err != nil {
+
+			err := h(c.ctx)
+			if err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -220,5 +225,6 @@ func (c *Conveyor) getContext() context.Context {
 	if c.ctx == nil {
 		return context.Background()
 	}
+
 	return c.ctx
 }
