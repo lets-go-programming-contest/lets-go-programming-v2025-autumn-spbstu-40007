@@ -1,3 +1,4 @@
+//nolint:varnamelen
 package handlers
 
 import (
