@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrChannelMissing         = errors.New("chan not found")
-	ErrAlreadyRunning         = errors.New("conveyor already running")
+	ErrChannelMissing = errors.New("chan not found")
+	ErrAlreadyRunning = errors.New("conveyor already running")
 )
 
 const closedChannelValue = "undefined"
@@ -28,9 +28,13 @@ type Conveyor struct {
 
 func New(bufferSize int) *Conveyor {
 	return &Conveyor{
-		bufSize:  bufferSize,
-		chans:    make(map[string]chan string),
-		handlers: make([]handlerFn, 0),
+		bufSize:   bufferSize,
+		chans:     make(map[string]chan string),
+		handlers:  make([]handlerFn, 0),
+		mu:        sync.Mutex{},
+		wg:        sync.WaitGroup{},
+		runCtx:    nil,
+		runCancel: nil,
 	}
 }
 
@@ -228,5 +232,6 @@ func (c *Conveyor) getContext() context.Context {
 	if c.runCtx != nil {
 		return c.runCtx
 	}
+
 	return context.Background()
 }
