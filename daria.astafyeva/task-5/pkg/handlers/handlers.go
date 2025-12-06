@@ -65,7 +65,6 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 	}
 
 	wg.Wait()
-
 	return nil
 }
 
@@ -73,7 +72,6 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 	if len(outs) == 0 {
 		return ErrNoOutputChannels
 	}
-
 	i := 0
 	for {
 		select {

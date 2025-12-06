@@ -74,16 +74,13 @@ func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
 	if c.ctx != nil {
 		c.mu.Unlock()
-
 		if err := parent.Err(); err != nil {
 			return err
 		}
 		return ErrAlreadyRunning
 	}
-
 	c.ctx, c.cancel = context.WithCancel(parent)
 	c.mu.Unlock()
-
 	defer c.cancel()
 
 	handlers := append([]handlerFn(nil), c.handlers...)
@@ -102,31 +99,24 @@ func (c *Conveyor) Run(parent context.Context) error {
 		}(h)
 	}
 
-	go func() {
-		c.wg.Wait()
-		close(errCh)
+	c.wg.Wait()
+	close(errCh)
 
-		c.mu.Lock()
-		for _, ch := range c.chans {
-			close(ch)
-		}
-		c.mu.Unlock()
-	}()
+	c.mu.Lock()
+	for _, ch := range c.chans {
+		close(ch)
+	}
+	c.mu.Unlock()
 
-	select {
-	case err := <-errCh:
+	for err := range errCh {
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return nil
 			}
-			c.cancel()
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
-		return nil
-
-	case <-c.ctx.Done():
-		return nil
 	}
+	return nil
 }
 
 func (c *Conveyor) Send(id, val string) error {
@@ -136,13 +126,11 @@ func (c *Conveyor) Send(id, val string) error {
 	if !ok {
 		return ErrChannelMissing
 	}
-
 	select {
 	case ch <- val:
 		return nil
 	default:
 	}
-
 	select {
 	case ch <- val:
 		return nil
@@ -158,7 +146,6 @@ func (c *Conveyor) Recv(id string) (string, error) {
 	if !ok {
 		return "", ErrChannelMissing
 	}
-
 	select {
 	case v, ok := <-ch:
 		if !ok {
@@ -167,7 +154,6 @@ func (c *Conveyor) Recv(id string) (string, error) {
 		return v, nil
 	default:
 	}
-
 	select {
 	case v, ok := <-ch:
 		if !ok {
