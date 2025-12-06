@@ -16,6 +16,7 @@ func PrefixDecoratorFunc(ctx context.Context, in, out chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
+
 			return ctx.Err()
 		case data, ok := <-in:
 			if !ok {
@@ -77,6 +78,7 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 	for {
 		select {
 		case <-ctx.Done():
+
 			return ctx.Err()
 		case data, ok := <-in:
 			if !ok {
@@ -86,6 +88,7 @@ func SeparatorFunc(ctx context.Context, in chan string, outs []chan string) erro
 			case outs[i%len(outs)] <- data:
 				i++
 			case <-ctx.Done():
+
 				return ctx.Err()
 			}
 		}
