@@ -98,26 +98,29 @@ func (c *Conveyor) RegisterSeparator(
 	})
 }
 
-func (c *Conveyor) Run(parent context.Context) error {
+func (c *Conveyor) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.runCtx != nil {
 		c.mu.Unlock()
 
-		if err := parent.Err(); err != nil {
+		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("parent context error: %w", err)
 		}
 
 		return ErrAlreadyRunning
 	}
 
-	c.runCtx, c.runCancel = context.WithCancel(parent)
+	c.runCtx, c.runCancel = context.WithCancel(ctx)
 	c.mu.Unlock()
 	defer c.runCancel()
 
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
 
-	runCtx := c.runCtx.(context.Context)
+	runCtx, ok := c.runCtx.(context.Context)
+	if !ok {
+		return errors.New("internal error: run context not available")
+	}
 
 	for _, handler := range handlers {
 		c.wg.Add(1)
@@ -141,7 +144,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 	for _, ch := range c.chans {
 		close(ch)
 	}
+
 	c.runCtx = nil
+
 	c.runCancel = nil
 	c.mu.Unlock()
 
@@ -233,5 +238,9 @@ func (c *Conveyor) getContext() context.Context {
 		return context.Background()
 	}
 
-	return c.runCtx.(context.Context)
+	if runCtx, ok := c.runCtx.(context.Context); ok {
+		return runCtx
+	}
+
+	return context.Background()
 }
