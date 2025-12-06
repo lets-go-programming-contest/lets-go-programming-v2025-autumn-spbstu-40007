@@ -117,8 +117,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
 
-	for i := 0; i < len(handlers); i++ {
-		handler := handlers[i]
+	for _, handler := range handlers {
 		c.wg.Add(1)
 
 		go func(h handlerFn) {
