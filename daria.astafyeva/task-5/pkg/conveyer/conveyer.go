@@ -33,53 +33,66 @@ func New(bufferSize int) *Conveyor {
 		handlers: make([]handlerFn, 0),
 		mu:       sync.Mutex{},
 		wg:       sync.WaitGroup{},
+		ctx:      nil,
+		cancel:   nil,
 	}
 }
 
-func (c *Conveyor) registerChannel(id string) chan string {
+func (c *Conveyor) registerChannel(channelID string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, ok := c.chans[id]; ok {
+	if ch, ok := c.chans[channelID]; ok {
 		return ch
 	}
 
-	ch := make(chan string, c.bufSize)
-	c.chans[id] = ch
+	channel := make(chan string, c.bufSize)
+	c.chans[channelID] = channel
 
-	return ch
+	return channel
 }
 
-func (c *Conveyor) RegisterDecorator(fn func(context.Context, chan string, chan string) error, inID, outID string) {
-	in := c.registerChannel(inID)
-	out := c.registerChannel(outID)
+func (c *Conveyor) RegisterDecorator(
+	fn func(context.Context, chan string, chan string) error,
+	inID, outID string,
+) {
+	inputCh := c.registerChannel(inID)
+	outputCh := c.registerChannel(outID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, in, out)
+		return fn(ctx, inputCh, outputCh)
 	})
 }
 
-func (c *Conveyor) RegisterMultiplexer(fn func(context.Context, []chan string, chan string) error, inIDs []string, outID string) {
-	ins := make([]chan string, 0, len(inIDs))
+func (c *Conveyor) RegisterMultiplexer(
+	fn func(context.Context, []chan string, chan string) error,
+	inIDs []string,
+	outID string,
+) {
+	inputChannels := make([]chan string, 0, len(inIDs))
 	for _, id := range inIDs {
-		ins = append(ins, c.registerChannel(id))
+		inputChannels = append(inputChannels, c.registerChannel(id))
 	}
-	out := c.registerChannel(outID)
+	outputCh := c.registerChannel(outID)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, ins, out)
+		return fn(ctx, inputChannels, outputCh)
 	})
 }
 
-func (c *Conveyor) RegisterSeparator(fn func(context.Context, chan string, []chan string) error, inID string, outIDs []string) {
-	in := c.registerChannel(inID)
-	outs := make([]chan string, 0, len(outIDs))
+func (c *Conveyor) RegisterSeparator(
+	fn func(context.Context, chan string, []chan string) error,
+	inID string,
+	outIDs []string,
+) {
+	inputCh := c.registerChannel(inID)
+	outputChannels := make([]chan string, 0, len(outIDs))
 	for _, id := range outIDs {
-		outs = append(outs, c.registerChannel(id))
+		outputChannels = append(outputChannels, c.registerChannel(id))
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, in, outs)
+		return fn(ctx, inputCh, outputChannels)
 	})
 }
 
@@ -87,11 +100,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
 	if c.ctx != nil {
 		c.mu.Unlock()
-
 		if err := parent.Err(); err != nil {
 			return fmt.Errorf("parent context error: %w", err)
 		}
-
 		return ErrAlreadyRunning
 	}
 
@@ -102,18 +113,18 @@ func (c *Conveyor) Run(parent context.Context) error {
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
 
-	for _, h := range handlers {
+	for _, handler := range handlers {
 		c.wg.Add(1)
-		go func(handler handlerFn) {
+		handlerCopy := handler
+		go func(h handlerFn) {
 			defer c.wg.Done()
-
-			if err := handler(c.ctx); err != nil {
+			if err := h(c.ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
 				}
 			}
-		}(h)
+		}(handlerCopy)
 	}
 
 	c.wg.Wait()
@@ -130,6 +141,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return nil
 			}
+
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
 	}
@@ -137,38 +149,40 @@ func (c *Conveyor) Run(parent context.Context) error {
 	return nil
 }
 
-func (c *Conveyor) Send(id, value string) error {
+func (c *Conveyor) Send(channelID, value string) error {
 	c.mu.Lock()
-	ch, ok := c.chans[id]
+	channel, ok := c.chans[channelID]
 	c.mu.Unlock()
+
 	if !ok {
 		return ErrChannelMissing
 	}
 
 	select {
-	case ch <- value:
+	case channel <- value:
 		return nil
 	default:
 	}
 
 	select {
-	case ch <- value:
+	case channel <- value:
 		return nil
 	case <-c.getContext().Done():
 		return fmt.Errorf("send blocked: %w", c.getContext().Err())
 	}
 }
 
-func (c *Conveyor) Recv(id string) (string, error) {
+func (c *Conveyor) Recv(channelID string) (string, error) {
 	c.mu.Lock()
-	ch, ok := c.chans[id]
+	channel, ok := c.chans[channelID]
 	c.mu.Unlock()
+
 	if !ok {
 		return "", ErrChannelMissing
 	}
 
 	select {
-	case v, ok := <-ch:
+	case v, ok := <-channel:
 		if !ok {
 			return closedChannelValue, nil
 		}
@@ -177,14 +191,14 @@ func (c *Conveyor) Recv(id string) (string, error) {
 	}
 
 	select {
-	case v, ok := <-ch:
+	case v, ok := <-channel:
 		if !ok {
 			return closedChannelValue, nil
 		}
 		return v, nil
 	case <-c.getContext().Done():
 		select {
-		case v, ok := <-ch:
+		case v, ok := <-channel:
 			if !ok {
 				return closedChannelValue, nil
 			}
