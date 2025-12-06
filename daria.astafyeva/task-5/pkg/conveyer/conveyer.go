@@ -111,9 +111,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 	}
 
 	ctx, cancel := context.WithCancel(parent)
-	c.runCtx = &ctx
-	c.runCancel = cancel
+	c.runCtx, c.runCancel = &ctx, cancel
 	c.mu.Unlock()
+
 	defer c.runCancel()
 
 	handlers := append([]handlerFn(nil), c.handlers...)
@@ -125,7 +125,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			if err := h(*c.runCtx); err != nil {
+			if err := h(ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
