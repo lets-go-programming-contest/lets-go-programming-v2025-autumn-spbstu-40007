@@ -40,20 +40,20 @@ func PrefixDecoratorFunc(ctx context.Context, inputChannel, outputChannel chan s
 }
 
 func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputChannel chan string) error {
-	var waitGroup sync.WaitGroup
+	var wg sync.WaitGroup
 
-	for _, channel := range inputChannels {
-		waitGroup.Add(1)
+	for _, ch := range inputChannels {
+		wg.Add(1)
 
-		currentChannel := channel
-		go func(ch <-chan string) {
-			defer waitGroup.Done()
+		currentChannel := ch
+		go func(channel <-chan string) {
+			defer wg.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-ch:
+				case data, ok := <-channel:
 					if !ok {
 						return
 					}
@@ -72,7 +72,7 @@ func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputCha
 		}(currentChannel)
 	}
 
-	waitGroup.Wait()
+	wg.Wait()
 	return nil
 }
 
