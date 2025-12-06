@@ -25,7 +25,7 @@ type conveyer struct {
 }
 
 func New(size int) *conveyer {
-	return &conveyer{
+	return &conveyer{ //nolint::exhaustruct
 		size:     size,
 		channels: make(map[string]chan string),
 		handlers: make([]handlersFn, 0),
@@ -122,12 +122,11 @@ func (c *conveyer) Run(ctx context.Context) error {
 	copy(handlers, c.handlers)
 	c.mu.RUnlock()
 
-	defer c.closeAllChannels()
-
 	group, ctxWithCancel := errgroup.WithContext(ctx)
 
-	for _, handler := range handlers {
-		h := handler
+	for _, handlers := range handlers {
+		h := handlers
+
 		group.Go(func() error {
 			return h(ctxWithCancel)
 		})
@@ -135,12 +134,10 @@ func (c *conveyer) Run(ctx context.Context) error {
 
 	err := group.Wait()
 
+	c.closeAllChannels()
+
 	if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 		return fmt.Errorf("conveyer failed: %w", err)
-	}
-
-	if errors.Is(err, context.Canceled) && ctx.Err() != nil {
-		return ctx.Err()
 	}
 
 	return nil
@@ -155,12 +152,9 @@ func (c *conveyer) Send(input string, data string) error {
 		return ErrChanNotFound
 	}
 
-	select {
-	case channel <- data:
-		return nil
-	default:
-		return fmt.Errorf("send to channel %s failed: channel blocked", input)
-	}
+	channel <- data
+
+	return nil
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
