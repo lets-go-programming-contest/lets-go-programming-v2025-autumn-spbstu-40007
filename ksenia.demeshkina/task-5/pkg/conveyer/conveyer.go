@@ -115,6 +115,54 @@ func (c *Conveyer) RegisterSeparator(
 	})
 }
 
+func (c *Conveyer) runHandler(ctx context.Context, conf handlerConfig, errChan chan error, cancel context.CancelFunc) {
+	defer c.waitGroup.Done()
+
+	c.mu.Lock()
+	var inputChannels []chan string
+	for _, name := range conf.inputs {
+		inputChannels = append(inputChannels, c.channels[name])
+	}
+	var outputChannels []chan string
+	for _, name := range conf.outputs {
+		outputChannels = append(outputChannels, c.channels[name])
+	}
+	c.mu.Unlock()
+
+	var err error
+	switch conf.hType {
+	case typeDecorator:
+		fn, ok := conf.fn.(func(context.Context, chan string, chan string) error)
+		if !ok {
+			err = ErrInvalidDecorator
+		} else {
+			err = fn(ctx, inputChannels[0], outputChannels[0])
+		}
+	case typeMultiplexer:
+		fn, ok := conf.fn.(func(context.Context, []chan string, chan string) error)
+		if !ok {
+			err = ErrInvalidMultiplexer
+		} else {
+			err = fn(ctx, inputChannels, outputChannels[0])
+		}
+	case typeSeparator:
+		fn, ok := conf.fn.(func(context.Context, chan string, []chan string) error)
+		if !ok {
+			err = ErrInvalidSeparator
+		} else {
+			err = fn(ctx, inputChannels[0], outputChannels)
+		}
+	}
+
+	if err != nil {
+		select {
+		case errChan <- err:
+			cancel()
+		default:
+		}
+	}
+}
+
 func (c *Conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -124,58 +172,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, cfg := range c.configs {
 		c.waitGroup.Add(1)
-
-		go func(conf handlerConfig) {
-			defer c.waitGroup.Done()
-
-			c.mu.Lock()
-			var inputChannels []chan string
-			for _, name := range conf.inputs {
-				inputChannels = append(inputChannels, c.channels[name])
-			}
-
-			var outputChannels []chan string
-			for _, name := range conf.outputs {
-				outputChannels = append(outputChannels, c.channels[name])
-			}
-			c.mu.Unlock()
-
-			var err error
-
-			switch conf.hType {
-			case typeDecorator:
-				fn, ok := conf.fn.(func(context.Context, chan string, chan string) error)
-				if !ok {
-					err = ErrInvalidDecorator
-				} else {
-					err = fn(ctx, inputChannels[0], outputChannels[0])
-				}
-
-			case typeMultiplexer:
-				fn, ok := conf.fn.(func(context.Context, []chan string, chan string) error)
-				if !ok {
-					err = ErrInvalidMultiplexer
-				} else {
-					err = fn(ctx, inputChannels, outputChannels[0])
-				}
-
-			case typeSeparator:
-				fn, ok := conf.fn.(func(context.Context, chan string, []chan string) error)
-				if !ok {
-					err = ErrInvalidSeparator
-				} else {
-					err = fn(ctx, inputChannels[0], outputChannels)
-				}
-			}
-
-			if err != nil {
-				select {
-				case errChan <- err:
-					cancel()
-				default:
-				}
-			}
-		}(cfg)
+		go c.runHandler(ctx, cfg, errChan, cancel)
 	}
 
 	go func() {
@@ -184,7 +181,6 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}()
 
 	var resultErr error
-
 	select {
 	case err := <-errChan:
 		resultErr = err
@@ -215,7 +211,6 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-
 	return nil
 }
 
