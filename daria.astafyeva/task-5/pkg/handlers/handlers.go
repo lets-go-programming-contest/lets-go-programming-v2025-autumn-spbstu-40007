@@ -30,6 +30,7 @@ func PrefixDecoratorFunc(ctx context.Context, in, out chan string) error {
 			select {
 			case out <- data:
 			case <-ctx.Done():
+
 				return ctx.Err()
 			}
 		}
@@ -46,7 +47,6 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 			for {
 				select {
 				case <-ctx.Done():
-					// Внутренние горутины выходят немедленно при отмене контекста
 					return
 				case data, ok := <-ch:
 					if !ok {
@@ -66,7 +66,6 @@ func MultiplexerFunc(ctx context.Context, ins []chan string, out chan string) er
 	}
 
 	<-ctx.Done()
-
 	return ctx.Err()
 }
 

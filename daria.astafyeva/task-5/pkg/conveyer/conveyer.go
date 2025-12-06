@@ -8,6 +8,7 @@ import (
 )
 
 var ErrChannelMissing = errors.New("chan not found")
+var ErrAlreadyRunning = errors.New("conveyor already running")
 
 type handlerFn func(context.Context) error
 
@@ -73,8 +74,11 @@ func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
 	if c.ctx != nil {
 		c.mu.Unlock()
-		<-parent.Done()
-		return parent.Err()
+
+		if err := parent.Err(); err != nil {
+			return err
+		}
+		return ErrAlreadyRunning
 	}
 
 	c.ctx, c.cancel = context.WithCancel(parent)
@@ -118,7 +122,6 @@ func (c *Conveyor) Run(parent context.Context) error {
 			c.cancel()
 			return fmt.Errorf("conveyor run failed: %w", err)
 		}
-
 		return nil
 
 	case <-c.ctx.Done():
