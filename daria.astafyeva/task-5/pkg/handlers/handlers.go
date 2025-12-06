@@ -41,7 +41,6 @@ func PrefixDecoratorFunc(ctx context.Context, inputChannel, outputChannel chan s
 
 func MultiplexerFunc(ctx context.Context, inputChannels []chan string, outputChannel chan string) error {
 	var waitGroup sync.WaitGroup
-
 	waitGroup.Add(len(inputChannels))
 
 	for _, currentChannel := range inputChannels {
