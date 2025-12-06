@@ -22,7 +22,7 @@ type Conveyor struct {
 	handlers  []handlerFn
 	mu        sync.Mutex
 	wg        sync.WaitGroup
-	runCtx    context.Context
+	runCtx    *context.Context
 	runCancel context.CancelFunc
 }
 
@@ -110,7 +110,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 		return ErrAlreadyRunning
 	}
 
-	c.runCtx, c.runCancel = context.WithCancel(parent)
+	ctx, cancel := context.WithCancel(parent)
+	c.runCtx = &ctx
+	c.runCancel = cancel
 	c.mu.Unlock()
 	defer c.runCancel()
 
@@ -123,7 +125,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			if err := h(c.runCtx); err != nil {
+			if err := h(*c.runCtx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -230,7 +232,7 @@ func (c *Conveyor) getContext() context.Context {
 	defer c.mu.Unlock()
 
 	if c.runCtx != nil {
-		return c.runCtx
+		return *c.runCtx
 	}
 
 	return context.Background()
