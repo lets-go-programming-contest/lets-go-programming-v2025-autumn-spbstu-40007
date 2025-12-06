@@ -17,24 +17,24 @@ const closedChannelValue = "undefined"
 type handlerFn func(context.Context) error
 
 type Conveyor struct {
-	bufSize  int
-	chans    map[string]chan string
-	handlers []handlerFn
-	mu       sync.Mutex
-	wg       sync.WaitGroup
-	ctx      context.Context
-	cancel   context.CancelFunc
+	bufSize   int
+	chans     map[string]chan string
+	handlers  []handlerFn
+	mu        sync.Mutex
+	wg        sync.WaitGroup
+	runCtx    context.Context
+	runCancel context.CancelFunc
 }
 
 func New(bufferSize int) *Conveyor {
 	return &Conveyor{
-		bufSize:  bufferSize,
-		chans:    make(map[string]chan string),
-		handlers: make([]handlerFn, 0),
-		mu:       sync.Mutex{},
-		wg:       sync.WaitGroup{},
-		ctx:      nil,
-		cancel:   nil,
+		bufSize:   bufferSize,
+		chans:     make(map[string]chan string),
+		handlers:  make([]handlerFn, 0),
+		mu:        sync.Mutex{},
+		wg:        sync.WaitGroup{},
+		runCtx:    nil,
+		runCancel: nil,
 	}
 }
 
@@ -100,7 +100,7 @@ func (c *Conveyor) RegisterSeparator(
 
 func (c *Conveyor) Run(parent context.Context) error {
 	c.mu.Lock()
-	if c.ctx != nil {
+	if c.runCtx != nil {
 		c.mu.Unlock()
 
 		if err := parent.Err(); err != nil {
@@ -110,9 +110,9 @@ func (c *Conveyor) Run(parent context.Context) error {
 		return ErrAlreadyRunning
 	}
 
-	c.ctx, c.cancel = context.WithCancel(parent)
+	c.runCtx, c.runCancel = context.WithCancel(parent)
 	c.mu.Unlock()
-	defer c.cancel()
+	defer c.runCancel()
 
 	handlers := append([]handlerFn(nil), c.handlers...)
 	errCh := make(chan error, len(handlers))
@@ -123,7 +123,7 @@ func (c *Conveyor) Run(parent context.Context) error {
 		go func(h handlerFn) {
 			defer c.wg.Done()
 
-			if err := h(c.ctx); err != nil {
+			if err := h(c.runCtx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -221,9 +221,9 @@ func (c *Conveyor) getContext() context.Context {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.ctx == nil {
+	if c.runCtx == nil {
 		return context.Background()
 	}
 
-	return c.ctx
+	return c.runCtx
 }
