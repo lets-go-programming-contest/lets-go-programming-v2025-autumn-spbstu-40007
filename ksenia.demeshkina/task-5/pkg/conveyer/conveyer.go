@@ -119,17 +119,21 @@ func (c *Conveyer) runHandler(ctx context.Context, conf handlerConfig, errChan c
 	defer c.waitGroup.Done()
 
 	c.mu.Lock()
-	var inputChannels []chan string
+
+	inputChannels := make([]chan string, 0, len(conf.inputs))
 	for _, name := range conf.inputs {
 		inputChannels = append(inputChannels, c.channels[name])
 	}
-	var outputChannels []chan string
+
+	outputChannels := make([]chan string, 0, len(conf.outputs))
 	for _, name := range conf.outputs {
 		outputChannels = append(outputChannels, c.channels[name])
 	}
+
 	c.mu.Unlock()
 
 	var err error
+
 	switch conf.hType {
 	case typeDecorator:
 		fn, ok := conf.fn.(func(context.Context, chan string, chan string) error)
@@ -138,6 +142,7 @@ func (c *Conveyer) runHandler(ctx context.Context, conf handlerConfig, errChan c
 		} else {
 			err = fn(ctx, inputChannels[0], outputChannels[0])
 		}
+
 	case typeMultiplexer:
 		fn, ok := conf.fn.(func(context.Context, []chan string, chan string) error)
 		if !ok {
@@ -145,6 +150,7 @@ func (c *Conveyer) runHandler(ctx context.Context, conf handlerConfig, errChan c
 		} else {
 			err = fn(ctx, inputChannels, outputChannels[0])
 		}
+
 	case typeSeparator:
 		fn, ok := conf.fn.(func(context.Context, chan string, []chan string) error)
 		if !ok {
@@ -168,10 +174,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	defer cancel()
 
 	errChan := make(chan error, 1)
+
 	c.done = make(chan struct{})
 
 	for _, cfg := range c.configs {
 		c.waitGroup.Add(1)
+
 		go c.runHandler(ctx, cfg, errChan, cancel)
 	}
 
@@ -181,11 +189,14 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}()
 
 	var resultErr error
+
 	select {
 	case err := <-errChan:
 		resultErr = err
+
 	case <-ctx.Done():
 		resultErr = nil
+
 	case <-c.done:
 		resultErr = nil
 	}
@@ -211,6 +222,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 
