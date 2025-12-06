@@ -25,7 +25,7 @@ type conveyer struct {
 }
 
 func New(size int) *conveyer {
-	return &conveyer{ //nolint::exhaustruct
+	return &conveyer{ //nolint:exhaustruct
 		size:     size,
 		channels: make(map[string]chan string),
 		handlers: make([]handlersFn, 0),
