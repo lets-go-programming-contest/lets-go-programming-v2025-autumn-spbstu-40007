@@ -20,6 +20,7 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	mockDB, _, _ := sqlmock.New()
+
 	defer mockDB.Close()
 
 	service := db.New(mockDB)
@@ -32,8 +33,11 @@ func TestDBService_GetNames(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -51,8 +55,11 @@ func TestDBService_GetNames(t *testing.T) {
 
 	t.Run("query error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -67,8 +74,11 @@ func TestDBService_GetNames(t *testing.T) {
 
 	t.Run("scan error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -85,12 +95,15 @@ func TestDBService_GetNames(t *testing.T) {
 
 	t.Run("rows error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
-		
+
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
 			RowError(0, errRow)
@@ -109,8 +122,11 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -128,8 +144,11 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 	t.Run("query error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -143,8 +162,11 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 	t.Run("scan error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
@@ -159,8 +181,11 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 	t.Run("rows error", func(t *testing.T) {
 		t.Parallel()
+
 		mockDB, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
+
 		defer mockDB.Close()
 
 		service := db.New(mockDB)
