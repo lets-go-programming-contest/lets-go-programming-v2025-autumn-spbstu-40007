@@ -138,7 +138,7 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 }
 
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
-	errChan := make(chan error, 1)
+	errChan := make(chan error, len(conveyer.handlers))
 	var wGroup sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
