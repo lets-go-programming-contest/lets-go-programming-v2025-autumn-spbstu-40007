@@ -23,21 +23,21 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-input:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(v, "no decorator") {
+			if strings.Contains(value, "no decorator") {
 				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(v, prefix) {
-				v = prefix + v
+			if !strings.HasPrefix(value, prefix) {
+				value = prefix + value
 			}
 
 			select {
-			case output <- v:
+			case output <- value:
 			case <-ctx.Done():
 				return nil
 			}
@@ -45,8 +45,8 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
-func copyInput(ctx context.Context, in <-chan string, out chan<- string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func copyInput(ctx context.Context, in <-chan string, out chan<- string, waitGroup *sync.WaitGroup) {
+	defer waitGroup.Done()
 
 	for {
 		select {
@@ -69,16 +69,16 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	defer safeClose(output)
 
 	relay := make(chan string)
-	var wg sync.WaitGroup
+	var WaitGroup sync.WaitGroup
 
 	for _, in := range inputs {
-		wg.Add(1)
+		WaitGroup.Add(1)
 
-		go copyInput(ctx, in, relay, &wg)
+		go copyInput(ctx, in, relay, &WaitGroup)
 	}
 
 	go func() {
-		wg.Wait()
+		WaitGroup.Wait()
 		close(relay)
 	}()
 
@@ -86,17 +86,17 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-relay:
+		case value, ok := <-relay:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(v, "no multiplexer") {
+			if strings.Contains(value, "no multiplexer") {
 				continue
 			}
 
 			select {
-			case output <- v:
+			case output <- value:
 			case <-ctx.Done():
 				return nil
 			}
