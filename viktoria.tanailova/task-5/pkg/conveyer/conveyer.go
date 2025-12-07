@@ -21,7 +21,7 @@ const (
 
 type handlerCfg struct {
 	kind      handlerKind
-	fn        interface{}
+	function  interface{}
 	inputIDs  []string
 	outputIDs []string
 }
@@ -53,7 +53,7 @@ func (c *Conveyer) ensureChan(id string) {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	function func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
@@ -65,7 +65,7 @@ func (c *Conveyer) RegisterDecorator(
 
 	cfg := handlerCfg{
 		kind:      kindDecorator,
-		fn:        fn,
+		function:  function,
 		inputIDs:  []string{input},
 		outputIDs: []string{output},
 	}
@@ -74,7 +74,7 @@ func (c *Conveyer) RegisterDecorator(
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	function func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
@@ -89,7 +89,7 @@ func (c *Conveyer) RegisterMultiplexer(
 
 	cfg := handlerCfg{
 		kind:      kindMultiplexer,
-		fn:        fn,
+		function:  function,
 		inputIDs:  append([]string(nil), inputs...),
 		outputIDs: []string{output},
 	}
@@ -98,7 +98,7 @@ func (c *Conveyer) RegisterMultiplexer(
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	function func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
@@ -113,7 +113,7 @@ func (c *Conveyer) RegisterSeparator(
 
 	cfg := handlerCfg{
 		kind:      kindSeparator,
-		fn:        fn,
+		function:  function,
 		inputIDs:  []string{input},
 		outputIDs: append([]string(nil), outputs...),
 	}
@@ -176,17 +176,17 @@ func (c *Conveyer) runHandler(
 
 	switch cfg.kind {
 	case kindDecorator:
-		fn, ok := cfg.fn.(func(context.Context, chan string, chan string) error)
+		function, ok := cfg.function.(func(context.Context, chan string, chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
 
 			return
 		}
 
-		err = fn(ctx, ins[0], outs[0])
+		err = function(ctx, ins[0], outs[0])
 
 	case kindMultiplexer:
-		fn, ok := cfg.fn.(func(context.Context, []chan string, chan string) error)
+		fn, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
 
@@ -196,7 +196,7 @@ func (c *Conveyer) runHandler(
 		err = fn(ctx, ins, outs[0])
 
 	case kindSeparator:
-		fn, ok := cfg.fn.(func(context.Context, chan string, []chan string) error)
+		fn, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
 
