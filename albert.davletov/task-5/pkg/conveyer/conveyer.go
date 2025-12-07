@@ -57,14 +57,6 @@ func (conveyer *ConveyerImpl) getOrCreateChan(id string) chan string {
 	return channel
 }
 
-func (conveyer *ConveyerImpl) closeAllChannels() {
-	for _, channel := range conveyer.channels {
-		close(channel)
-	}
-
-	conveyer.channels = make(map[string]chan string)
-}
-
 func (conveyer *ConveyerImpl) RegisterDecorator(
 	fn func(ctx context.Context, input chan string, output chan string) error,
 	input string,
@@ -146,43 +138,32 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 }
 
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	defer conveyer.closeAllChannels()
-
-	var wg sync.WaitGroup
 	errChan := make(chan error, 1)
+	var wGroup sync.WaitGroup
 
 	for _, handler := range conveyer.handlers {
-		h := handler
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wGroup.Add(1)
+		go func(h func(ctx context.Context) error) {
+			defer wGroup.Done()
+
 			if err := h(ctx); err != nil {
 				select {
 				case errChan <- err:
-					cancel()
 				default:
 				}
 			}
-		}()
+		}(handler)
 	}
 
-	done := make(chan struct{})
 	go func() {
-		wg.Wait()
-		close(done)
+		wGroup.Wait()
+		close(errChan)
 	}()
 
 	select {
 	case err := <-errChan:
-		wg.Wait()
 		return err
 	case <-ctx.Done():
-		wg.Wait()
 		return ctx.Err()
-	case <-done:
-		return nil
 	}
 }
