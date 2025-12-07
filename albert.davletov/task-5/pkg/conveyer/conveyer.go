@@ -155,6 +155,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 
 	for _, handler := range conveyer.handlers {
 		wGroup.Add(1)
+
 		tempHandler := func(h func(context.Context) error) {
 			defer wGroup.Done()
 
@@ -167,9 +168,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 				}
 			}
 		}
-
 		go tempHandler(handler)
-
 	}
 
 	select {
