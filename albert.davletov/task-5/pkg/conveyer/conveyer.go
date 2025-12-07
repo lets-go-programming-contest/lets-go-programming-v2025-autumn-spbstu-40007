@@ -137,24 +137,27 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 	return data, nil
 }
 
+func (conveyer *ConveyerImpl) closeAllChannels() {
+	for _, channel := range conveyer.channels {
+		close(channel)
+	}
+}
+
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
-	errChan := make(chan error, len(conveyer.handlers))
-	var wGroup sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	defer func() {
-		for _, ch := range conveyer.channels {
-			close(ch)
-		}
-	}()
+	defer conveyer.closeAllChannels()
+
+	var wGroup sync.WaitGroup
+	errChan := make(chan error, 1)
 
 	for _, handler := range conveyer.handlers {
 		wGroup.Add(1)
 		go func(h func(context.Context) error) {
 			defer wGroup.Done()
 			err := h(ctx)
-			if !errors.Is(err, context.Canceled) {
+			if err != nil {
 				select {
 				case errChan <- err:
 					cancel()
@@ -165,12 +168,11 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	}
 
 	select {
-	case <-ctx.Done():
-		wGroup.Wait()
-		return nil
 	case err := <-errChan:
 		wGroup.Wait()
 		return err
+	case <-ctx.Done():
+		wGroup.Wait()
+		return nil
 	}
-
 }
