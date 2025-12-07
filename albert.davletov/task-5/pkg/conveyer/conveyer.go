@@ -10,17 +10,17 @@ var ErrChanNotFound error = errors.New("error: chan not found")
 
 type Conveyer interface {
 	RegisterDecorator(
-		fn func(ctx context.Context, input chan string, output chan string) error,
+		fnHandler func(ctx context.Context, input chan string, output chan string) error,
 		input string,
 		output string,
 	)
 	RegisterMultiplexer(
-		fn func(ctx context.Context, inputs []chan string, output chan string) error,
+		fnHandler func(ctx context.Context, inputs []chan string, output chan string) error,
 		inputs []string,
 		output string,
 	)
 	RegisterSeparator(
-		fn func(ctx context.Context, input chan string, outputs []chan string) error,
+		fnHandler func(ctx context.Context, input chan string, outputs []chan string) error,
 		input string,
 		outputs []string,
 	)
@@ -36,7 +36,7 @@ type ConveyerImpl struct {
 	handlers   []func(ctx context.Context) error
 }
 
-func New(size int) Conveyer {
+func New(size int) *ConveyerImpl {
 	return &ConveyerImpl{
 		channels:   make(map[string]chan string),
 		bufferSize: size,
@@ -44,21 +44,21 @@ func New(size int) Conveyer {
 	}
 }
 
-func (conveyer *ConveyerImpl) getOrCreateChan(id string) chan string {
-	channel, ok := conveyer.channels[id]
+func (conveyer *ConveyerImpl) getOrCreateChan(index string) chan string {
+	channel, ok := conveyer.channels[index]
 	if ok {
 		return channel
 	}
 
 	channel = make(chan string, conveyer.bufferSize)
 
-	conveyer.channels[id] = channel
+	conveyer.channels[index] = channel
 
 	return channel
 }
 
 func (conveyer *ConveyerImpl) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	fnHandler func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
@@ -66,14 +66,14 @@ func (conveyer *ConveyerImpl) RegisterDecorator(
 	outputCh := conveyer.getOrCreateChan(output)
 
 	decoratorHandler := func(ctx context.Context) error {
-		return fn(ctx, inputCh, outputCh)
+		return fnHandler(ctx, inputCh, outputCh)
 	}
 
 	conveyer.handlers = append(conveyer.handlers, decoratorHandler)
 }
 
 func (conveyer *ConveyerImpl) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	fnHandler func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
@@ -86,14 +86,14 @@ func (conveyer *ConveyerImpl) RegisterMultiplexer(
 	outputCh := conveyer.getOrCreateChan(output)
 
 	multiplexerHandler := func(ctx context.Context) error {
-		return fn(ctx, inputsCh, outputCh)
+		return fnHandler(ctx, inputsCh, outputCh)
 	}
 
 	conveyer.handlers = append(conveyer.handlers, multiplexerHandler)
 }
 
 func (conveyer *ConveyerImpl) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	fnHandler func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
@@ -106,7 +106,7 @@ func (conveyer *ConveyerImpl) RegisterSeparator(
 	inputCh := conveyer.getOrCreateChan(input)
 
 	separatorHandler := func(ctx context.Context) error {
-		return fn(ctx, inputCh, outputsCh)
+		return fnHandler(ctx, inputCh, outputsCh)
 	}
 
 	conveyer.handlers = append(conveyer.handlers, separatorHandler)
@@ -124,8 +124,8 @@ func (conveyer *ConveyerImpl) Send(id string, data string) error {
 }
 
 func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
-	channel, ok := conveyer.channels[id]
-	if !ok {
+	channel, exists := conveyer.channels[id]
+	if !exists {
 		return "", ErrChanNotFound
 	}
 
@@ -150,12 +150,14 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	defer conveyer.closeAllChannels()
 
 	var wGroup sync.WaitGroup
+
 	errChan := make(chan error, 1)
 
 	for _, handler := range conveyer.handlers {
 		wGroup.Add(1)
-		go func(h func(context.Context) error) {
+		tempHandler := func(h func(context.Context) error) {
 			defer wGroup.Done()
+
 			err := h(ctx)
 			if err != nil {
 				select {
@@ -164,15 +166,20 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 				default:
 				}
 			}
-		}(handler)
+		}
+
+		go tempHandler(handler)
+
 	}
 
 	select {
 	case err := <-errChan:
 		wGroup.Wait()
+
 		return err
 	case <-ctx.Done():
 		wGroup.Wait()
+
 		return nil
 	}
 }

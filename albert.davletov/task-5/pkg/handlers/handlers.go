@@ -32,7 +32,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 			case <-ctx.Done():
 				return nil
 			case output <- stringDecorated:
-
 			}
 		}
 	}
@@ -70,6 +69,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		wGroup.Add(1)
 		go func(in chan string) {
 			defer wGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
@@ -78,6 +78,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					if !ok {
 						return
 					}
+
 					if !strings.Contains(data, "no multiplexer") {
 						select {
 						case output <- data:
@@ -90,7 +91,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 		}(input)
 	}
-
 	wGroup.Wait()
+
 	return nil
 }
