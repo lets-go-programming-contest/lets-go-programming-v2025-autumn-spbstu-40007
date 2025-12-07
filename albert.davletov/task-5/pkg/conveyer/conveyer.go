@@ -142,6 +142,12 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	var wGroup sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
 
+	defer func() {
+		for _, ch := range conveyer.channels {
+			close(ch)
+		}
+	}()
+
 	for _, handler := range conveyer.handlers {
 		wGroup.Add(1)
 		go func(h func(context.Context) error) {
