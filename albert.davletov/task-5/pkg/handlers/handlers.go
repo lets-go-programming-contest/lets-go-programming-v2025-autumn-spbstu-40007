@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var ErrCantBeDecorated error = errors.New("err: cant be decorated")
+var ErrCantBeDecorated error = errors.New("cant be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
@@ -79,7 +79,11 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 						return
 					}
 					if !strings.Contains(data, "no multiplexer") {
-						output <- data
+						select {
+						case output <- data:
+						case <-ctx.Done():
+							return
+						}
 					}
 				}
 			}
