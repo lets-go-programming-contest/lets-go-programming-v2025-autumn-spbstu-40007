@@ -50,12 +50,14 @@ func New(size int) *Conveyer {
 	}
 }
 
-func (c *Conveyer) getOrCreate(name string) {
-	_, ok := c.chans[name]
+func (c *Conveyer) getOrCreate(name string) chan string {
+	ch, ok := c.chans[name]
 	if !ok {
-		ch := make(chan string, c.bufSize)
+		ch = make(chan string, c.bufSize)
 		c.chans[name] = ch
 	}
+
+	return ch
 }
 
 func (c *Conveyer) RegisterDecorator(
