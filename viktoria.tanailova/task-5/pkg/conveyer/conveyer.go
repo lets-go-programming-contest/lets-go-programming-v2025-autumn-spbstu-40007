@@ -36,19 +36,20 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
+		mu:       sync.Mutex{},
+		wg:       sync.WaitGroup{},
 		bufSize:  size,
 		channels: make(map[string]chan string),
 		handlers: make([]handlerCfg, 0),
 	}
 }
 
-func (c *Conveyer) ensureChan(id string) chan string {
-	ch, ok := c.channels[id]
+func (c *Conveyer) ensureChan(id string) {
+	_, ok := c.channels[id]
 	if !ok {
-		ch = make(chan string, c.bufSize)
+		ch := make(chan string, c.bufSize)
 		c.channels[id] = ch
 	}
-	return ch
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -83,6 +84,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, id := range inputs {
 		c.ensureChan(id)
 	}
+
 	c.ensureChan(output)
 
 	cfg := handlerCfg{
@@ -104,6 +106,7 @@ func (c *Conveyer) RegisterSeparator(
 	defer c.mu.Unlock()
 
 	c.ensureChan(input)
+
 	for _, id := range outputs {
 		c.ensureChan(id)
 	}
@@ -128,6 +131,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	ch <- data
+
 	return nil
 }
 
@@ -156,12 +160,13 @@ func (c *Conveyer) runHandler(
 	defer c.wg.Done()
 
 	c.mu.Lock()
-	var ins []chan string
-	var outs []chan string
+	var ins []chan string = []chan string{}
+	var outs []chan string = []chan string{}
 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
 	}
+
 	for _, id := range cfg.outputIDs {
 		outs = append(outs, c.channels[id])
 	}
@@ -174,8 +179,10 @@ func (c *Conveyer) runHandler(
 		fn, ok := cfg.fn.(func(context.Context, chan string, chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
+
 			return
 		}
+
 		err = fn(ctx, ins[0], outs[0])
 
 	case kindMultiplexer:
@@ -184,6 +191,7 @@ func (c *Conveyer) runHandler(
 			errCh <- ErrBadHandlerType
 			return
 		}
+
 		err = fn(ctx, ins, outs[0])
 
 	case kindSeparator:
@@ -192,6 +200,7 @@ func (c *Conveyer) runHandler(
 			errCh <- ErrBadHandlerType
 			return
 		}
+
 		err = fn(ctx, ins[0], outs)
 	}
 

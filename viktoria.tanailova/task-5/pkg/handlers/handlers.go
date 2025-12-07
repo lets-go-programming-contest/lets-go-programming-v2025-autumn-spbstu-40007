@@ -87,6 +87,7 @@ func MultiplexerFunc(
 
 	for _, in := range inputs {
 		wg.Add(1)
+
 		go copyInput(ctx, in, relay, &wg)
 	}
 
@@ -133,6 +134,7 @@ func SeparatorFunc(
 				continue
 			}
 			seen[ch] = struct{}{}
+
 			safeClose(ch)
 		}
 	}()
