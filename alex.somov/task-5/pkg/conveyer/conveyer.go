@@ -203,6 +203,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, s := range c.separators {
 		in := c.chans[s.input]
+
 		var outs []chan string
 
 		for _, id := range s.outputs {

@@ -29,12 +29,10 @@ func PrefixDecoratorFunc(
 			return nil
 		case v, ok := <-input:
 			if !ok {
-
 				return nil
 			}
 
 			if strings.Contains(v, "no decorator") {
-
 				return ErrCannotDecorate
 			}
 
@@ -75,6 +73,7 @@ func MultiplexerFunc(
 				if !ok {
 					continue
 				}
+
 				allClosed = false
 
 				if strings.Contains(v, "no multiplexer") {
@@ -83,6 +82,7 @@ func MultiplexerFunc(
 
 				select {
 				case output <- v:
+
 				case <-ctx.Done():
 
 					return nil
@@ -92,7 +92,6 @@ func MultiplexerFunc(
 		}
 
 		if allClosed {
-
 			return nil
 		}
 	}
