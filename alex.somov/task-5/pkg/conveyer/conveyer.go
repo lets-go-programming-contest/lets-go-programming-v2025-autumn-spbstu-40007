@@ -124,7 +124,7 @@ func (c *Conveyer) RegisterSeparator(
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.Lock()
-	channel, ok := c.channels[input] //nolint:varnamelen
+	channel, ok := c.channels[input]
 	c.mu.Unlock()
 
 	if !ok {
@@ -138,7 +138,7 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Lock()
-	channel, ok := c.channels[output] //nolint:varnamelen
+	channel, ok := c.channels[output]
 	c.mu.Unlock()
 
 	if !ok {

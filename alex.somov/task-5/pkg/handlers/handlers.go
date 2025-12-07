@@ -45,14 +45,14 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
-func copyInput(ctx context.Context, in <-chan string, out chan<- string, waitGroup *sync.WaitGroup) {
+func copyInput(ctx context.Context, input <-chan string, out chan<- string, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case v, ok := <-in:
+		case v, ok := <-input:
 			if !ok {
 				return
 			}
@@ -69,6 +69,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	defer safeClose(output)
 
 	relay := make(chan string)
+
 	var WaitGroup sync.WaitGroup
 
 	for _, in := range inputs {
@@ -111,14 +112,14 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 	defer func() {
 		seen := make(map[chan string]struct{})
-		for _, ch := range outputs {
-			if _, ok := seen[ch]; ok {
+		for _, channel := range outputs {
+			if _, ok := seen[channel]; ok {
 				continue
 			}
 
-			seen[ch] = struct{}{}
+			seen[channel] = struct{}{}
 
-			safeClose(ch)
+			safeClose(channel)
 		}
 	}()
 
@@ -128,7 +129,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-input:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
@@ -137,7 +138,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			idx++
 
 			select {
-			case out <- v:
+			case out <- value:
 			case <-ctx.Done():
 				return nil
 			}
