@@ -3,6 +3,7 @@ package conveyer
 import (
 	"context"
 	"errors"
+	"sync"
 )
 
 var ErrChanNotFound error = errors.New("error: chan not found")
@@ -148,26 +149,41 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	var wg sync.WaitGroup
 	errChan := make(chan error, 1)
+	done := make(chan struct{})
 
 	for _, handler := range conveyer.handlers {
-		go func(h func(ctx context.Context) error) {
+		h := handler
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
 			if err := h(ctx); err != nil {
 				select {
 				case errChan <- err:
 				default:
 				}
 			}
-		}(handler)
+		}()
 	}
+
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
 	select {
 	case err := <-errChan:
 		cancel()
+		wg.Wait()
 		conveyer.closeAllChannels()
 		return err
+	case <-done:
+		conveyer.closeAllChannels()
+		return nil
 	case <-ctx.Done():
 		cancel()
+		wg.Wait()
 		conveyer.closeAllChannels()
 		return ctx.Err()
 	}
