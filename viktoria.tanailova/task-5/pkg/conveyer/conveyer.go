@@ -123,7 +123,7 @@ func (c *Conveyer) RegisterSeparator(
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.Lock()
-	ch, ok := c.channels[input]
+	ch, ok := c.channels[input] //nolint:varnamelen
 	c.mu.Unlock()
 
 	if !ok {
@@ -137,7 +137,7 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Lock()
-	ch, ok := c.channels[output]
+	ch, ok := c.channels[output] //nolint:varnamelen
 	c.mu.Unlock()
 
 	if !ok {
@@ -160,8 +160,8 @@ func (c *Conveyer) runHandler(
 	defer c.wg.Done()
 
 	c.mu.Lock()
-	var ins []chan string = make([]chan string, 0)  //nolint:prealloc
-	var outs []chan string = make([]chan string, 0) //nolint:prealloc
+	ins := make([]chan string, 0)  //nolint:prealloc
+	outs := make([]chan string, 0) //nolint:prealloc
 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
@@ -186,24 +186,24 @@ func (c *Conveyer) runHandler(
 		err = function(ctx, ins[0], outs[0])
 
 	case kindMultiplexer:
-		fn, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
+		function, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
 
 			return
 		}
 
-		err = fn(ctx, ins, outs[0])
+		err = function(ctx, ins, outs[0])
 
 	case kindSeparator:
-		fn, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
+		function, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
 
 			return
 		}
 
-		err = fn(ctx, ins[0], outs)
+		err = function(ctx, ins[0], outs)
 	}
 
 	if err != nil {

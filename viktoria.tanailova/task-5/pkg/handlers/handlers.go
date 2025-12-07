@@ -27,7 +27,7 @@ func PrefixDecoratorFunc(
 		select {
 		case <-ctx.Done():
 			return nil
-		case s, ok := <-input:
+		case s, ok := <-input: //nolint:varnamelen
 			if !ok {
 				return nil
 			}
@@ -51,7 +51,7 @@ func PrefixDecoratorFunc(
 
 func copyInput(
 	ctx context.Context,
-	in <-chan string,
+	in <-chan string, //nolint:varnamelen
 	out chan<- string,
 	wg *sync.WaitGroup,
 ) {
@@ -61,7 +61,7 @@ func copyInput(
 		select {
 		case <-ctx.Done():
 			return
-		case v, ok := <-in:
+		case v, ok := <-in: //nolint:varnamelen
 			if !ok {
 				return
 			}
@@ -83,7 +83,7 @@ func MultiplexerFunc(
 	defer safeClose(output)
 
 	relay := make(chan string)
-	var wg sync.WaitGroup
+	var wg sync.WaitGroup //nolint:varnamelen
 
 	for _, in := range inputs {
 		wg.Add(1)
@@ -100,7 +100,7 @@ func MultiplexerFunc(
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-relay:
+		case v, ok := <-relay: //nolint:varnamelen
 			if !ok {
 				return nil
 			}
@@ -129,7 +129,7 @@ func SeparatorFunc(
 
 	defer func() {
 		seen := make(map[chan string]struct{})
-		for _, ch := range outputs {
+		for _, ch := range outputs { //nolint:varnamelen
 			if _, ok := seen[ch]; ok {
 				continue
 			}
@@ -146,7 +146,7 @@ func SeparatorFunc(
 		select {
 		case <-ctx.Done():
 			return nil
-		case v, ok := <-input:
+		case v, ok := <-input: //nolint:varnamelen
 			if !ok {
 				return nil
 			}
