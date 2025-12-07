@@ -6,7 +6,12 @@ import (
 	"sync"
 )
 
-var ErrChanNotFound = errors.New("chan not found")
+var (
+	errChanNotFound    = errors.New("chan not found")
+	errDecoratorSign   = errors.New("invalid decorator signature")
+	errMultiplexorSign = errors.New("invalid multiplexer signature")
+	errSeparatorSign   = errors.New("invalid separator signature")
+)
 
 type handlerKind int
 
@@ -82,6 +87,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, id := range inputs {
 		c.ensureChan(id)
 	}
+
 	c.ensureChan(output)
 
 	cfg := handlerCfg{
@@ -102,6 +108,7 @@ func (c *Conveyer) RegisterSeparator(
 	defer c.mu.Unlock()
 
 	c.ensureChan(input)
+
 	for _, id := range outputs {
 		c.ensureChan(id)
 	}
@@ -121,10 +128,11 @@ func (c *Conveyer) Send(input string, data string) error {
 	c.mu.Unlock()
 
 	if !ok {
-		return ErrChanNotFound
+		return errChanNotFound
 	}
 
 	ch <- data
+
 	return nil
 }
 
@@ -134,7 +142,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Unlock()
 
 	if !ok {
-		return "", ErrChanNotFound
+		return "", errChanNotFound
 	}
 
 	v, ok := <-ch
@@ -155,9 +163,11 @@ func (c *Conveyer) runHandler(ctx context.Context, cfg handlerCfg, errCh chan<- 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
 	}
+
 	for _, id := range cfg.outputIDs {
 		outs = append(outs, c.channels[id])
 	}
+
 	c.mu.Unlock()
 
 	var err error
@@ -166,25 +176,31 @@ func (c *Conveyer) runHandler(ctx context.Context, cfg handlerCfg, errCh chan<- 
 	case kindDecorator:
 		fn, ok := cfg.function.(func(context.Context, chan string, chan string) error)
 		if !ok {
-			errCh <- errors.New("invalid decorator signature")
+			errCh <- errDecoratorSign
+
 			return
 		}
+
 		err = fn(ctx, ins[0], outs[0])
 
 	case kindMultiplexer:
 		fn, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
 		if !ok {
-			errCh <- errors.New("invalid multiplexer signature")
+			errCh <- errMultiplexorSign
+
 			return
 		}
+
 		err = fn(ctx, ins, outs[0])
 
 	case kindSeparator:
 		fn, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
 		if !ok {
-			errCh <- errors.New("invalid separator signature")
+			errCh <- errSeparatorSign
+
 			return
 		}
+
 		err = fn(ctx, ins[0], outs)
 	}
 

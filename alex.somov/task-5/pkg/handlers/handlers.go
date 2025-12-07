@@ -73,6 +73,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, in := range inputs {
 		wg.Add(1)
+
 		go copyInput(ctx, in, relay, &wg)
 	}
 
@@ -114,7 +115,9 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			if _, ok := seen[ch]; ok {
 				continue
 			}
+
 			seen[ch] = struct{}{}
+
 			safeClose(ch)
 		}
 	}()
