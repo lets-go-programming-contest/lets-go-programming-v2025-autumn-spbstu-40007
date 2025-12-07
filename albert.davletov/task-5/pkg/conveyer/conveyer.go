@@ -161,9 +161,6 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	done := make(chan struct{})
 	go func() {
 		wGroup.Wait()
-		for _, ch := range conveyer.channels {
-			close(ch)
-		}
 		close(done)
 	}()
 
