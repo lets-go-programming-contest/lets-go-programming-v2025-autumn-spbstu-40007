@@ -138,47 +138,29 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 }
 
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
-	var waitGroup sync.WaitGroup
-
-	errCh := make(chan error, len(conveyer.handlers))
-
+	errChan := make(chan error, 1)
+	var wGroup sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
 
-	defer func() {
-		for _, ch := range conveyer.channels {
-			close(ch)
-		}
-	}()
-
-	for _, worker := range conveyer.handlers {
-		waitGroup.Add(1)
-
-		w := worker
-
-		go func() {
-			defer waitGroup.Done()
-
-			if err := w(ctx); err != nil {
-				if !errors.Is(err, context.Canceled) {
-					select {
-					case errCh <- err:
-						cancel()
-					default:
-					}
-				}
+	for _, handler := range conveyer.handlers {
+		wGroup.Add(1)
+		go func(h func(context.Context) error) {
+			defer wGroup.Done()
+			err := h(ctx)
+			if err != nil {
+				errChan <- err
+				cancel()
 			}
-		}()
+		}(handler)
 	}
 
 	select {
 	case <-ctx.Done():
-		waitGroup.Wait()
-
-		return nil
-	case err := <-errCh:
-		waitGroup.Wait()
-
+		wGroup.Wait()
+		return ctx.Err()
+	case err := <-errChan:
+		wGroup.Wait()
 		return err
 	}
+
 }
