@@ -10,8 +10,6 @@ import (
 var ErrCantBeDecorated error = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-	defer close(output)
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -42,9 +40,6 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	counter := 0
-	for _, out := range outputs {
-		defer close(out)
-	}
 
 	for {
 		select {
@@ -70,7 +65,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wGroup sync.WaitGroup
-	defer close(output)
 
 	for _, input := range inputs {
 		wGroup.Add(1)
