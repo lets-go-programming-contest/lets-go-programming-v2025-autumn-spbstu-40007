@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-var ErrCantBeDecorated error = errors.New("cant be decorated")
+var ErrCantBeDecorated error = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
