@@ -138,7 +138,7 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Lock()
-	channel, ok := c.channels[output]
+	channel, ok := c.channels[output] //nolint:varnamelen
 	c.mu.Unlock()
 
 	if !ok {
