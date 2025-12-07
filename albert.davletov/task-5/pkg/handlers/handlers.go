@@ -67,14 +67,14 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, input := range inputs {
 		wGroup.Add(1)
-		go func(in chan string) {
+		go func(inChan chan string) {
 			defer wGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-in:
+				case data, ok := <-inChan:
 					if !ok {
 						return
 					}
@@ -88,9 +88,9 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 				}
 			}
-
 		}(input)
 	}
+
 	wGroup.Wait()
 
 	return nil
