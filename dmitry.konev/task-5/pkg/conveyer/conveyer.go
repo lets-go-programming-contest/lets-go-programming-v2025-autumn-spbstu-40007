@@ -3,16 +3,10 @@ package conveyer
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
-)
-
-var (
-	ErrChanNotFound = errors.New("chan not found")
-	ErrSendBlocked  = errors.New("send blocked")
 )
 
 type decoratorEntry struct {
@@ -34,12 +28,15 @@ type multiplexerEntry struct {
 }
 
 type pipeline struct {
-	size         int
-	chans        map[string]chan string
+	size int
+
+	chans map[string]chan string
+
 	decorators   []decoratorEntry
 	separators   []separatorEntry
 	multiplexers []multiplexerEntry
-	mu           sync.RWMutex
+
+	mu sync.RWMutex
 }
 
 func New(size int) *pipeline {
@@ -50,16 +47,19 @@ func New(size int) *pipeline {
 }
 
 func (p *pipeline) getOrCreate(id string) chan string {
-	ch, exists := p.chans[id]
-	if !exists {
+	ch, ok := p.chans[id]
+	if !ok {
 		ch = make(chan string, p.size)
 		p.chans[id] = ch
 	}
-
 	return ch
 }
 
-func (p *pipeline) RegisterDecorator(fn func(ctx context.Context, input chan string, output chan string) error, input, output string) {
+func (p *pipeline) RegisterDecorator(
+	fn func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -73,14 +73,17 @@ func (p *pipeline) RegisterDecorator(fn func(ctx context.Context, input chan str
 	})
 }
 
-func (p *pipeline) RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string) error, inputs []string, output string) {
+func (p *pipeline) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	for _, id := range inputs {
 		p.getOrCreate(id)
 	}
-
 	p.getOrCreate(output)
 
 	p.multiplexers = append(p.multiplexers, multiplexerEntry{
@@ -90,7 +93,11 @@ func (p *pipeline) RegisterMultiplexer(fn func(ctx context.Context, inputs []cha
 	})
 }
 
-func (p *pipeline) RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string) error, input string, outputs []string) {
+func (p *pipeline) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -107,38 +114,38 @@ func (p *pipeline) RegisterSeparator(fn func(ctx context.Context, input chan str
 }
 
 func (p *pipeline) Run(ctx context.Context) error {
-	group, ctx := errgroup.WithContext(ctx)
+	g, ctx := errgroup.WithContext(ctx)
 
-	for _, dEntry := range p.decorators {
-		entry := dEntry
-		group.Go(func() error {
-			return wrapErr(entry.fn(ctx, p.chans[entry.input], p.chans[entry.output]))
+	for _, d := range p.decorators {
+		d := d
+		g.Go(func() error {
+			return d.fn(ctx, p.chans[d.input], p.chans[d.output])
 		})
 	}
 
-	for _, sEntry := range p.separators {
-		entry := sEntry
-		group.Go(func() error {
+	for _, s := range p.separators {
+		s := s
+		g.Go(func() error {
 			var outs []chan string
-			for _, id := range entry.outputs {
+			for _, id := range s.outputs {
 				outs = append(outs, p.chans[id])
 			}
-			return wrapErr(entry.fn(ctx, p.chans[entry.input], outs))
+			return s.fn(ctx, p.chans[s.input], outs)
 		})
 	}
 
-	for _, mEntry := range p.multiplexers {
-		entry := mEntry
-		group.Go(func() error {
+	for _, m := range p.multiplexers {
+		m := m
+		g.Go(func() error {
 			var ins []chan string
-			for _, id := range entry.inputs {
+			for _, id := range m.inputs {
 				ins = append(ins, p.chans[id])
 			}
-			return wrapErr(entry.fn(ctx, ins, p.chans[entry.output]))
+			return m.fn(ctx, ins, p.chans[m.output])
 		})
 	}
 
-	err := group.Wait()
+	err := g.Wait()
 
 	p.mu.Lock()
 	for _, ch := range p.chans {
@@ -146,53 +153,44 @@ func (p *pipeline) Run(ctx context.Context) error {
 	}
 	p.mu.Unlock()
 
-	return wrapErr(err)
+	return err
 }
 
 func (p *pipeline) Send(id string, data string) error {
 	p.mu.RLock()
-	ch, exists := p.chans[id]
+	ch, ok := p.chans[id]
 	p.mu.RUnlock()
 
-	if !exists {
-		return ErrChanNotFound
+	if !ok {
+		return errors.New("chan not found")
 	}
 
 	select {
 	case ch <- data:
 		return nil
-
 	default:
 		select {
 		case ch <- data:
 			return nil
-
 		case <-time.After(50 * time.Millisecond):
-			return ErrSendBlocked
+			return errors.New("send blocked")
 		}
 	}
 }
 
 func (p *pipeline) Recv(id string) (string, error) {
 	p.mu.RLock()
-	ch, exists := p.chans[id]
+	ch, ok := p.chans[id]
 	p.mu.RUnlock()
 
-	if !exists {
-		return "", ErrChanNotFound
+	if !ok {
+		return "", errors.New("chan not found")
 	}
 
-	value, ok := <-ch
+	val, ok := <-ch
 	if !ok {
 		return "undefined", nil
 	}
 
-	return value, nil
-}
-
-func wrapErr(err error) error {
-	if err == nil {
-		return nil
-	}
-	return fmt.Errorf("%w", err)
+	return val, nil
 }
