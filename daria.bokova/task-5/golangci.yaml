@@ -1,0 +1,29 @@
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - gocyclo
+    - gosec
+
+linters-settings:
+  ireturn:
+    allow:
+      - conveyer/pkg/conveyer.Conveyer
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - gocyclo
+    - linters:
+        - ireturn
+      text: "New returns interface"
