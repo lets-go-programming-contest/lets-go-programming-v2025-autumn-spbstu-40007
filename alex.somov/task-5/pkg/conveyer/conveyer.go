@@ -8,227 +8,226 @@ import (
 
 var ErrChanNotFound = errors.New("chan not found")
 
-type decoratorDesc struct {
-	fn     func(ctx context.Context, input chan string, output chan string) error
-	input  string
-	output string
+type decoratorDescriptor struct {
+	handlerFunction func(ctx context.Context, inputChannel chan string, outputChannel chan string) error
+	inputChannelID  string
+	outputChannelID string
 }
 
-type multiplexerDesc struct {
-	fn     func(ctx context.Context, inputs []chan string, output chan string) error
-	inputs []string
-	output string
+type multiplexerDescriptor struct {
+	handlerFunction func(ctx context.Context, inputChannels []chan string, outputChannel chan string) error
+	inputChannelIDs []string
+	outputChannelID string
 }
 
-type separatorDesc struct {
-	fn      func(ctx context.Context, input chan string, outputs []chan string) error
-	input   string
-	outputs []string
+type separatorDescriptor struct {
+	handlerFunction  func(ctx context.Context, inputChannel chan string, outputChannels []chan string) error
+	inputChannelID   string
+	outputChannelIDs []string
 }
 
 type Conveyer struct {
-	chans map[string]chan string
+	channelMap map[string]chan string
 
-	decorators   []decoratorDesc
-	multiplexers []multiplexerDesc
-	separators   []separatorDesc
+	decoratorDescriptors   []decoratorDescriptor
+	multiplexerDescriptors []multiplexerDescriptor
+	separatorDescriptors   []separatorDescriptor
 
-	bufSize int
-	mu      sync.Mutex
-	wg      sync.WaitGroup
+	bufferSize int
+	mutex      sync.Mutex
+	waitGroup  sync.WaitGroup
 }
 
-func New(size int) *Conveyer {
+func New(bufferSize int) *Conveyer {
 	return &Conveyer{
-		chans:        make(map[string]chan string),
-		decorators:   make([]decoratorDesc, 0),
-		multiplexers: make([]multiplexerDesc, 0),
-		separators:   make([]separatorDesc, 0),
-		bufSize:      size,
-		mu:           sync.Mutex{},
-		wg:           sync.WaitGroup{},
+		channelMap:             make(map[string]chan string),
+		decoratorDescriptors:   make([]decoratorDescriptor, 0),
+		multiplexerDescriptors: make([]multiplexerDescriptor, 0),
+		separatorDescriptors:   make([]separatorDescriptor, 0),
+		bufferSize:             bufferSize,
+		mutex:                  sync.Mutex{},
+		waitGroup:              sync.WaitGroup{},
 	}
 }
 
-func (c *Conveyer) getOrCreate(name string) chan string {
-	ch, ok := c.chans[name]
-	if !ok {
-		ch = make(chan string, c.bufSize)
-		c.chans[name] = ch
-	}
+func (c *Conveyer) ensureChannelExists(channelName string) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	return ch
+	if _, exists := c.channelMap[channelName]; !exists {
+		c.channelMap[channelName] = make(chan string, c.bufferSize)
+	}
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
-	input string,
-	output string,
+	decoratorFunction func(ctx context.Context, inputChannel chan string, outputChannel chan string) error,
+	inputChannelID string,
+	outputChannelID string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	c.getOrCreate(input)
-	c.getOrCreate(output)
+	c.ensureChannelExists(inputChannelID)
+	c.ensureChannelExists(outputChannelID)
 
-	c.decorators = append(c.decorators, decoratorDesc{
-		fn:     fn,
-		input:  input,
-		output: output,
+	c.decoratorDescriptors = append(c.decoratorDescriptors, decoratorDescriptor{
+		handlerFunction: decoratorFunction,
+		inputChannelID:  inputChannelID,
+		outputChannelID: outputChannelID,
 	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
-	inputs []string,
-	output string,
+	multiplexerFunction func(ctx context.Context, inputChannels []chan string, outputChannel chan string) error,
+	inputChannelIDs []string,
+	outputChannelID string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	for _, id := range inputs {
-		c.getOrCreate(id)
+	for _, inputChannelID := range inputChannelIDs {
+		c.ensureChannelExists(inputChannelID)
 	}
-	c.getOrCreate(output)
 
-	c.multiplexers = append(c.multiplexers, multiplexerDesc{
-		fn:     fn,
-		inputs: append([]string(nil), inputs...),
-		output: output,
+	c.ensureChannelExists(outputChannelID)
+
+	c.multiplexerDescriptors = append(c.multiplexerDescriptors, multiplexerDescriptor{
+		handlerFunction: multiplexerFunction,
+		inputChannelIDs: append([]string(nil), inputChannelIDs...),
+		outputChannelID: outputChannelID,
 	})
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
-	input string,
-	outputs []string,
+	separatorFunction func(ctx context.Context, inputChannel chan string, outputChannels []chan string) error,
+	inputChannelID string,
+	outputChannelIDs []string,
 ) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 
-	c.getOrCreate(input)
-	for _, id := range outputs {
-		c.getOrCreate(id)
+	c.ensureChannelExists(inputChannelID)
+
+	for _, outputChannelID := range outputChannelIDs {
+		c.ensureChannelExists(outputChannelID)
 	}
 
-	c.separators = append(c.separators, separatorDesc{
-		fn:      fn,
-		input:   input,
-		outputs: append([]string(nil), outputs...),
+	c.separatorDescriptors = append(c.separatorDescriptors, separatorDescriptor{
+		handlerFunction:  separatorFunction,
+		inputChannelID:   inputChannelID,
+		outputChannelIDs: append([]string(nil), outputChannelIDs...),
 	})
 }
 
-func (c *Conveyer) Send(input string, data string) error {
-	c.mu.Lock()
-	ch, ok := c.chans[input]
-	c.mu.Unlock()
+func (c *Conveyer) Send(inputChannelName string, data string) error {
+	c.mutex.Lock()
+	inputChannel, exists := c.channelMap[inputChannelName]
+	c.mutex.Unlock()
 
-	if !ok {
+	if !exists {
 		return ErrChanNotFound
 	}
 
-	ch <- data
-
+	inputChannel <- data
 	return nil
 }
 
-func (c *Conveyer) Recv(output string) (string, error) {
-	c.mu.Lock()
-	ch, ok := c.chans[output]
-	c.mu.Unlock()
+func (c *Conveyer) Recv(outputChannelName string) (string, error) {
+	c.mutex.Lock()
+	outputChannel, exists := c.channelMap[outputChannelName]
+	c.mutex.Unlock()
 
-	if !ok {
+	if !exists {
 		return "", ErrChanNotFound
 	}
 
-	v, ok := <-ch
+	receivedValue, channelClosed := <-outputChannel
 
-	if !ok {
+	if channelClosed {
 		return "undefined", nil
 	}
 
-	return v, nil
+	return receivedValue, nil
 }
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	errCh := make(chan error, 1)
+	errorChannel := make(chan error, 1)
 
-	c.mu.Lock()
+	c.mutex.Lock()
+	decoratorDescriptors := make([]decoratorDescriptor, len(c.decoratorDescriptors))
+	copy(decoratorDescriptors, c.decoratorDescriptors)
 
-	for _, d := range c.decorators {
-		in := c.chans[d.input]
-		out := c.chans[d.output]
+	multiplexerDescriptors := make([]multiplexerDescriptor, len(c.multiplexerDescriptors))
+	copy(multiplexerDescriptors, c.multiplexerDescriptors)
 
-		c.wg.Add(1)
+	separatorDescriptors := make([]separatorDescriptor, len(c.separatorDescriptors))
+	copy(separatorDescriptors, c.separatorDescriptors)
+	c.mutex.Unlock()
 
-		go func(desc decoratorDesc, in, out chan string) {
-			defer c.wg.Done()
+	for _, descriptor := range decoratorDescriptors {
+		c.waitGroup.Add(1)
+		go func(descriptorCopy decoratorDescriptor) {
+			defer c.waitGroup.Done()
+			inputChannel := c.channelMap[descriptorCopy.inputChannelID]
+			outputChannel := c.channelMap[descriptorCopy.outputChannelID]
 
-			if err := desc.fn(ctx, in, out); err != nil {
+			if err := descriptorCopy.handlerFunction(ctx, inputChannel, outputChannel); err != nil {
 				select {
-				case errCh <- err:
+				case errorChannel <- err:
 				default:
 				}
 			}
-		}(d, in, out)
+		}(descriptor)
 	}
 
-	for _, m := range c.multiplexers {
-		var ins []chan string
+	for _, descriptor := range multiplexerDescriptors {
+		c.waitGroup.Add(1)
+		go func(descriptorCopy multiplexerDescriptor) {
+			defer c.waitGroup.Done()
+			var inputChannels []chan string
+			for _, inputChannelID := range descriptorCopy.inputChannelIDs {
+				inputChannels = append(inputChannels, c.channelMap[inputChannelID])
+			}
+			outputChannel := c.channelMap[descriptorCopy.outputChannelID]
 
-		for _, id := range m.inputs {
-			ins = append(ins, c.chans[id])
-		}
-		out := c.chans[m.output]
-
-		c.wg.Add(1)
-		go func(desc multiplexerDesc, ins []chan string, out chan string) {
-			defer c.wg.Done()
-
-			if err := desc.fn(ctx, ins, out); err != nil {
+			if err := descriptorCopy.handlerFunction(ctx, inputChannels, outputChannel); err != nil {
 				select {
-				case errCh <- err:
+				case errorChannel <- err:
 				default:
 				}
 			}
-		}(m, ins, out)
+		}(descriptor)
 	}
 
-	for _, s := range c.separators {
-		in := c.chans[s.input]
-		var outs []chan string
+	for _, descriptor := range separatorDescriptors {
+		c.waitGroup.Add(1)
+		go func(descriptorCopy separatorDescriptor) {
+			defer c.waitGroup.Done()
+			inputChannel := c.channelMap[descriptorCopy.inputChannelID]
+			var outputChannels []chan string
+			for _, outputChannelID := range descriptorCopy.outputChannelIDs {
+				outputChannels = append(outputChannels, c.channelMap[outputChannelID])
+			}
 
-		for _, id := range s.outputs {
-			outs = append(outs, c.chans[id])
-		}
-
-		c.wg.Add(1)
-		go func(desc separatorDesc, in chan string, outs []chan string) {
-			defer c.wg.Done()
-
-			if err := desc.fn(ctx, in, outs); err != nil {
+			if err := descriptorCopy.handlerFunction(ctx, inputChannel, outputChannels); err != nil {
 				select {
-				case errCh <- err:
+				case errorChannel <- err:
 				default:
 				}
 			}
-		}(s, in, outs)
+		}(descriptor)
 	}
-
-	c.mu.Unlock()
 
 	select {
-	case err := <-errCh:
+	case receivedError := <-errorChannel:
 		cancel()
-		c.wg.Wait()
-
-		return err
+		c.waitGroup.Wait()
+		return receivedError
 	case <-ctx.Done():
-		c.wg.Wait()
-
+		c.waitGroup.Wait()
 		return nil
 	}
 }
