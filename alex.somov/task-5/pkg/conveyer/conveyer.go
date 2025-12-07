@@ -231,9 +231,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case err := <-errCh:
 		cancel()
 		c.wg.Wait()
+
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()
+
 		return nil
 	}
 }
