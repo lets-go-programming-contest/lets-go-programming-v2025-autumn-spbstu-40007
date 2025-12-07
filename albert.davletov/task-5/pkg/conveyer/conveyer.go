@@ -139,6 +139,8 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	errChan := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	var wGroup sync.WaitGroup
 
 	for _, handler := range conveyer.handlers {
@@ -149,21 +151,25 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 			if err := h(ctx); err != nil {
 				select {
 				case errChan <- err:
+					cancel()
 				default:
 				}
 			}
 		}(handler)
 	}
 
+	done := make(chan struct{})
 	go func() {
 		wGroup.Wait()
-		close(errChan)
+		close(done)
 	}()
 
 	select {
 	case err := <-errChan:
+		wGroup.Wait()
 		return err
 	case <-ctx.Done():
+		wGroup.Wait()
 		return ctx.Err()
 	}
 }
