@@ -160,8 +160,8 @@ func (c *Conveyer) runHandler(
 	defer c.wg.Done()
 
 	c.mu.Lock()
-	var ins []chan string = make([]chan string, 0)
-	var outs []chan string = make([]chan string, 0)
+	var ins []chan string = make([]chan string, 0)  //nolint:prealloc
+	var outs []chan string = make([]chan string, 0) //nolint:prealloc
 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
@@ -234,6 +234,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()
+
 		return nil
 	}
 }
