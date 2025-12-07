@@ -154,7 +154,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 		go func(h func(context.Context) error) {
 			defer wGroup.Done()
 			err := h(ctx)
-			if err != nil {
+			if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
 				select {
 				case errChan <- err:
 					cancel()
