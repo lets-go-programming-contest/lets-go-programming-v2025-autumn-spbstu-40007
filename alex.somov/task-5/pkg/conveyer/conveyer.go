@@ -8,25 +8,30 @@ import (
 
 var ErrChanNotFound = errors.New("chan not found")
 
-type handlerKind int
+type decoratorDesc struct {
+	fn     func(ctx context.Context, input chan string, output chan string) error
+	input  string
+	output string
+}
 
-const (
-	kindDecorator handlerKind = iota + 1
-	kindMultiplexer
-	kindSeparator
-)
+type multiplexerDesc struct {
+	fn     func(ctx context.Context, inputs []chan string, output chan string) error
+	inputs []string
+	output string
+}
 
-type handlerCfg struct {
-	kind      handlerKind
-	function  interface{}
-	inputIDs  []string
-	outputIDs []string
+type separatorDesc struct {
+	fn      func(ctx context.Context, input chan string, outputs []chan string) error
+	input   string
+	outputs []string
 }
 
 type Conveyer struct {
-	channels map[string]chan string
+	chans map[string]chan string
 
-	handlers []handlerCfg
+	decorators   []decoratorDesc
+	multiplexers []multiplexerDesc
+	separators   []separatorDesc
 
 	bufSize int
 	mu      sync.Mutex
@@ -35,20 +40,24 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
-		channels: make(map[string]chan string),
-		handlers: make([]handlerCfg, 0),
-		bufSize:  size,
-		mu:       sync.Mutex{},
-		wg:       sync.WaitGroup{},
+		chans:        make(map[string]chan string),
+		decorators:   make([]decoratorDesc, 0),
+		multiplexers: make([]multiplexerDesc, 0),
+		separators:   make([]separatorDesc, 0),
+		bufSize:      size,
+		mu:           sync.Mutex{},
+		wg:           sync.WaitGroup{},
 	}
 }
 
-func (c *Conveyer) ensureChan(id string) {
-	_, ok := c.channels[id]
+func (c *Conveyer) getOrCreate(name string) chan string {
+	ch, ok := c.chans[name]
 	if !ok {
-		ch := make(chan string, c.bufSize)
-		c.channels[id] = ch
+		ch = make(chan string, c.bufSize)
+		c.chans[name] = ch
 	}
+
+	return ch
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -59,16 +68,14 @@ func (c *Conveyer) RegisterDecorator(
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.ensureChan(input)
-	c.ensureChan(output)
+	c.getOrCreate(input)
+	c.getOrCreate(output)
 
-	cfg := handlerCfg{
-		kind:      kindDecorator,
-		function:  fn,
-		inputIDs:  []string{input},
-		outputIDs: []string{output},
-	}
-	c.handlers = append(c.handlers, cfg)
+	c.decorators = append(c.decorators, decoratorDesc{
+		fn:     fn,
+		input:  input,
+		output: output,
+	})
 }
 
 func (c *Conveyer) RegisterMultiplexer(
@@ -80,17 +87,15 @@ func (c *Conveyer) RegisterMultiplexer(
 	defer c.mu.Unlock()
 
 	for _, id := range inputs {
-		c.ensureChan(id)
+		c.getOrCreate(id)
 	}
-	c.ensureChan(output)
+	c.getOrCreate(output)
 
-	cfg := handlerCfg{
-		kind:      kindMultiplexer,
-		function:  fn,
-		inputIDs:  append([]string(nil), inputs...),
-		outputIDs: []string{output},
-	}
-	c.handlers = append(c.handlers, cfg)
+	c.multiplexers = append(c.multiplexers, multiplexerDesc{
+		fn:     fn,
+		inputs: append([]string(nil), inputs...),
+		output: output,
+	})
 }
 
 func (c *Conveyer) RegisterSeparator(
@@ -101,23 +106,21 @@ func (c *Conveyer) RegisterSeparator(
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.ensureChan(input)
+	c.getOrCreate(input)
 	for _, id := range outputs {
-		c.ensureChan(id)
+		c.getOrCreate(id)
 	}
 
-	cfg := handlerCfg{
-		kind:      kindSeparator,
-		function:  fn,
-		inputIDs:  []string{input},
-		outputIDs: append([]string(nil), outputs...),
-	}
-	c.handlers = append(c.handlers, cfg)
+	c.separators = append(c.separators, separatorDesc{
+		fn:      fn,
+		input:   input,
+		outputs: append([]string(nil), outputs...),
+	})
 }
 
 func (c *Conveyer) Send(input string, data string) error {
 	c.mu.Lock()
-	ch, ok := c.channels[input]
+	ch, ok := c.chans[input]
 	c.mu.Unlock()
 
 	if !ok {
@@ -125,12 +128,13 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	ch <- data
+
 	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Lock()
-	ch, ok := c.channels[output]
+	ch, ok := c.chans[output]
 	c.mu.Unlock()
 
 	if !ok {
@@ -138,6 +142,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	}
 
 	v, ok := <-ch
+
 	if !ok {
 		return "undefined", nil
 	}
@@ -145,79 +150,85 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	return v, nil
 }
 
-func (c *Conveyer) runHandler(ctx context.Context, cfg handlerCfg, errCh chan<- error) {
-	defer c.wg.Done()
-
-	c.mu.Lock()
-	ins := make([]chan string, 0)
-	outs := make([]chan string, 0)
-
-	for _, id := range cfg.inputIDs {
-		ins = append(ins, c.channels[id])
-	}
-	for _, id := range cfg.outputIDs {
-		outs = append(outs, c.channels[id])
-	}
-	c.mu.Unlock()
-
-	var err error
-
-	switch cfg.kind {
-	case kindDecorator:
-		fn, ok := cfg.function.(func(context.Context, chan string, chan string) error)
-		if !ok {
-			errCh <- errors.New("invalid decorator signature")
-			return
-		}
-		err = fn(ctx, ins[0], outs[0])
-
-	case kindMultiplexer:
-		fn, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
-		if !ok {
-			errCh <- errors.New("invalid multiplexer signature")
-			return
-		}
-		err = fn(ctx, ins, outs[0])
-
-	case kindSeparator:
-		fn, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
-		if !ok {
-			errCh <- errors.New("invalid separator signature")
-			return
-		}
-		err = fn(ctx, ins[0], outs)
-	}
-
-	if err != nil {
-		select {
-		case errCh <- err:
-		default:
-		}
-	}
-}
-
 func (c *Conveyer) Run(ctx context.Context) error {
-	if len(c.handlers) == 0 {
-		return nil
-	}
-
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	errCh := make(chan error, 1)
 
-	for _, cfg := range c.handlers {
+	c.mu.Lock()
+
+	for _, d := range c.decorators {
+		in := c.chans[d.input]
+		out := c.chans[d.output]
+
 		c.wg.Add(1)
-		go c.runHandler(ctx, cfg, errCh)
+
+		go func(desc decoratorDesc, in, out chan string) {
+			defer c.wg.Done()
+
+			if err := desc.fn(ctx, in, out); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(d, in, out)
 	}
+
+	for _, m := range c.multiplexers {
+		var ins []chan string
+
+		for _, id := range m.inputs {
+			ins = append(ins, c.chans[id])
+		}
+		out := c.chans[m.output]
+
+		c.wg.Add(1)
+		go func(desc multiplexerDesc, ins []chan string, out chan string) {
+			defer c.wg.Done()
+
+			if err := desc.fn(ctx, ins, out); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(m, ins, out)
+	}
+
+	for _, s := range c.separators {
+		in := c.chans[s.input]
+		var outs []chan string
+
+		for _, id := range s.outputs {
+			outs = append(outs, c.chans[id])
+		}
+
+		c.wg.Add(1)
+		go func(desc separatorDesc, in chan string, outs []chan string) {
+			defer c.wg.Done()
+
+			if err := desc.fn(ctx, in, outs); err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(s, in, outs)
+	}
+
+	c.mu.Unlock()
 
 	select {
 	case err := <-errCh:
 		cancel()
 		c.wg.Wait()
+
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()
+
 		return nil
 	}
 }
