@@ -160,8 +160,8 @@ func (c *Conveyer) runHandler(
 	defer c.wg.Done()
 
 	c.mu.Lock()
-	var ins []chan string = []chan string{}
-	var outs []chan string = []chan string{}
+	var ins []chan string = make([]chan string, 0)
+	var outs []chan string = make([]chan string, 0)
 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
@@ -189,6 +189,7 @@ func (c *Conveyer) runHandler(
 		fn, ok := cfg.fn.(func(context.Context, []chan string, chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
+
 			return
 		}
 
@@ -198,6 +199,7 @@ func (c *Conveyer) runHandler(
 		fn, ok := cfg.fn.(func(context.Context, chan string, []chan string) error)
 		if !ok {
 			errCh <- ErrBadHandlerType
+
 			return
 		}
 
@@ -228,6 +230,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case err := <-errCh:
 		cancel()
 		c.wg.Wait()
+
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()

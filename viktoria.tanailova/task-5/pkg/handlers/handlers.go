@@ -133,6 +133,7 @@ func SeparatorFunc(
 			if _, ok := seen[ch]; ok {
 				continue
 			}
+
 			seen[ch] = struct{}{}
 
 			safeClose(ch)
