@@ -154,8 +154,11 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 			defer wGroup.Done()
 			err := h(ctx)
 			if err != nil {
-				errChan <- err
-				cancel()
+				select {
+				case errChan <- err:
+					cancel()
+				default:
+				}
 			}
 		}(handler)
 	}
