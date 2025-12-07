@@ -50,14 +50,12 @@ func New(size int) *Conveyer {
 	}
 }
 
-func (c *Conveyer) getOrCreate(name string) chan string {
-	ch, ok := c.chans[name]
+func (c *Conveyer) getOrCreate(name string) {
+	_, ok := c.chans[name]
 	if !ok {
-		ch = make(chan string, c.bufSize)
+		ch := make(chan string, c.bufSize)
 		c.chans[name] = ch
 	}
-
-	return ch
 }
 
 func (c *Conveyer) RegisterDecorator(
@@ -89,6 +87,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for _, id := range inputs {
 		c.getOrCreate(id)
 	}
+
 	c.getOrCreate(output)
 
 	c.multiplexers = append(c.multiplexers, multiplexerDesc{
@@ -107,6 +106,7 @@ func (c *Conveyer) RegisterSeparator(
 	defer c.mu.Unlock()
 
 	c.getOrCreate(input)
+
 	for _, id := range outputs {
 		c.getOrCreate(id)
 	}
@@ -182,9 +182,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		for _, id := range m.inputs {
 			ins = append(ins, c.chans[id])
 		}
+
 		out := c.chans[m.output]
 
 		c.wg.Add(1)
+
 		go func(desc multiplexerDesc, ins []chan string, out chan string) {
 			defer c.wg.Done()
 
@@ -206,6 +208,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		}
 
 		c.wg.Add(1)
+
 		go func(desc separatorDesc, in chan string, outs []chan string) {
 			defer c.wg.Done()
 
