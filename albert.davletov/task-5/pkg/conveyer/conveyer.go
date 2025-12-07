@@ -141,6 +141,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	errChan := make(chan error, 1)
 	var wGroup sync.WaitGroup
 	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	defer func() {
 		for _, ch := range conveyer.channels {
