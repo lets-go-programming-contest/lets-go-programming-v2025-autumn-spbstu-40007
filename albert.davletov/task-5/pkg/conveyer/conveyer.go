@@ -167,7 +167,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		wGroup.Wait()
-		return ctx.Err()
+		return nil
 	case err := <-errChan:
 		wGroup.Wait()
 		return err
