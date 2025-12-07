@@ -9,5 +9,5 @@ import (
 func main() {
 	cfg := config.Load()
 
-	fmt.Print(cfg.Environment, cfg.LogLevel)
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
