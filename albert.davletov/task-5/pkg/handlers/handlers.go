@@ -10,6 +10,8 @@ import (
 var ErrCantBeDecorated error = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
+
 	for {
 		select {
 		case <-ctx.Done():
