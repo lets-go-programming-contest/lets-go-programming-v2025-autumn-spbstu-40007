@@ -45,6 +45,8 @@ func New(size int) *Conveyer {
 		multiplexers: make([]multiplexerDesc, 0),
 		separators:   make([]separatorDesc, 0),
 		bufSize:      size,
+		mu:           sync.Mutex{},
+		wg:           sync.WaitGroup{},
 	}
 }
 
@@ -126,6 +128,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	ch <- data
+
 	return nil
 }
 
@@ -139,6 +142,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	}
 
 	v, ok := <-ch
+
 	if !ok {
 		return "undefined", nil
 	}
@@ -159,8 +163,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		out := c.chans[d.output]
 
 		c.wg.Add(1)
+
 		go func(desc decoratorDesc, in, out chan string) {
 			defer c.wg.Done()
+
 			if err := desc.fn(ctx, in, out); err != nil {
 				select {
 				case errCh <- err:
@@ -172,6 +178,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, m := range c.multiplexers {
 		var ins []chan string
+
 		for _, id := range m.inputs {
 			ins = append(ins, c.chans[id])
 		}
@@ -180,6 +187,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		c.wg.Add(1)
 		go func(desc multiplexerDesc, ins []chan string, out chan string) {
 			defer c.wg.Done()
+
 			if err := desc.fn(ctx, ins, out); err != nil {
 				select {
 				case errCh <- err:
@@ -192,6 +200,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	for _, s := range c.separators {
 		in := c.chans[s.input]
 		var outs []chan string
+
 		for _, id := range s.outputs {
 			outs = append(outs, c.chans[id])
 		}
@@ -199,6 +208,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		c.wg.Add(1)
 		go func(desc separatorDesc, in chan string, outs []chan string) {
 			defer c.wg.Done()
+
 			if err := desc.fn(ctx, in, outs); err != nil {
 				select {
 				case errCh <- err:
@@ -214,9 +224,11 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	case err := <-errCh:
 		cancel()
 		c.wg.Wait()
+
 		return err
 	case <-ctx.Done():
 		c.wg.Wait()
+
 		return nil
 	}
 }
