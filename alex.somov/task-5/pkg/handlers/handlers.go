@@ -8,46 +8,44 @@ import (
 
 var ErrCannotDecorate = errors.New("can't be decorated")
 
-func safeClose(channel chan string) {
-	defer func() { recover() }()
-	close(channel)
+func safeClose(ch chan string) {
+	defer func() { _ = recover() }()
+	close(ch)
 }
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
-	inputChannel chan string,
-	outputChannel chan string,
+	input chan string,
+	output chan string,
 ) error {
-	defer safeClose(outputChannel)
+	defer safeClose(output)
 
 	const prefix = "decorated: "
 
 	for {
 		select {
 		case <-ctx.Done():
+
 			return nil
-		case receivedValue, ok := <-inputChannel:
+		case v, ok := <-input:
 			if !ok {
+
 				return nil
 			}
 
-			if strings.Contains(receivedValue, "no decorator") {
+			if strings.Contains(v, "no decorator") {
+
 				return ErrCannotDecorate
 			}
 
-			if !strings.HasPrefix(receivedValue, prefix) {
-				receivedValueWithPrefix := prefix + receivedValue
-				select {
-				case outputChannel <- receivedValueWithPrefix:
-				case <-ctx.Done():
-					return nil
-				}
-				continue
+			if !strings.HasPrefix(v, prefix) {
+				v = prefix + v
 			}
 
 			select {
-			case outputChannel <- receivedValue:
+			case output <- v:
 			case <-ctx.Done():
+
 				return nil
 			}
 		}
@@ -56,42 +54,45 @@ func PrefixDecoratorFunc(
 
 func MultiplexerFunc(
 	ctx context.Context,
-	inputChannels []chan string,
-	outputChannel chan string,
+	inputs []chan string,
+	output chan string,
 ) error {
-	defer safeClose(outputChannel)
+	defer safeClose(output)
 
 	for {
-		allInputChannelsClosed := true
+		allClosed := true
 
-		for _, inputChannel := range inputChannels {
+		for _, in := range inputs {
 			select {
 			case <-ctx.Done():
+
 				return nil
 			default:
 			}
 
 			select {
-			case receivedValue, ok := <-inputChannel:
+			case v, ok := <-in:
 				if !ok {
 					continue
 				}
-				allInputChannelsClosed = false
+				allClosed = false
 
-				if strings.Contains(receivedValue, "no multiplexer") {
+				if strings.Contains(v, "no multiplexer") {
 					continue
 				}
 
 				select {
-				case outputChannel <- receivedValue:
+				case output <- v:
 				case <-ctx.Done():
+
 					return nil
 				}
 			default:
 			}
 		}
 
-		if allInputChannelsClosed {
+		if allClosed {
+
 			return nil
 		}
 	}
@@ -99,41 +100,45 @@ func MultiplexerFunc(
 
 func SeparatorFunc(
 	ctx context.Context,
-	inputChannel chan string,
-	outputChannels []chan string,
+	input chan string,
+	outputs []chan string,
 ) error {
-	if len(outputChannels) == 0 {
+	if len(outputs) == 0 {
+
 		return nil
 	}
 
 	defer func() {
-		seenChannels := make(map[chan string]struct{})
-		for _, channel := range outputChannels {
-			if _, alreadySeen := seenChannels[channel]; alreadySeen {
+		seen := make(map[chan string]struct{})
+		for _, ch := range outputs {
+			if _, ok := seen[ch]; ok {
 				continue
 			}
-			seenChannels[channel] = struct{}{}
-			safeClose(channel)
+			seen[ch] = struct{}{}
+			safeClose(ch)
 		}
 	}()
 
-	outputIndex := 0
+	idx := 0
 
 	for {
 		select {
 		case <-ctx.Done():
+
 			return nil
-		case receivedValue, ok := <-inputChannel:
+		case v, ok := <-input:
 			if !ok {
+
 				return nil
 			}
 
-			targetOutputChannel := outputChannels[outputIndex%len(outputChannels)]
-			outputIndex++
+			out := outputs[idx%len(outputs)]
+			idx++
 
 			select {
-			case targetOutputChannel <- receivedValue:
+			case out <- v:
 			case <-ctx.Done():
+
 				return nil
 			}
 		}
