@@ -67,6 +67,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 	for _, input := range inputs {
 		wGroup.Add(1)
+
 		multiplexerProcess := func(inChan chan string) {
 			defer wGroup.Done()
 
@@ -89,7 +90,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				}
 			}
 		}
-
 		go multiplexerProcess(input)
 	}
 
