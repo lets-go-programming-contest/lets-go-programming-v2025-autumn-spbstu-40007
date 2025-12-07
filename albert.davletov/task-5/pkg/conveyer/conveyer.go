@@ -146,6 +146,9 @@ func (conveyer *ConveyerImpl) Recv(id string) (string, error) {
 }
 
 func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	defer conveyer.closeAllChannels()
 
 	var wg sync.WaitGroup
@@ -159,11 +162,18 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 			if err := h(ctx); err != nil {
 				select {
 				case errChan <- err:
+					cancel()
 				default:
 				}
 			}
 		}()
 	}
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
 
 	select {
 	case err := <-errChan:
@@ -172,5 +182,7 @@ func (conveyer *ConveyerImpl) Run(ctx context.Context) error {
 	case <-ctx.Done():
 		wg.Wait()
 		return ctx.Err()
+	case <-done:
+		return nil
 	}
 }
