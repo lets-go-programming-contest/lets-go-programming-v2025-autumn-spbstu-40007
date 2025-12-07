@@ -1,0 +1,227 @@
+package conveyer
+
+import (
+	"context"
+	"errors"
+	"sync"
+)
+
+var (
+	ErrChanNotFound   = errors.New("chan not found")
+	ErrBadHandlerType = errors.New("invalid handler function signature")
+)
+
+type handlerKind int
+
+const (
+	kindDecorator handlerKind = iota + 1
+	kindMultiplexer
+	kindSeparator
+)
+
+type handlerCfg struct {
+	kind      handlerKind
+	fn        interface{}
+	inputIDs  []string
+	outputIDs []string
+}
+
+type Conveyer struct {
+	mu       sync.Mutex
+	wg       sync.WaitGroup
+	bufSize  int
+	channels map[string]chan string
+	handlers []handlerCfg
+}
+
+func New(size int) *Conveyer {
+	return &Conveyer{
+		bufSize:  size,
+		channels: make(map[string]chan string),
+		handlers: make([]handlerCfg, 0),
+	}
+}
+
+func (c *Conveyer) ensureChan(id string) chan string {
+	ch, ok := c.channels[id]
+	if !ok {
+		ch = make(chan string, c.bufSize)
+		c.channels[id] = ch
+	}
+	return ch
+}
+
+func (c *Conveyer) RegisterDecorator(
+	fn func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.ensureChan(input)
+	c.ensureChan(output)
+
+	cfg := handlerCfg{
+		kind:      kindDecorator,
+		fn:        fn,
+		inputIDs:  []string{input},
+		outputIDs: []string{output},
+	}
+
+	c.handlers = append(c.handlers, cfg)
+}
+
+func (c *Conveyer) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for _, id := range inputs {
+		c.ensureChan(id)
+	}
+	c.ensureChan(output)
+
+	cfg := handlerCfg{
+		kind:      kindMultiplexer,
+		fn:        fn,
+		inputIDs:  append([]string(nil), inputs...),
+		outputIDs: []string{output},
+	}
+
+	c.handlers = append(c.handlers, cfg)
+}
+
+func (c *Conveyer) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.ensureChan(input)
+	for _, id := range outputs {
+		c.ensureChan(id)
+	}
+
+	cfg := handlerCfg{
+		kind:      kindSeparator,
+		fn:        fn,
+		inputIDs:  []string{input},
+		outputIDs: append([]string(nil), outputs...),
+	}
+
+	c.handlers = append(c.handlers, cfg)
+}
+
+func (c *Conveyer) Send(input string, data string) error {
+	c.mu.Lock()
+	ch, ok := c.channels[input]
+	c.mu.Unlock()
+
+	if !ok {
+		return ErrChanNotFound
+	}
+
+	ch <- data
+	return nil
+}
+
+func (c *Conveyer) Recv(output string) (string, error) {
+	c.mu.Lock()
+	ch, ok := c.channels[output]
+	c.mu.Unlock()
+
+	if !ok {
+		return "", ErrChanNotFound
+	}
+
+	v, ok := <-ch
+	if !ok {
+		return "undefined", nil
+	}
+
+	return v, nil
+}
+
+func (c *Conveyer) runHandler(
+	ctx context.Context,
+	cfg handlerCfg,
+	errCh chan<- error,
+) {
+	defer c.wg.Done()
+
+	c.mu.Lock()
+	var ins []chan string
+	var outs []chan string
+
+	for _, id := range cfg.inputIDs {
+		ins = append(ins, c.channels[id])
+	}
+	for _, id := range cfg.outputIDs {
+		outs = append(outs, c.channels[id])
+	}
+	c.mu.Unlock()
+
+	var err error
+
+	switch cfg.kind {
+	case kindDecorator:
+		fn, ok := cfg.fn.(func(context.Context, chan string, chan string) error)
+		if !ok {
+			errCh <- ErrBadHandlerType
+			return
+		}
+		err = fn(ctx, ins[0], outs[0])
+
+	case kindMultiplexer:
+		fn, ok := cfg.fn.(func(context.Context, []chan string, chan string) error)
+		if !ok {
+			errCh <- ErrBadHandlerType
+			return
+		}
+		err = fn(ctx, ins, outs[0])
+
+	case kindSeparator:
+		fn, ok := cfg.fn.(func(context.Context, chan string, []chan string) error)
+		if !ok {
+			errCh <- ErrBadHandlerType
+			return
+		}
+		err = fn(ctx, ins[0], outs)
+	}
+
+	if err != nil {
+		errCh <- err
+	}
+}
+
+func (c *Conveyer) Run(ctx context.Context) error {
+	if len(c.handlers) == 0 {
+		return nil
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	errCh := make(chan error, 1)
+
+	for _, cfg := range c.handlers {
+		c.wg.Add(1)
+		go c.runHandler(ctx, cfg, errCh)
+	}
+
+	select {
+	case err := <-errCh:
+		cancel()
+		c.wg.Wait()
+		return err
+	case <-ctx.Done():
+		c.wg.Wait()
+		return nil
+	}
+}
