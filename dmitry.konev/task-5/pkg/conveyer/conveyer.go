@@ -126,9 +126,9 @@ func (p *pipeline) Run(ctx context.Context) error {
 	for _, s := range p.separators {
 		s := s
 		g.Go(func() error {
-			var outs []chan string
-			for _, id := range s.outputs {
-				outs = append(outs, p.chans[id])
+			outs := make([]chan string, len(s.outputs))
+			for i, id := range s.outputs {
+				outs[i] = p.chans[id]
 			}
 			return s.fn(ctx, p.chans[s.input], outs)
 		})
@@ -137,23 +137,15 @@ func (p *pipeline) Run(ctx context.Context) error {
 	for _, m := range p.multiplexers {
 		m := m
 		g.Go(func() error {
-			var ins []chan string
-			for _, id := range m.inputs {
-				ins = append(ins, p.chans[id])
+			ins := make([]chan string, len(m.inputs))
+			for i, id := range m.inputs {
+				ins[i] = p.chans[id]
 			}
 			return m.fn(ctx, ins, p.chans[m.output])
 		})
 	}
 
-	err := g.Wait()
-
-	p.mu.Lock()
-	for _, ch := range p.chans {
-		close(ch)
-	}
-	p.mu.Unlock()
-
-	return err
+	return g.Wait()
 }
 
 func (p *pipeline) Send(id string, data string) error {
