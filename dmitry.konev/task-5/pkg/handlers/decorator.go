@@ -23,7 +23,7 @@ func PrefixDecoratorFunc(
 			}
 
 			if strings.Contains(s, "no decorator") {
-				return errors.New("can’t be decorated")
+				return errors.New("can't be decorated")
 			}
 
 			if !strings.HasPrefix(s, "decorated: ") {
