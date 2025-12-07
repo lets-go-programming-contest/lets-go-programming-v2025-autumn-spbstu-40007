@@ -83,6 +83,7 @@ func MultiplexerFunc(
 	defer safeClose(output)
 
 	relay := make(chan string)
+
 	var wg sync.WaitGroup //nolint:varnamelen
 
 	for _, in := range inputs {

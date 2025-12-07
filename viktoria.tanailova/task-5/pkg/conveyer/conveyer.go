@@ -160,8 +160,8 @@ func (c *Conveyer) runHandler(
 	defer c.wg.Done()
 
 	c.mu.Lock()
-	ins := make([]chan string, 0)  //nolint:prealloc
-	outs := make([]chan string, 0) //nolint:prealloc
+	ins := make([]chan string, 0)
+	outs := make([]chan string, 0)
 
 	for _, id := range cfg.inputIDs {
 		ins = append(ins, c.channels[id])
