@@ -57,7 +57,7 @@ func (c *Conveyer) ensureChan(id string) {
 }
 
 func (c *Conveyer) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	function func(ctx context.Context, input chan string, output chan string) error,
 	input string,
 	output string,
 ) {
@@ -69,7 +69,7 @@ func (c *Conveyer) RegisterDecorator(
 
 	cfg := handlerCfg{
 		kind:      kindDecorator,
-		function:  fn,
+		function:  function,
 		inputIDs:  []string{input},
 		outputIDs: []string{output},
 	}
@@ -77,7 +77,7 @@ func (c *Conveyer) RegisterDecorator(
 }
 
 func (c *Conveyer) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	function func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string,
 	output string,
 ) {
@@ -92,7 +92,7 @@ func (c *Conveyer) RegisterMultiplexer(
 
 	cfg := handlerCfg{
 		kind:      kindMultiplexer,
-		function:  fn,
+		function:  function,
 		inputIDs:  append([]string(nil), inputs...),
 		outputIDs: []string{output},
 	}
@@ -100,7 +100,7 @@ func (c *Conveyer) RegisterMultiplexer(
 }
 
 func (c *Conveyer) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	function func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string,
 	outputs []string,
 ) {
@@ -115,7 +115,7 @@ func (c *Conveyer) RegisterSeparator(
 
 	cfg := handlerCfg{
 		kind:      kindSeparator,
-		function:  fn,
+		function:  function,
 		inputIDs:  []string{input},
 		outputIDs: append([]string(nil), outputs...),
 	}
@@ -138,14 +138,14 @@ func (c *Conveyer) Send(input string, data string) error {
 
 func (c *Conveyer) Recv(output string) (string, error) {
 	c.mu.Lock()
-	ch, ok := c.channels[output]
+	channel, ok := c.channels[output]
 	c.mu.Unlock()
 
 	if !ok {
 		return "", errChanNotFound
 	}
 
-	v, ok := <-ch
+	v, ok := <-channel
 	if !ok {
 		return "undefined", nil
 	}
@@ -174,34 +174,34 @@ func (c *Conveyer) runHandler(ctx context.Context, cfg handlerCfg, errCh chan<- 
 
 	switch cfg.kind {
 	case kindDecorator:
-		fn, ok := cfg.function.(func(context.Context, chan string, chan string) error)
+		function, ok := cfg.function.(func(context.Context, chan string, chan string) error)
 		if !ok {
 			errCh <- errDecoratorSign
 
 			return
 		}
 
-		err = fn(ctx, ins[0], outs[0])
+		err = function(ctx, ins[0], outs[0])
 
 	case kindMultiplexer:
-		fn, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
+		function, ok := cfg.function.(func(context.Context, []chan string, chan string) error)
 		if !ok {
 			errCh <- errMultiplexorSign
 
 			return
 		}
 
-		err = fn(ctx, ins, outs[0])
+		err = function(ctx, ins, outs[0])
 
 	case kindSeparator:
-		fn, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
+		function, ok := cfg.function.(func(context.Context, chan string, []chan string) error)
 		if !ok {
 			errCh <- errSeparatorSign
 
 			return
 		}
 
-		err = fn(ctx, ins[0], outs)
+		err = function(ctx, ins[0], outs)
 	}
 
 	if err != nil {
