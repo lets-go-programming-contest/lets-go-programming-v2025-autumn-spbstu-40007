@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"context"
-	"reflect"
-	"strings"
 )
 
 func MultiplexerFunc(
@@ -12,15 +10,8 @@ func MultiplexerFunc(
 	output chan string,
 ) error {
 
-	cases := make([]reflect.SelectCase, len(inputs))
 	open := len(inputs)
-
-	for i, ch := range inputs {
-		cases[i] = reflect.SelectCase{
-			Dir:  reflect.SelectRecv,
-			Chan: reflect.ValueOf(ch),
-		}
-	}
+	closed := make([]bool, len(inputs))
 
 	for open > 0 {
 		select {
@@ -29,23 +20,27 @@ func MultiplexerFunc(
 		default:
 		}
 
-		idx, val, ok := reflect.Select(cases)
-		if !ok {
-			cases[idx].Chan = reflect.ValueOf(nil)
-			open--
-			continue
-		}
+		for i, ch := range inputs {
+			if closed[i] {
+				continue
+			}
 
-		s := val.String()
+			select {
+			case s, ok := <-ch:
+				if !ok {
+					closed[i] = true
+					open--
+					continue
+				}
 
-		if strings.Contains(s, "no multiplexer") {
-			continue
-		}
+				select {
+				case output <- s:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
 
-		select {
-		case output <- s:
-		case <-ctx.Done():
-			return ctx.Err()
+			default:
+			}
 		}
 	}
 
