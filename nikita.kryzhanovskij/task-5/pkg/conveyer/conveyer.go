@@ -110,7 +110,6 @@ func (c *conveyorImpl) RegisterMultiplexer(
 		outputName: output,
 	})
 }
-
 func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGroup) {
 	for _, decorator := range c.decs {
 		inputCh := c.getOrCreate(decorator.inputName)
@@ -120,7 +119,9 @@ func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGr
 
 		go func(desc decoratorDesc, input, output chan string) {
 			defer waitGroup.Done()
+
 			err := desc.fn(ctx, input, output)
+
 			if err != nil {
 				c.errCh <- err
 			}
@@ -141,7 +142,9 @@ func (c *conveyorImpl) runSeparators(ctx context.Context, waitGroup *sync.WaitGr
 
 		go func(desc separatorDesc, input chan string, outputs []chan string) {
 			defer waitGroup.Done()
+
 			err := desc.fn(ctx, input, outputs)
+
 			if err != nil {
 				c.errCh <- err
 			}
@@ -162,7 +165,9 @@ func (c *conveyorImpl) runMultiplexers(ctx context.Context, waitGroup *sync.Wait
 
 		go func(desc multiplexerDesc, ins []chan string, output chan string) {
 			defer waitGroup.Done()
+
 			err := desc.fn(ctx, ins, output)
+
 			if err != nil {
 				c.errCh <- err
 			}
