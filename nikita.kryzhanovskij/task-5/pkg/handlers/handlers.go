@@ -27,7 +27,11 @@ func PrefixDecoratorFunc(prefix string) func(
 					return ErrCannotDecorate
 				}
 
-				output <- prefix + value
+				select {
+				case output <- prefix + value:
+				case <-ctx.Done():
+					return ctx.Err()
+				}
 			}
 		}
 	}
@@ -56,7 +60,11 @@ func SeparatorFunc(sep string) func(
 
 				for idx, part := range parts {
 					if idx < len(outputs) {
-						outputs[idx] <- part
+						select {
+						case outputs[idx] <- part:
+						case <-ctx.Done():
+							return ctx.Err()
+						}
 					}
 				}
 			}
@@ -88,7 +96,13 @@ func MultiplexerFunc() func(
 							return
 						}
 
-						output <- value
+						select {
+						case output <- value:
+						case <-ctx.Done():
+							done <- struct{}{}
+
+							return
+						}
 					}
 				}
 			}(inputCh)
