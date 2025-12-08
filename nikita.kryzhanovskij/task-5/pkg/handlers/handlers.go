@@ -78,14 +78,14 @@ func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output ch
 		active := len(inputs)
 
 		for _, inputCh := range inputs {
-			go func(ch chan string) {
+			go func(inputChannel chan string) {
 				defer func() { done <- struct{}{} }()
 
 				for {
 					select {
 					case <-ctx.Done():
 						return
-					case value, ok := <-ch:
+					case value, ok := <-inputChannel:
 						if !ok {
 							return
 						}

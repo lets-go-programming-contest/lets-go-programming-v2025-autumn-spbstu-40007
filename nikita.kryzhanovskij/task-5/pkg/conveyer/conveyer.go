@@ -122,7 +122,6 @@ func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGr
 			defer waitGroup.Done()
 
 			err := desc.fn(ctx, input, output)
-
 			if err != nil {
 				c.errCh <- err
 			}
@@ -145,7 +144,6 @@ func (c *conveyorImpl) runSeparators(ctx context.Context, waitGroup *sync.WaitGr
 			defer waitGroup.Done()
 
 			err := desc.fn(ctx, input, outputs)
-
 			if err != nil {
 				c.errCh <- err
 			}
@@ -168,7 +166,6 @@ func (c *conveyorImpl) runMultiplexers(ctx context.Context, waitGroup *sync.Wait
 			defer waitGroup.Done()
 
 			err := desc.fn(ctx, ins, output)
-
 			if err != nil {
 				c.errCh <- err
 			}
@@ -180,7 +177,6 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.started {
 		c.mu.Unlock()
-
 		return ErrAlreadyStarted
 	}
 
