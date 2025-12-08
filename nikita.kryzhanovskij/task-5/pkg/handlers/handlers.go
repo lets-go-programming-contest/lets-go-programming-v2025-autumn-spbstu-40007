@@ -8,8 +8,7 @@ import (
 
 var ErrCannotDecorate = errors.New("can't be decorated")
 
-// PrefixDecoratorFunc возвращает функцию-декоратор с префиксом
-func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan string, output chan string) error {
+func PrefixDecoratorFunc() func(ctx context.Context, input chan string, output chan string) error {
 	return func(ctx context.Context, input chan string, output chan string) error {
 		defer close(output)
 
@@ -22,12 +21,12 @@ func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan str
 					return nil
 				}
 
-				if value == "" {
+				if strings.Contains(value, "no decorator") {
 					return ErrCannotDecorate
 				}
 
 				select {
-				case output <- prefix + value:
+				case output <- "decorated: " + value:
 				case <-ctx.Done():
 					return ctx.Err()
 				}
@@ -36,14 +35,15 @@ func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan str
 	}
 }
 
-// SeparatorFunc возвращает функцию-разделитель
-func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc() func(ctx context.Context, input chan string, outputs []chan string) error {
 	return func(ctx context.Context, input chan string, outputs []chan string) error {
 		defer func() {
 			for _, out := range outputs {
 				close(out)
 			}
 		}()
+
+		idx := 0
 
 		for {
 			select {
@@ -54,25 +54,20 @@ func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outp
 					return nil
 				}
 
-				parts := strings.Split(value, sep)
-
-				for idx, part := range parts {
-					if idx >= len(outputs) {
-						break
-					}
-
+				if idx < len(outputs) {
 					select {
-					case outputs[idx] <- part:
+					case outputs[idx] <- value:
 					case <-ctx.Done():
 						return ctx.Err()
 					}
 				}
+
+				idx = (idx + 1) % len(outputs)
 			}
 		}
 	}
 }
 
-// MultiplexerFunc возвращает функцию-мультиплексор
 func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output chan string) error {
 	return func(ctx context.Context, inputs []chan string, output chan string) error {
 		defer close(output)
@@ -91,6 +86,10 @@ func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output ch
 					case value, ok := <-inputChannel:
 						if !ok {
 							return
+						}
+
+						if strings.Contains(value, "no multiplexer") {
+							continue
 						}
 
 						select {
