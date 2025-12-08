@@ -8,6 +8,7 @@ import (
 
 var ErrCannotDecorate = errors.New("can't be decorated")
 
+// PrefixDecoratorFunc возвращает функцию-декоратор с префиксом
 func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan string, output chan string) error {
 	return func(ctx context.Context, input chan string, output chan string) error {
 		defer close(output)
@@ -35,6 +36,7 @@ func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan str
 	}
 }
 
+// SeparatorFunc возвращает функцию-разделитель
 func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outputs []chan string) error {
 	return func(ctx context.Context, input chan string, outputs []chan string) error {
 		defer func() {
@@ -70,6 +72,7 @@ func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outp
 	}
 }
 
+// MultiplexerFunc возвращает функцию-мультиплексор
 func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output chan string) error {
 	return func(ctx context.Context, inputs []chan string, output chan string) error {
 		defer close(output)
