@@ -32,11 +32,12 @@ type multiplexerDesc struct {
 }
 
 type Conveyer interface {
-	RegisterDecorator(fn func(ctx context.Context, input chan string, output chan string) error,
+	// Регистрирует декоратор-фабрику (вроде PrefixDecoratorFunc напрямую)
+	RegisterDecorator(fn func() func(ctx context.Context, input chan string, output chan string) error,
 		input string, output string)
-	RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	RegisterMultiplexer(fn func() func(ctx context.Context, inputs []chan string, output chan string) error,
 		inputs []string, output string)
-	RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	RegisterSeparator(fn func() func(ctx context.Context, input chan string, outputs []chan string) error,
 		input string, outputs []string)
 
 	Send(input string, data string) error
@@ -79,33 +80,33 @@ func (c *conveyorImpl) getOrCreate(name string) chan string {
 }
 
 func (c *conveyorImpl) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+	fn func() func(ctx context.Context, input chan string, output chan string) error,
 	input string, output string,
 ) {
 	c.decs = append(c.decs, decoratorDesc{
-		fn:         fn,
+		fn:         fn(),
 		inputName:  input,
 		outputName: output,
 	})
 }
 
 func (c *conveyorImpl) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	fn func() func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string, outputs []string,
 ) {
 	c.seps = append(c.seps, separatorDesc{
-		fn:          fn,
+		fn:          fn(),
 		inputName:   input,
 		outputNames: outputs,
 	})
 }
 
 func (c *conveyorImpl) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	fn func() func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string, output string,
 ) {
 	c.muxes = append(c.muxes, multiplexerDesc{
-		fn:         fn,
+		fn:         fn(),
 		inputNames: inputs,
 		outputName: output,
 	})
