@@ -111,21 +111,21 @@ func (c *conveyorImpl) RegisterMultiplexer(
 	})
 }
 
-func (c *conveyorImpl) runDecorators(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGroup) {
 	for _, decorator := range c.decs {
 		inputCh := c.getOrCreate(decorator.inputName)
 		outputCh := c.getOrCreate(decorator.outputName)
 
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(desc decoratorDesc, input, output chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 			desc.fn(ctx, input, output, c.errCh)
 		}(decorator, inputCh, outputCh)
 	}
 }
 
-func (c *conveyorImpl) runSeparators(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runSeparators(ctx context.Context, waitGroup *sync.WaitGroup) {
 	for _, separator := range c.seps {
 		inputCh := c.getOrCreate(separator.inputName)
 		outs := make([]chan string, 0, len(separator.outputNames))
@@ -134,16 +134,16 @@ func (c *conveyorImpl) runSeparators(ctx context.Context, wg *sync.WaitGroup) {
 			outs = append(outs, c.getOrCreate(name))
 		}
 
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(desc separatorDesc, input chan string, outputs []chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 			desc.fn(ctx, input, outputs, c.errCh)
 		}(separator, inputCh, outs)
 	}
 }
 
-func (c *conveyorImpl) runMultiplexers(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runMultiplexers(ctx context.Context, waitGroup *sync.WaitGroup) {
 	for _, multiplexer := range c.muxes {
 		inputs := make([]chan string, 0, len(multiplexer.inputNames))
 		for _, name := range multiplexer.inputNames {
@@ -152,10 +152,10 @@ func (c *conveyorImpl) runMultiplexers(ctx context.Context, wg *sync.WaitGroup) 
 
 		outputCh := c.getOrCreate(multiplexer.outputName)
 
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(desc multiplexerDesc, ins []chan string, output chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 			desc.fn(ctx, ins, output, c.errCh)
 		}(multiplexer, inputs, outputCh)
 	}
