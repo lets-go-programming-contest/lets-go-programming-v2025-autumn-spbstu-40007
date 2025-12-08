@@ -8,106 +8,96 @@ import (
 
 var ErrCannotDecorate = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc() func(ctx context.Context, input chan string, output chan string) error {
-	return func(ctx context.Context, input chan string, output chan string) error {
-		defer close(output)
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+	defer close(output)
 
-		for {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case value, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			if strings.Contains(value, "no decorator") {
+				return ErrCannotDecorate
+			}
+
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
-			case value, ok := <-input:
-				if !ok {
-					return nil
-				}
+				return nil
+			case output <- "decorated: " + value:
+			}
+		}
+	}
+}
 
-				if strings.Contains(value, "no decorator") {
-					return ErrCannotDecorate
-				}
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
 
+	idx := 0
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case value, ok := <-input:
+			if !ok {
+				return nil
+			}
+
+			if len(outputs) > 0 {
 				select {
-				case output <- "decorated: " + value:
 				case <-ctx.Done():
-					return ctx.Err()
-				}
-			}
-		}
-	}
-}
-
-func SeparatorFunc() func(ctx context.Context, input chan string, outputs []chan string) error {
-	return func(ctx context.Context, input chan string, outputs []chan string) error {
-		defer func() {
-			for _, out := range outputs {
-				close(out)
-			}
-		}()
-
-		idx := 0
-
-		for {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case value, ok := <-input:
-				if !ok {
 					return nil
+				case outputs[idx%len(outputs)] <- value:
+					idx++
 				}
-
-				if idx < len(outputs) {
-					select {
-					case outputs[idx] <- value:
-					case <-ctx.Done():
-						return ctx.Err()
-					}
-				}
-
-				idx = (idx + 1) % len(outputs)
 			}
 		}
 	}
 }
 
-func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output chan string) error {
-	return func(ctx context.Context, inputs []chan string, output chan string) error {
-		defer close(output)
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	defer close(output)
 
-		done := make(chan struct{})
-		active := len(inputs)
+	if len(inputs) == 0 {
+		return nil
+	}
 
-		for _, inputCh := range inputs {
-			go func(inputChannel chan string) {
-				defer func() { done <- struct{}{} }()
+	for _, inputCh := range inputs {
+		localInputCh := inputCh
 
-				for {
+		go func(ch chan string) {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case value, ok := <-ch:
+					if !ok {
+						return
+					}
+
+					if strings.Contains(value, "no multiplexer") {
+						continue
+					}
+
 					select {
 					case <-ctx.Done():
 						return
-					case value, ok := <-inputChannel:
-						if !ok {
-							return
-						}
-
-						if strings.Contains(value, "no multiplexer") {
-							continue
-						}
-
-						select {
-						case output <- value:
-						case <-ctx.Done():
-							return
-						}
+					case output <- value:
 					}
 				}
-			}(inputCh)
-		}
-
-		for active > 0 {
-			<-done
-
-			active--
-		}
-
-		return nil
+			}
+		}(localInputCh)
 	}
+
+	<-ctx.Done()
+
+	return nil
 }
