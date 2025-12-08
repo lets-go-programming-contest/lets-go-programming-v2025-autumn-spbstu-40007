@@ -80,6 +80,9 @@ func (c *conveyorImpl) RegisterDecorator(
 	fn func(ctx context.Context, input chan string, output chan string) error,
 	input string, output string,
 ) {
+	c.getOrCreate(input)
+	c.getOrCreate(output)
+
 	c.decs = append(c.decs, decoratorDesc{
 		fn:         fn,
 		inputName:  input,
@@ -91,6 +94,11 @@ func (c *conveyorImpl) RegisterSeparator(
 	fn func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string, outputs []string,
 ) {
+	c.getOrCreate(input)
+	for _, out := range outputs {
+		c.getOrCreate(out)
+	}
+
 	c.seps = append(c.seps, separatorDesc{
 		fn:          fn,
 		inputName:   input,
@@ -102,6 +110,11 @@ func (c *conveyorImpl) RegisterMultiplexer(
 	fn func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string, output string,
 ) {
+	for _, in := range inputs {
+		c.getOrCreate(in)
+	}
+	c.getOrCreate(output)
+
 	c.muxes = append(c.muxes, multiplexerDesc{
 		fn:         fn,
 		inputNames: inputs,
@@ -182,9 +195,6 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	go func() {
 		wg.Wait()
-		for _, ch := range c.chans {
-			close(ch)
-		}
 	}()
 
 	return nil
