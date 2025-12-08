@@ -102,6 +102,7 @@ func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output ch
 
 		for active > 0 {
 			<-done
+
 			active--
 		}
 
