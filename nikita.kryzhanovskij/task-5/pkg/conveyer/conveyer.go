@@ -195,9 +195,11 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	go func() {
 		wg.Wait()
+		c.mu.Lock()
 		for _, ch := range c.chans {
 			close(ch)
 		}
+		c.mu.Unlock()
 	}()
 
 	return nil
@@ -212,9 +214,12 @@ func (c *conveyorImpl) Send(input string, data string) error {
 		return ErrChanNotFound
 	}
 
-	channel <- data
-
-	return nil
+	select {
+	case <-context.Background().Done():
+		return ErrClosed
+	case channel <- data:
+		return nil
+	}
 }
 
 func (c *conveyorImpl) Recv(output string) (string, error) {
