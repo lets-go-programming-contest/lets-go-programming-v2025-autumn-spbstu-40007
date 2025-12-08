@@ -63,13 +63,13 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
 	for _, input := range inputs {
-		wg.Add(1)
+		waitGroup.Add(1)
 
 		go func(inputCh chan string) {
-			defer wg.Done()
+			defer waitGroup.Done()
 
 			for {
 				select {
@@ -94,7 +94,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		}(input)
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 
 	return nil
 }
