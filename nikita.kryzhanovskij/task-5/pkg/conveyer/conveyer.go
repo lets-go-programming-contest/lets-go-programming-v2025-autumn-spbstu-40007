@@ -58,6 +58,7 @@ type conveyorImpl struct {
 func New(size int) *conveyorImpl {
 	return &conveyorImpl{
 		size:    size,
+		mu:      sync.RWMutex{},
 		chans:   make(map[string]chan string),
 		decs:    make([]decoratorDesc, 0),
 		seps:    make([]separatorDesc, 0),
@@ -117,6 +118,7 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 		return ErrAlreadyStarted
 	}
+
 	c.started = true
 	c.mu.Unlock()
 
@@ -155,6 +157,7 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 		for _, name := range multiplexer.inputNames {
 			inputs = append(inputs, c.getOrCreate(name))
 		}
+
 		outputCh := c.getOrCreate(multiplexer.outputName)
 
 		waitGroup.Add(1)
@@ -175,10 +178,10 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 func (c *conveyorImpl) Send(input string, data string) error {
 	c.mu.RLock()
-	channel, ok := c.chans[input]
+	channel, channelExists := c.chans[input]
 	c.mu.RUnlock()
 
-	if !ok {
+	if !channelExists {
 		return ErrChanNotFound
 	}
 
@@ -189,15 +192,15 @@ func (c *conveyorImpl) Send(input string, data string) error {
 
 func (c *conveyorImpl) Recv(output string) (string, error) {
 	c.mu.RLock()
-	channel, ok := c.chans[output]
+	channel, channelExists := c.chans[output]
 	c.mu.RUnlock()
 
-	if !ok {
+	if !channelExists {
 		return "", ErrChanNotFound
 	}
 
-	value, ok := <-channel
-	if !ok {
+	value, isOpen := <-channel
+	if !isOpen {
 		return "", ErrClosed
 	}
 

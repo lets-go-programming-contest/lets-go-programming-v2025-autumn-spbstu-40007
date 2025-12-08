@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 )
+
+var ErrCannotDecorate = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(prefix string) func(
 	ctx context.Context, input chan string, output chan string, errCh chan error,
@@ -22,7 +24,8 @@ func PrefixDecoratorFunc(prefix string) func(
 				}
 
 				if value == "" {
-					errCh <- fmt.Errorf("can't be decorated")
+					errCh <- ErrCannotDecorate
+
 					continue
 				}
 
@@ -72,22 +75,21 @@ func MultiplexerFunc() func(
 		done := make(chan struct{})
 		active := len(inputs)
 
-		for idx, inputCh := range inputs {
-			identifier := idx
-
+		for _, inputCh := range inputs {
 			go func(input chan string) {
 				for {
 					select {
 					case <-ctx.Done():
 						done <- struct{}{}
+
 						return
 					case value, ok := <-input:
 						if !ok {
 							done <- struct{}{}
+
 							return
 						}
 
-						fmt.Printf("[Multiplexer-%d] Получено и отправлено: %q\n", identifier, value)
 						output <- value
 					}
 				}
@@ -96,6 +98,7 @@ func MultiplexerFunc() func(
 
 		for active > 0 {
 			<-done
+
 			active--
 		}
 	}
