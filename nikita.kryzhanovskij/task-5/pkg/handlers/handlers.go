@@ -9,24 +9,22 @@ import (
 var ErrCannotDecorate = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(prefix string) func(
-	ctx context.Context, input chan string, output chan string, errCh chan error,
-) {
-	return func(ctx context.Context, input chan string, output chan string, errCh chan error) {
+	ctx context.Context, input chan string, output chan string,
+) error {
+	return func(ctx context.Context, input chan string, output chan string) error {
 		defer close(output)
 
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return ctx.Err()
 			case value, ok := <-input:
 				if !ok {
-					return
+					return nil
 				}
 
 				if value == "" {
-					errCh <- ErrCannotDecorate
-
-					continue
+					return ErrCannotDecorate
 				}
 
 				output <- prefix + value
@@ -36,9 +34,9 @@ func PrefixDecoratorFunc(prefix string) func(
 }
 
 func SeparatorFunc(sep string) func(
-	ctx context.Context, input chan string, outputs []chan string, errCh chan error,
-) {
-	return func(ctx context.Context, input chan string, outputs []chan string, errCh chan error) {
+	ctx context.Context, input chan string, outputs []chan string,
+) error {
+	return func(ctx context.Context, input chan string, outputs []chan string) error {
 		defer func() {
 			for _, out := range outputs {
 				close(out)
@@ -48,10 +46,10 @@ func SeparatorFunc(sep string) func(
 		for {
 			select {
 			case <-ctx.Done():
-				return
+				return ctx.Err()
 			case value, ok := <-input:
 				if !ok {
-					return
+					return nil
 				}
 
 				parts := strings.Split(value, sep)
@@ -67,9 +65,9 @@ func SeparatorFunc(sep string) func(
 }
 
 func MultiplexerFunc() func(
-	ctx context.Context, inputs []chan string, output chan string, errCh chan error,
-) {
-	return func(ctx context.Context, inputs []chan string, output chan string, errCh chan error) {
+	ctx context.Context, inputs []chan string, output chan string,
+) error {
+	return func(ctx context.Context, inputs []chan string, output chan string) error {
 		defer close(output)
 
 		done := make(chan struct{})
@@ -101,5 +99,7 @@ func MultiplexerFunc() func(
 
 			active--
 		}
+
+		return nil
 	}
 }

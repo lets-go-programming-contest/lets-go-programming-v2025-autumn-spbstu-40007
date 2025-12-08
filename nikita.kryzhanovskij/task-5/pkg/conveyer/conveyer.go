@@ -14,29 +14,29 @@ var (
 )
 
 type decoratorDesc struct {
-	fn         func(ctx context.Context, input chan string, output chan string, errCh chan error)
+	fn         func(ctx context.Context, input chan string, output chan string) error
 	inputName  string
 	outputName string
 }
 
 type separatorDesc struct {
-	fn          func(ctx context.Context, input chan string, outputs []chan string, errCh chan error)
+	fn          func(ctx context.Context, input chan string, outputs []chan string) error
 	inputName   string
 	outputNames []string
 }
 
 type multiplexerDesc struct {
-	fn         func(ctx context.Context, inputs []chan string, output chan string, errCh chan error)
+	fn         func(ctx context.Context, inputs []chan string, output chan string) error
 	inputNames []string
 	outputName string
 }
 
 type Conveyer interface {
-	RegisterDecorator(fn func(ctx context.Context, input chan string, output chan string, errCh chan error),
+	RegisterDecorator(fn func(ctx context.Context, input chan string, output chan string) error,
 		input string, output string)
-	RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string, errCh chan error),
+	RegisterMultiplexer(fn func(ctx context.Context, inputs []chan string, output chan string) error,
 		inputs []string, output string)
-	RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string, errCh chan error),
+	RegisterSeparator(fn func(ctx context.Context, input chan string, outputs []chan string) error,
 		input string, outputs []string)
 
 	Send(input string, data string) error
@@ -79,7 +79,7 @@ func (c *conveyorImpl) getOrCreate(name string) chan string {
 }
 
 func (c *conveyorImpl) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string, errCh chan error),
+	fn func(ctx context.Context, input chan string, output chan string) error,
 	input string, output string,
 ) {
 	c.decs = append(c.decs, decoratorDesc{
@@ -90,7 +90,7 @@ func (c *conveyorImpl) RegisterDecorator(
 }
 
 func (c *conveyorImpl) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string, errCh chan error),
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
 	input string, outputs []string,
 ) {
 	c.seps = append(c.seps, separatorDesc{
@@ -101,7 +101,7 @@ func (c *conveyorImpl) RegisterSeparator(
 }
 
 func (c *conveyorImpl) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string, errCh chan error),
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
 	inputs []string, output string,
 ) {
 	c.muxes = append(c.muxes, multiplexerDesc{
@@ -120,7 +120,9 @@ func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGr
 
 		go func(desc decoratorDesc, input, output chan string) {
 			defer waitGroup.Done()
-			desc.fn(ctx, input, output, c.errCh)
+			if err := desc.fn(ctx, input, output); err != nil {
+				c.errCh <- err
+			}
 		}(decorator, inputCh, outputCh)
 	}
 }
@@ -138,7 +140,9 @@ func (c *conveyorImpl) runSeparators(ctx context.Context, waitGroup *sync.WaitGr
 
 		go func(desc separatorDesc, input chan string, outputs []chan string) {
 			defer waitGroup.Done()
-			desc.fn(ctx, input, outputs, c.errCh)
+			if err := desc.fn(ctx, input, outputs); err != nil {
+				c.errCh <- err
+			}
 		}(separator, inputCh, outs)
 	}
 }
@@ -156,7 +160,9 @@ func (c *conveyorImpl) runMultiplexers(ctx context.Context, waitGroup *sync.Wait
 
 		go func(desc multiplexerDesc, ins []chan string, output chan string) {
 			defer waitGroup.Done()
-			desc.fn(ctx, ins, output, c.errCh)
+			if err := desc.fn(ctx, ins, output); err != nil {
+				c.errCh <- err
+			}
 		}(multiplexer, inputs, outputCh)
 	}
 }
