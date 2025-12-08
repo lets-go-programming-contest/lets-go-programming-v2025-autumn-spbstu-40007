@@ -8,9 +8,7 @@ import (
 
 var ErrCannotDecorate = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc(prefix string) func(
-	ctx context.Context, input chan string, output chan string,
-) error {
+func PrefixDecoratorFunc(prefix string) func(ctx context.Context, input chan string, output chan string) error {
 	return func(ctx context.Context, input chan string, output chan string) error {
 		defer close(output)
 
@@ -37,9 +35,7 @@ func PrefixDecoratorFunc(prefix string) func(
 	}
 }
 
-func SeparatorFunc(sep string) func(
-	ctx context.Context, input chan string, outputs []chan string,
-) error {
+func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outputs []chan string) error {
 	return func(ctx context.Context, input chan string, outputs []chan string) error {
 		defer func() {
 			for _, out := range outputs {
@@ -72,9 +68,7 @@ func SeparatorFunc(sep string) func(
 	}
 }
 
-func MultiplexerFunc() func(
-	ctx context.Context, inputs []chan string, output chan string,
-) error {
+func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output chan string) error {
 	return func(ctx context.Context, inputs []chan string, output chan string) error {
 		defer close(output)
 
