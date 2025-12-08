@@ -111,6 +111,56 @@ func (c *conveyorImpl) RegisterMultiplexer(
 	})
 }
 
+func (c *conveyorImpl) runDecorators(ctx context.Context, wg *sync.WaitGroup) {
+	for _, decorator := range c.decs {
+		inputCh := c.getOrCreate(decorator.inputName)
+		outputCh := c.getOrCreate(decorator.outputName)
+
+		wg.Add(1)
+
+		go func(desc decoratorDesc, input, output chan string) {
+			defer wg.Done()
+			desc.fn(ctx, input, output, c.errCh)
+		}(decorator, inputCh, outputCh)
+	}
+}
+
+func (c *conveyorImpl) runSeparators(ctx context.Context, wg *sync.WaitGroup) {
+	for _, separator := range c.seps {
+		inputCh := c.getOrCreate(separator.inputName)
+		outs := make([]chan string, 0, len(separator.outputNames))
+
+		for _, name := range separator.outputNames {
+			outs = append(outs, c.getOrCreate(name))
+		}
+
+		wg.Add(1)
+
+		go func(desc separatorDesc, input chan string, outputs []chan string) {
+			defer wg.Done()
+			desc.fn(ctx, input, outputs, c.errCh)
+		}(separator, inputCh, outs)
+	}
+}
+
+func (c *conveyorImpl) runMultiplexers(ctx context.Context, wg *sync.WaitGroup) {
+	for _, multiplexer := range c.muxes {
+		inputs := make([]chan string, 0, len(multiplexer.inputNames))
+		for _, name := range multiplexer.inputNames {
+			inputs = append(inputs, c.getOrCreate(name))
+		}
+
+		outputCh := c.getOrCreate(multiplexer.outputName)
+
+		wg.Add(1)
+
+		go func(desc multiplexerDesc, ins []chan string, output chan string) {
+			defer wg.Done()
+			desc.fn(ctx, ins, output, c.errCh)
+		}(multiplexer, inputs, outputCh)
+	}
+}
+
 func (c *conveyorImpl) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.started {
@@ -124,49 +174,9 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	var waitGroup sync.WaitGroup
 
-	for _, decorator := range c.decs {
-		inputCh := c.getOrCreate(decorator.inputName)
-		outputCh := c.getOrCreate(decorator.outputName)
-
-		waitGroup.Add(1)
-
-		go func(desc decoratorDesc, input, output chan string) {
-			defer waitGroup.Done()
-			desc.fn(ctx, input, output, c.errCh)
-		}(decorator, inputCh, outputCh)
-	}
-
-	for _, separator := range c.seps {
-		inputCh := c.getOrCreate(separator.inputName)
-		outs := make([]chan string, 0, len(separator.outputNames))
-
-		for _, name := range separator.outputNames {
-			outs = append(outs, c.getOrCreate(name))
-		}
-
-		waitGroup.Add(1)
-
-		go func(desc separatorDesc, input chan string, outputs []chan string) {
-			defer waitGroup.Done()
-			desc.fn(ctx, input, outputs, c.errCh)
-		}(separator, inputCh, outs)
-	}
-
-	for _, multiplexer := range c.muxes {
-		inputs := make([]chan string, 0, len(multiplexer.inputNames))
-		for _, name := range multiplexer.inputNames {
-			inputs = append(inputs, c.getOrCreate(name))
-		}
-
-		outputCh := c.getOrCreate(multiplexer.outputName)
-
-		waitGroup.Add(1)
-
-		go func(desc multiplexerDesc, ins []chan string, output chan string) {
-			defer waitGroup.Done()
-			desc.fn(ctx, ins, output, c.errCh)
-		}(multiplexer, inputs, outputCh)
-	}
+	c.runDecorators(ctx, &waitGroup)
+	c.runSeparators(ctx, &waitGroup)
+	c.runMultiplexers(ctx, &waitGroup)
 
 	go func() {
 		waitGroup.Wait()
