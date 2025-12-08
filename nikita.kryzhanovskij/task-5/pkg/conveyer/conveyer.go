@@ -195,6 +195,9 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	go func() {
 		wg.Wait()
+		for _, ch := range c.chans {
+			close(ch)
+		}
 	}()
 
 	return nil
