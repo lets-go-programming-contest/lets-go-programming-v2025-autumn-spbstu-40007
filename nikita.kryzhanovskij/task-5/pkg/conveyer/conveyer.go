@@ -52,6 +52,7 @@ type conveyorImpl struct {
 	seps    []separatorDesc
 	muxes   []multiplexerDesc
 	started bool
+	wg      sync.WaitGroup
 }
 
 func New(size int) *conveyorImpl {
@@ -122,22 +123,22 @@ func (c *conveyorImpl) RegisterMultiplexer(
 	})
 }
 
-func (c *conveyorImpl) runDecorators(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runDecorators(ctx context.Context) {
 	for _, decorator := range c.decs {
 		inputCh := c.getOrCreate(decorator.inputName)
 		outputCh := c.getOrCreate(decorator.outputName)
 
-		wg.Add(1)
+		c.wg.Add(1)
 
 		go func(desc decoratorDesc, input, output chan string) {
-			defer wg.Done()
+			defer c.wg.Done()
 
 			_ = desc.fn(ctx, input, output)
 		}(decorator, inputCh, outputCh)
 	}
 }
 
-func (c *conveyorImpl) runSeparators(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runSeparators(ctx context.Context) {
 	for _, separator := range c.seps {
 		inputCh := c.getOrCreate(separator.inputName)
 		outs := make([]chan string, 0, len(separator.outputNames))
@@ -146,17 +147,17 @@ func (c *conveyorImpl) runSeparators(ctx context.Context, wg *sync.WaitGroup) {
 			outs = append(outs, c.getOrCreate(name))
 		}
 
-		wg.Add(1)
+		c.wg.Add(1)
 
 		go func(desc separatorDesc, input chan string, outputs []chan string) {
-			defer wg.Done()
+			defer c.wg.Done()
 
 			_ = desc.fn(ctx, input, outputs)
 		}(separator, inputCh, outs)
 	}
 }
 
-func (c *conveyorImpl) runMultiplexers(ctx context.Context, wg *sync.WaitGroup) {
+func (c *conveyorImpl) runMultiplexers(ctx context.Context) {
 	for _, multiplexer := range c.muxes {
 		inputs := make([]chan string, 0, len(multiplexer.inputNames))
 
@@ -166,10 +167,10 @@ func (c *conveyorImpl) runMultiplexers(ctx context.Context, wg *sync.WaitGroup) 
 
 		outputCh := c.getOrCreate(multiplexer.outputName)
 
-		wg.Add(1)
+		c.wg.Add(1)
 
 		go func(desc multiplexerDesc, ins []chan string, output chan string) {
-			defer wg.Done()
+			defer c.wg.Done()
 
 			_ = desc.fn(ctx, ins, output)
 		}(multiplexer, inputs, outputCh)
@@ -187,14 +188,45 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	c.started = true
 	c.mu.Unlock()
 
-	var wg sync.WaitGroup
-
-	c.runDecorators(ctx, &wg)
-	c.runSeparators(ctx, &wg)
-	c.runMultiplexers(ctx, &wg)
+	c.runDecorators(ctx)
+	c.runSeparators(ctx)
+	c.runMultiplexers(ctx)
 
 	go func() {
-		wg.Wait()
+		c.wg.Wait()
+		// Закрываем входные каналы
+		for name, ch := range c.chans {
+			// Проверяем, есть ли входная часть у этого канала
+			isInput := false
+			for _, dec := range c.decs {
+				if dec.inputName == name {
+					isInput = true
+					break
+				}
+			}
+			if !isInput {
+				for _, sep := range c.seps {
+					if sep.inputName == name {
+						isInput = true
+						break
+					}
+				}
+			}
+			if !isInput {
+				for _, mux := range c.muxes {
+					for _, inName := range mux.inputNames {
+						if inName == name {
+							isInput = true
+							break
+						}
+					}
+				}
+			}
+
+			if isInput {
+				close(ch)
+			}
+		}
 	}()
 
 	return nil
