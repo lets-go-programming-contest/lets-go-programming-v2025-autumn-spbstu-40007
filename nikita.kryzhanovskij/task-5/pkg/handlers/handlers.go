@@ -55,12 +55,14 @@ func SeparatorFunc(sep string) func(ctx context.Context, input chan string, outp
 				parts := strings.Split(value, sep)
 
 				for idx, part := range parts {
-					if idx < len(outputs) {
-						select {
-						case outputs[idx] <- part:
-						case <-ctx.Done():
-							return ctx.Err()
-						}
+					if idx >= len(outputs) {
+						break
+					}
+
+					select {
+					case outputs[idx] <- part:
+					case <-ctx.Done():
+						return ctx.Err()
 					}
 				}
 			}
@@ -76,25 +78,21 @@ func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output ch
 		active := len(inputs)
 
 		for _, inputCh := range inputs {
-			go func(input chan string) {
+			go func(ch chan string) {
+				defer func() { done <- struct{}{} }()
+
 				for {
 					select {
 					case <-ctx.Done():
-						done <- struct{}{}
-
 						return
-					case value, ok := <-input:
+					case value, ok := <-ch:
 						if !ok {
-							done <- struct{}{}
-
 							return
 						}
 
 						select {
 						case output <- value:
 						case <-ctx.Done():
-							done <- struct{}{}
-
 							return
 						}
 					}
@@ -104,7 +102,6 @@ func MultiplexerFunc() func(ctx context.Context, inputs []chan string, output ch
 
 		for active > 0 {
 			<-done
-
 			active--
 		}
 

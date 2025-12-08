@@ -110,6 +110,7 @@ func (c *conveyorImpl) RegisterMultiplexer(
 		outputName: output,
 	})
 }
+
 func (c *conveyorImpl) runDecorators(ctx context.Context, waitGroup *sync.WaitGroup) {
 	for _, decorator := range c.decs {
 		inputCh := c.getOrCreate(decorator.inputName)
