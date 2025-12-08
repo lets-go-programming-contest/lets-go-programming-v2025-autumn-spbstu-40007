@@ -195,11 +195,6 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	go func() {
 		wg.Wait()
-		c.mu.Lock()
-		for _, ch := range c.chans {
-			close(ch)
-		}
-		c.mu.Unlock()
 	}()
 
 	return nil
