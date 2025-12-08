@@ -177,6 +177,7 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	c.mu.Lock()
 	if c.started {
 		c.mu.Unlock()
+
 		return ErrAlreadyStarted
 	}
 
