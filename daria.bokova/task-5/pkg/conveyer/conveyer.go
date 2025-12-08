@@ -18,6 +18,9 @@ type Conveyer interface {
 	Recv(output string) (string, error)
 }
 
-func New(size int) *conveyerImpl {
+// New создает новый конвейер с указанным размером буфера каналов
+//
+//nolint:ireturn
+func New(size int) Conveyer {
 	return newConveyerImpl(size)
 }
