@@ -13,18 +13,22 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
+			close(output)
 			return nil
 		case value, ok := <-input:
 			if !ok {
+				close(output)
 				return nil
 			}
 
 			if strings.Contains(value, "no decorator") {
+				close(output)
 				return ErrCannotDecorate
 			}
 
 			select {
 			case <-ctx.Done():
+				close(output)
 				return nil
 			case output <- "decorated: " + value:
 			}
@@ -33,6 +37,12 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
+
 	idx := 0
 
 	for {
@@ -58,6 +68,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	if len(inputs) == 0 {
+		close(output)
 		return nil
 	}
 
@@ -94,6 +105,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	wg.Wait()
+	close(output)
 
 	return nil
 }
