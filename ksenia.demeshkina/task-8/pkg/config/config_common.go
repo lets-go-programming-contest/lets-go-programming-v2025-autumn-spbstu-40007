@@ -2,26 +2,22 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Environment string `yaml:"environment" json:"environment"`
-	LogLevel    string `yaml:"log_level" json:"log_level"`
+	Environment string `json:"environment" yaml:"environment"`
+	LogLevel    string `json:"log_level"   yaml:"log_level"`
 }
 
-var cfg Config
-
-func Get() Config {
-	return cfg
-}
-
-func loadYAML(data []byte) error {
+func Load(data []byte) (Config, error) {
+	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		if err2 := json.Unmarshal(data, &cfg); err2 != nil {
-			return err
+			return Config{}, fmt.Errorf("failed to parse config: %w", err)
 		}
 	}
-	return nil
+	return cfg, nil
 }

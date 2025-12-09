@@ -5,8 +5,4 @@ package config
 import _ "embed"
 
 //go:embed dev.yaml
-var devYAML []byte
-
-func init() {
-	_ = loadYAML(devYAML)
-}
+var СonfigFile []byte

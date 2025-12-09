@@ -2,11 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/ksuah/task-8/pkg/config"
 )
 
 func main() {
-	c := config.Get()
-	fmt.Printf("%s %s", c.Environment, c.LogLevel)
+	cfg, err := config.Load(config.СonfigFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
 }
