@@ -19,6 +19,6 @@ func Load(data []byte) (Config, error) {
 			return Config{}, fmt.Errorf("failed to parse config: %w", err)
 		}
 	}
-	
+
 	return cfg, nil
 }
