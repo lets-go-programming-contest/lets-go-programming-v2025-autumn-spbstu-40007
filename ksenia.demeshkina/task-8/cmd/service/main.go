@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/ksuah/task-8/config"
+	"github.com/ksuah/task-8/pkg/config"
 )
 
 func main() {
