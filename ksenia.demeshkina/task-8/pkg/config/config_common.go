@@ -19,7 +19,9 @@ func Get() Config {
 
 func loadYAML(data []byte) error {
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		_ = json.Unmarshal(data, &cfg)
+		if err2 := json.Unmarshal(data, &cfg); err2 != nil {
+			return err
+		}
 	}
 	return nil
 }

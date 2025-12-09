@@ -1,13 +1,12 @@
-//go:build dev
-// +build dev
+//go:build prod
 
 package config
 
 import _ "embed"
 
-//go:embed dev.yaml
-var devYAML []byte
+//go:embed prod.yaml
+var prodYAML []byte
 
 func init() {
-	_ = loadYAML(devYAML)
+	_ = loadYAML(prodYAML)
 }
