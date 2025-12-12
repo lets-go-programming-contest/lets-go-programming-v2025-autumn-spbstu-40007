@@ -5,24 +5,23 @@ import (
 	"github.com/mdlayher/wifi"
 )
 
-type WiFiScanner interface {
+type WiFiHandle interface {
 	Interfaces() ([]*wifi.Interface, error)
 }
 
-type NetworkService struct {
-	scanner WiFiScanner
+type WiFiService struct {
+	WiFi WiFiHandle
 }
 
-func NewNetworkService(s WiFiScanner) NetworkService {
-	return NetworkService{scanner: s}
+func New(w WiFiHandle) WiFiService {
+	return WiFiService{WiFi: w}
 }
 
-func (ns NetworkService) GetInterfaceNames() ([]string, error) {
-	ifaces, err := ns.scanner.Interfaces()
+func (s WiFiService) GetNames() ([]string, error) {
+	ifaces, err := s.WiFi.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("scan error: %w", err)
+		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
-	
 	names := make([]string, 0, len(ifaces))
 	for _, i := range ifaces {
 		names = append(names, i.Name)

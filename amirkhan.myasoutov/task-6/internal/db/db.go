@@ -1,38 +1,37 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 )
 
-type SQLHandler interface {
-	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+type Database interface {
+	Query(query string, args ...any) (*sql.Rows, error)
 }
 
-type DataService struct {
-	executor SQLHandler
+type DBService struct {
+	DB Database
 }
 
-func NewDataService(db SQLHandler) DataService {
-	return DataService{executor: db}
+func New(db Database) DBService {
+	return DBService{DB: db}
 }
 
-func (s DataService) GetActiveUsers(ctx context.Context) ([]string, error) {
-	const query = "SELECT username FROM users WHERE status = 'active'"
-	rows, err := s.executor.QueryContext(ctx, query)
+func (service DBService) GetNames() ([]string, error) {
+	query := "SELECT name FROM users"
+	rows, err := service.DB.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("db error: %w", err)
+		return nil, fmt.Errorf("db query: %w", err)
 	}
 	defer func() { _ = rows.Close() }()
 
-	var users []string
+	var names []string
 	for rows.Next() {
-		var user string
-		if err := rows.Scan(&user); err != nil {
-			return nil, err
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
-		users = append(users, user)
+		names = append(names, name)
 	}
-	return users, nil
+	return names, nil
 }
