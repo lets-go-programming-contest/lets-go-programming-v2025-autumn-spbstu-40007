@@ -1,5 +1,5 @@
 run:
-  timeout: 1m
+  timeout: 5m
 
 linters:
   disable-all: true
@@ -7,8 +7,11 @@ linters:
     - govet
     - errcheck
     - staticcheck
+    - gosimple
     - unused
+    - stylecheck
     - misspell
 
-issues:
-  exclude-use-default: false
+linters-settings:
+  govet:
+    check-shadowing: true
