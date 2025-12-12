@@ -35,6 +35,19 @@ func TestWiFiService_GetNames(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 
+	t.Run("empty result", func(t *testing.T) {
+		m := new(MockWiFiHandle)
+		svc := service.New(m)
+		
+		fakeIfaces := []*wifi.Interface{}
+		m.On("Interfaces").Return(fakeIfaces, nil).Once()
+
+		names, err := svc.GetNames()
+		assert.NoError(t, err)
+		assert.Empty(t, names)
+	})
+
+
 	t.Run("interface error", func(t *testing.T) {
 		m := new(MockWiFiHandle)
 		svc := service.New(m)
