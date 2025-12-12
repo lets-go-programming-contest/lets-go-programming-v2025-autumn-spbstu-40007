@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"fmt"
+
 	"github.com/mdlayher/wifi"
 )
 
@@ -22,9 +23,12 @@ func (s WiFiService) GetNames() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("getting interfaces: %w", err)
 	}
+
 	names := make([]string, 0, len(ifaces))
+
 	for _, i := range ifaces {
 		names = append(names, i.Name)
 	}
+
 	return names, nil
 }
