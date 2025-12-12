@@ -1,0 +1,14 @@
+run:
+  timeout: 1m
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - misspell
+
+issues:
+  exclude-use-default: false
