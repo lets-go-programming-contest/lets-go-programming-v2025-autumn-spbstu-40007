@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	service "github.com/ami0-0/task-6/internal/wifi"
@@ -19,16 +20,21 @@ type MockWiFiHandle struct {
 
 func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
+	err := args.Error(1)
+	if err != nil {
+		return nil, fmt.Errorf("mock error: %w", err)
+	}
 
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, nil
 	}
 
-	if val, ok := args.Get(0).([]*wifi.Interface); ok {
-		return val, args.Error(1) // args.Error(1) вернет nil
+	val, ok := args.Get(0).([]*wifi.Interface)
+	if ok {
+		return val, nil
 	}
 
-	return nil, args.Error(1)
+	return nil, nil
 }
 
 func TestWiFiService_GetNames(t *testing.T) {
