@@ -1,0 +1,18 @@
+mode: set
+github.com/ami0-0/task-6/main.go:5.13,7.2 1 0
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:16.54,18.2 1 1
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:20.64,22.16 2 1
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:22.16,24.3 1 0
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:26.2,27.27 2 1
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:27.27,29.3 1 1
+github.com/ami0-0/task-6/internal/netinfo/wifi.go:30.2,30.19 1 1
+github.com/ami0-0/task-6/internal/repository/db.go:17.48,19.2 1 1
+github.com/ami0-0/task-6/internal/repository/db.go:21.76,24.16 3 1
+github.com/ami0-0/task-6/internal/repository/db.go:24.16,26.3 1 0
+github.com/ami0-0/task-6/internal/repository/db.go:27.2,27.15 1 1
+github.com/ami0-0/task-6/internal/repository/db.go:27.15,27.35 1 1
+github.com/ami0-0/task-6/internal/repository/db.go:29.2,30.18 2 1
+github.com/ami0-0/task-6/internal/repository/db.go:30.18,32.42 2 1
+github.com/ami0-0/task-6/internal/repository/db.go:32.42,34.4 1 0
+github.com/ami0-0/task-6/internal/repository/db.go:35.3,35.30 1 1
+github.com/ami0-0/task-6/internal/repository/db.go:37.2,37.19 1 1
