@@ -16,7 +16,7 @@ var (
 )
 
 func TestDBService_GetNames(t *testing.T) {
-	t.Parallel() // Разрешаем параллельный запуск
+	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -32,7 +32,7 @@ func TestDBService_GetNames(t *testing.T) {
 		mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
 		names, err := service.GetNames()
-		require.NoError(t, err) // Используем require для критических проверок
+		require.NoError(t, err)
 		assert.Equal(t, []string{"Alice", "Bob"}, names)
 	})
 
