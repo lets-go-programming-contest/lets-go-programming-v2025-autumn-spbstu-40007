@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 )
@@ -18,8 +17,9 @@ func New(db Database) DBService {
 	return DBService{DB: db}
 }
 
-func (service DBService) GetNames(ctx context.Context) ([]string, error) {
+func (service DBService) GetNames() ([]string, error) {
 	query := "SELECT name FROM users"
+	
 	rows, err := service.DB.Query(query) 
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
@@ -42,8 +42,9 @@ func (service DBService) GetNames(ctx context.Context) ([]string, error) {
 	return names, nil
 }
 
-func (service DBService) GetUniqueNames(ctx context.Context) ([]string, error) {
+func (service DBService) GetUniqueNames() ([]string, error) {
 	query := "SELECT DISTINCT name FROM users"
+	
 	rows, err := service.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
