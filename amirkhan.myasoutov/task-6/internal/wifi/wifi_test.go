@@ -20,8 +20,8 @@ type MockWiFiHandle struct {
 
 func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
-	err := args.Error(1)
 
+	err := args.Error(1)
 	if err != nil {
 		return nil, fmt.Errorf("mock error: %w", err)
 	}
