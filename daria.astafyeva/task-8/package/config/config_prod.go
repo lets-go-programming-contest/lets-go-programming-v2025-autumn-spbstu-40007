@@ -5,4 +5,4 @@ package config
 import _ "embed"
 
 //go:embed prod.yaml
-var ConfigFile []byte 
+var ConfigFile []byte
