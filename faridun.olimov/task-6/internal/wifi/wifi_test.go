@@ -7,7 +7,7 @@ import (
 
 	"task-6/internal/wifi"
 
-	mdwifi "github.com/mdlayher/wifi"
+	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
