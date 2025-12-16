@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"github.com/itsdasha/task-8/pkg/config"
+	"github.com/itsdasha/task-8/package/config"
 )
 
 func main() {
