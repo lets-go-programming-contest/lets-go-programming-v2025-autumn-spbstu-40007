@@ -2,6 +2,7 @@ package wifi_test
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"testing"
 
@@ -21,12 +22,14 @@ func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	var r0 []*wifi.Interface
 	if ret.Get(0) != nil {
-		r0 = ret.Get(0).([]*wifi.Interface)
+		if val, ok := ret.Get(0).([]*wifi.Interface); ok {
+			r0 = val
+		}
 	}
 
 	var r1 error
 	if ret.Error(1) != nil {
-		r1 = ret.Error(1)
+		r1 = fmt.Errorf("mock Interfaces error: %w", ret.Error(1))
 	}
 
 	return r0, r1
