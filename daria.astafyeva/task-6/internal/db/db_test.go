@@ -1,160 +1,224 @@
-package wifi_test
+package db_test
 
 import (
-	"errors"
-	"net"
+	"regexp"
 	"testing"
 
-	service "github.com/itsdasha/task-6/internal/wifi"
-	"github.com/mdlayher/wifi"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/itsdasha/task-6/internal/db"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type MockWiFiHandle struct {
-	mock.Mock
-}
-
-func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
-	ret := _m.Called()
-
-	var r0 []*wifi.Interface
-	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
-		r0 = rf()
-	} else if ret.Get(0) != nil {
-		r0 = ret.Get(0).([]*wifi.Interface)
-	}
-
-	var r1 error
-	if ret.Error(1) != nil {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-var errWiFi = errors.New("failed to get interfaces")
-
-func TestWiFiService_New(t *testing.T) {
+func TestDBService_GetNames(t *testing.T) {
 	t.Parallel()
 
-	mockHandle := &MockWiFiHandle{}
-	svc := service.New(mockHandle)
-
-	assert.NotNil(t, svc)
-	assert.Same(t, mockHandle, svc.WiFi)
-}
-
-func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success - multiple interfaces", func(t *testing.T) {
+	t.Run("success with data", func(t *testing.T) {
 		t.Parallel()
 
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
 
-		mac1, _ := net.ParseMAC("aa:bb:cc:00:00:01")
-		mac2, _ := net.ParseMAC("aa:bb:cc:00:00:02")
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			AddRow("Bob")
 
-		ifaces := []*wifi.Interface{
-			{HardwareAddr: mac1},
-			{HardwareAddr: mac2},
-		}
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
-		mockHandle.On("Interfaces").Return(ifaces, nil).Once()
-
-		addrs, err := svc.GetAddresses()
+		service := db.New(dbMock)
+		names, err := service.GetNames()
 
 		require.NoError(t, err)
-		assert.Equal(t, []net.HardwareAddr{mac1, mac2}, addrs)
-		mockHandle.AssertExpectations(t)
+		assert.NotEmpty(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("success - empty", func(t *testing.T) {
+	t.Run("success empty", func(t *testing.T) {
 		t.Parallel()
 
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
-
-		mockHandle.On("Interfaces").Return([]*wifi.Interface{}, nil).Once()
-
-		addrs, err := svc.GetAddresses()
-
+		dbMock, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		assert.Empty(t, addrs)
-		mockHandle.AssertExpectations(t)
-	})
+		defer dbMock.Close()
 
-	t.Run("error from Interfaces", func(t *testing.T) {
-		t.Parallel()
+		rows := sqlmock.NewRows([]string{"name"})
 
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
-		mockHandle.On("Interfaces").Return([]*wifi.Interface(nil), errWiFi).Once()
-
-		addrs, err := svc.GetAddresses()
-
-		require.Error(t, err)
-		assert.Nil(t, addrs)
-		assert.Contains(t, err.Error(), "getting interfaces")
-		mockHandle.AssertExpectations(t)
-	})
-}
-
-func TestWiFiService_GetNames(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success - multiple names", func(t *testing.T) {
-		t.Parallel()
-
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
-
-		ifaces := []*wifi.Interface{
-			{Name: "wlp3s0"},
-			{Name: "wlan0"},
-		}
-
-		mockHandle.On("Interfaces").Return(ifaces, nil).Once()
-
-		names, err := svc.GetNames()
-
-		require.NoError(t, err)
-		assert.Equal(t, []string{"wlp3s0", "wlan0"}, names)
-		mockHandle.AssertExpectations(t)
-	})
-
-	t.Run("success - empty", func(t *testing.T) {
-		t.Parallel()
-
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
-
-		mockHandle.On("Interfaces").Return([]*wifi.Interface{}, nil).Once()
-
-		names, err := svc.GetNames()
+		service := db.New(dbMock)
+		names, err := service.GetNames()
 
 		require.NoError(t, err)
 		assert.Empty(t, names)
-		mockHandle.AssertExpectations(t)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("error from Interfaces", func(t *testing.T) {
+	t.Run("query error", func(t *testing.T) {
 		t.Parallel()
 
-		mockHandle := &MockWiFiHandle{}
-		svc := service.New(mockHandle)
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
 
-		mockHandle.On("Interfaces").Return([]*wifi.Interface(nil), errWiFi).Once()
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(assert.AnError)
 
-		names, err := svc.GetNames()
+		service := db.New(dbMock)
+		names, err := service.GetNames()
 
 		require.Error(t, err)
 		assert.Nil(t, names)
-		assert.Contains(t, err.Error(), "getting interfaces")
-		mockHandle.AssertExpectations(t)
+		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+
+	t.Run("scan error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			RowError(0, assert.AnError)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestDBService_GetUniqueNames(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success with data", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			AddRow("Bob")
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.NoError(t, err)
+		assert.NotEmpty(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("success empty", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"})
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.NoError(t, err)
+		assert.Empty(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("query error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(assert.AnError)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("scan error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			RowError(0, assert.AnError)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestDBService_New(t *testing.T) {
+	t.Parallel()
+
+	dbMock, _, _ := sqlmock.New()
+	defer dbMock.Close()
+
+	service := db.New(dbMock)
+
+	assert.NotNil(t, service)
 }
