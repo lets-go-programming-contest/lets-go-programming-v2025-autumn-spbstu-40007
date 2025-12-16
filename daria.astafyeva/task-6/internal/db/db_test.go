@@ -13,7 +13,7 @@ import (
 func TestDBService_GetNames(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success with data", func(t *testing.T) {
 		t.Parallel()
 
 		dbMock, mock, err := sqlmock.New()
@@ -30,11 +30,11 @@ func TestDBService_GetNames(t *testing.T) {
 		names, err := service.GetNames()
 
 		require.NoError(t, err)
-		assert.NotEmpty(t, names)
+		assert.Len(t, names, 2)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
-	t.Run("empty result", func(t *testing.T) {
+	t.Run("success empty result", func(t *testing.T) {
 		t.Parallel()
 
 		dbMock, mock, err := sqlmock.New()
@@ -67,6 +67,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		require.Error(t, err)
 		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "db query")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -86,6 +87,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		require.Error(t, err)
 		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows scanning")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -107,6 +109,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		require.Error(t, err)
 		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows error")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
@@ -114,7 +117,7 @@ func TestDBService_GetNames(t *testing.T) {
 func TestDBService_GetUniqueNames(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success with data", func(t *testing.T) {
 		t.Parallel()
 
 		dbMock, mock, err := sqlmock.New()
@@ -131,7 +134,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		names, err := service.GetUniqueNames()
 
 		require.NoError(t, err)
-		assert.NotEmpty(t, names)
+		assert.Len(t, names, 2)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -149,6 +152,49 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		require.Error(t, err)
 		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "db query")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("scan error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows scanning")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			RowError(0, assert.AnError)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows error")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
