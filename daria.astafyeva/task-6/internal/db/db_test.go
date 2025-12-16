@@ -12,7 +12,6 @@ import (
 
 var (
 	errQuery = errors.New("query failed")
-	errScan  = errors.New("scan failed")
 	errRows  = errors.New("rows iteration failed")
 )
 
@@ -87,7 +86,6 @@ func TestDBService_GetNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -106,6 +104,7 @@ func TestDBService_GetNames(t *testing.T) {
 				assert.Nil(t, names)
 			} else {
 				require.NoError(t, err)
+
 				if tt.want == nil {
 					assert.Nil(t, names)
 				} else {
@@ -169,7 +168,6 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
