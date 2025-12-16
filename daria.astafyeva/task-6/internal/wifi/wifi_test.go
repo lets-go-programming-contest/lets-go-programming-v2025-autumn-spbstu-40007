@@ -21,15 +21,15 @@ func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	ret := _m.Called()
 
 	var r0 []*wifi.Interface
-	if ret.Get(0) != nil {
-		if val, ok := ret.Get(0).([]*wifi.Interface); ok {
-			r0 = val
+	if val := ret.Get(0); val != nil {
+		if v, ok := val.([]*wifi.Interface); ok {
+			r0 = v
 		}
 	}
 
 	var r1 error
-	if ret.Error(1) != nil {
-		r1 = fmt.Errorf("mock Interfaces error: %w", ret.Error(1))
+	if err := ret.Error(1); err != nil {
+		r1 = fmt.Errorf("mock Interfaces error: %w", err)
 	}
 
 	return r0, r1
