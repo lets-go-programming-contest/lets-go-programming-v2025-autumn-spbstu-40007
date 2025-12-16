@@ -12,9 +12,8 @@ import (
 )
 
 var (
-	queryErr = errors.New("query failed")
-	scanErr  = errors.New("scan failed")
-	rowsErr  = errors.New("rows iteration failed")
+	errQuery = errors.New("query failed")
+	errRows  = errors.New("rows iteration failed")
 )
 
 func TestDBService_New(t *testing.T) {
@@ -59,7 +58,7 @@ func TestDBService_GetNames(t *testing.T) {
 		require.NoError(t, err)
 		defer dbMock.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(queryErr)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnError(errQuery)
 
 		service := db.New(dbMock)
 		names, err := service.GetNames()
@@ -99,7 +98,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
-			RowError(0, rowsErr)
+			RowError(0, errRows)
 
 		mock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM users")).WillReturnRows(rows)
 
@@ -125,7 +124,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
-			AddRow("Alice")
+			AddRow("Bob")
 
 		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
 
@@ -144,7 +143,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		require.NoError(t, err)
 		defer dbMock.Close()
 
-		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(queryErr)
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnError(errQuery)
 
 		service := db.New(dbMock)
 		names, err := service.GetUniqueNames()
@@ -152,6 +151,48 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		require.Error(t, err)
 		assert.Nil(t, names)
 		assert.Contains(t, err.Error(), "db query")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("scan error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows scanning")
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("rows error", func(t *testing.T) {
+		t.Parallel()
+
+		dbMock, mock, err := sqlmock.New()
+		require.NoError(t, err)
+		defer dbMock.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			RowError(0, errRows)
+
+		mock.ExpectQuery(regexp.QuoteMeta("SELECT DISTINCT name FROM users")).WillReturnRows(rows)
+
+		service := db.New(dbMock)
+		names, err := service.GetUniqueNames()
+
+		require.Error(t, err)
+		assert.Nil(t, names)
+		assert.Contains(t, err.Error(), "rows error")
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
