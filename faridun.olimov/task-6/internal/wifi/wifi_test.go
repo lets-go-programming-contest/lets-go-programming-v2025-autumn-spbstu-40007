@@ -12,10 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	errSystem = errors.New("system error")
-	errFailed = errors.New("failed")
-)
+var errSystem = errors.New("system error")
 
 func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Parallel()
