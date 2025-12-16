@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,5 +16,6 @@ func Load(data []byte) (Config, error) {
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return Config{}, fmt.Errorf("failed to unmarshal YAML config: %w", err)
 	}
+
 	return cfg, nil
 }
