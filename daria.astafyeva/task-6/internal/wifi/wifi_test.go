@@ -70,7 +70,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		mockHandle.AssertExpectations(t)
 	})
 
-	t.Run("success - no interfaces", func(t *testing.T) {
+	t.Run("success - empty", func(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := &MockWiFiHandle{}
