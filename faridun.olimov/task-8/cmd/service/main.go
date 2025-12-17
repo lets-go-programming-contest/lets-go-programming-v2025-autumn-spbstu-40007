@@ -1,8 +1,10 @@
+//nolint:gofmt
 package main
 
 import (
 	"fmt"
 	"log"
+
 	"task-8/pkg/config"
 )
 
