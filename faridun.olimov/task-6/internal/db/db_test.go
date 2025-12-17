@@ -1,10 +1,9 @@
 package db_test
 
 import (
-	"errors"
-	"testing"
-
+	"errors" //nolint:gofumpt
 	"task-6/internal/db"
+	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"

@@ -2,7 +2,7 @@ package wifi_test
 
 import (
 	"errors"
-	"net"
+	"net" //nolint:gofumpt
 	"testing"
 
 	"task-6/internal/wifi"
