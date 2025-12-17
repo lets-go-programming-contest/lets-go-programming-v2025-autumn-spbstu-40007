@@ -1,4 +1,3 @@
-//nolint:gofmt
 package main
 
 import (
