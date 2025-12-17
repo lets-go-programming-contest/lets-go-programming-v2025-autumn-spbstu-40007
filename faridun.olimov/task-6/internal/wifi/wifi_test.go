@@ -3,9 +3,8 @@ package wifi_test
 import (
 	"errors"
 	"net" //nolint:gofumpt
-	"testing"
-
 	"task-6/internal/wifi"
+	"testing"
 
 	mdwifi "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
