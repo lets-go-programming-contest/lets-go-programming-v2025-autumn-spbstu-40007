@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"task-8/pkg/config"
 )
 
@@ -12,5 +13,5 @@ func main() {
 		log.Fatalf("Не удалось загрузить конфиг: %v", err)
 	}
 
-	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
