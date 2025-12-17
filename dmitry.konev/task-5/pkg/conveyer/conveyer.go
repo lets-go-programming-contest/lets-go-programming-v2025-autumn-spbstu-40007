@@ -4,185 +4,151 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"time"
-
-	"golang.org/x/sync/errgroup"
 )
 
-type decoratorEntry struct {
-	fn     func(ctx context.Context, input chan string, output chan string) error
-	input  string
-	output string
+const (
+	ErrChanNotFound = "chan not found"
+	Undefined       = "undefined"
+)
+
+type conveyerImpl struct {
+	size     int
+	channels map[string]chan string
+	mu       sync.RWMutex
+
+	workers []func(ctx context.Context) error
 }
 
-type separatorEntry struct {
-	fn      func(ctx context.Context, input chan string, outputs []chan string) error
-	input   string
-	outputs []string
-}
-
-type multiplexerEntry struct {
-	fn     func(ctx context.Context, inputs []chan string, output chan string) error
-	inputs []string
-	output string
-}
-
-type pipeline struct {
-	size int
-
-	chans map[string]chan string
-
-	decorators   []decoratorEntry
-	separators   []separatorEntry
-	multiplexers []multiplexerEntry
-
-	mu sync.RWMutex
-}
-
-func New(size int) *pipeline {
-	return &pipeline{
-		size:  size,
-		chans: make(map[string]chan string),
+func New(size int) *conveyerImpl {
+	return &conveyerImpl{
+		size:     size,
+		channels: make(map[string]chan string),
 	}
 }
 
-func (p *pipeline) getOrCreate(id string) chan string {
-	ch, ok := p.chans[id]
-	if !ok {
-		ch = make(chan string, p.size)
-		p.chans[id] = ch
+func (c *conveyerImpl) getOrCreate(id string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if ch, ok := c.channels[id]; ok {
+		return ch
 	}
+
+	ch := make(chan string, c.size)
+	c.channels[id] = ch
 	return ch
 }
 
-func (p *pipeline) RegisterDecorator(
-	fn func(ctx context.Context, input chan string, output chan string) error,
+func (c *conveyerImpl) get(id string) (chan string, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	ch, ok := c.channels[id]
+	return ch, ok
+}
+
+func (c *conveyerImpl) RegisterDecorator(
+	fn func(context.Context, chan string, chan string) error,
 	input string,
 	output string,
 ) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.getOrCreate(input)
-	p.getOrCreate(output)
-
-	p.decorators = append(p.decorators, decoratorEntry{
-		fn:     fn,
-		input:  input,
-		output: output,
+	in := c.getOrCreate(input)
+	out := c.getOrCreate(output)
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, in, out)
 	})
 }
 
-func (p *pipeline) RegisterMultiplexer(
-	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+func (c *conveyerImpl) RegisterMultiplexer(
+	fn func(context.Context, []chan string, chan string) error,
 	inputs []string,
 	output string,
 ) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	out := c.getOrCreate(output)
+	ins := make([]chan string, 0, len(inputs))
 
 	for _, id := range inputs {
-		p.getOrCreate(id)
+		ins = append(ins, c.getOrCreate(id))
 	}
-	p.getOrCreate(output)
 
-	p.multiplexers = append(p.multiplexers, multiplexerEntry{
-		fn:     fn,
-		inputs: inputs,
-		output: output,
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, ins, out)
 	})
 }
 
-func (p *pipeline) RegisterSeparator(
-	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+func (c *conveyerImpl) RegisterSeparator(
+	fn func(context.Context, chan string, []chan string) error,
 	input string,
 	outputs []string,
 ) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	in := c.getOrCreate(input)
+	outs := make([]chan string, 0, len(outputs))
 
-	p.getOrCreate(input)
 	for _, id := range outputs {
-		p.getOrCreate(id)
+		outs = append(outs, c.getOrCreate(id))
 	}
 
-	p.separators = append(p.separators, separatorEntry{
-		fn:      fn,
-		input:   input,
-		outputs: outputs,
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, in, outs)
 	})
 }
 
-func (p *pipeline) Run(ctx context.Context) error {
-	g, ctx := errgroup.WithContext(ctx)
+func (c *conveyerImpl) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	for _, d := range p.decorators {
-		d := d
-		g.Go(func() error {
-			return d.fn(ctx, p.chans[d.input], p.chans[d.output])
-		})
-	}
+	errCh := make(chan error, len(c.workers))
+	var wg sync.WaitGroup
 
-	for _, s := range p.separators {
-		s := s
-		g.Go(func() error {
-			outs := make([]chan string, len(s.outputs))
-			for i, id := range s.outputs {
-				outs[i] = p.chans[id]
+	for _, w := range c.workers {
+		wg.Add(1)
+		go func(fn func(context.Context) error) {
+			defer wg.Done()
+			if err := fn(ctx); err != nil {
+				errCh <- err
 			}
-			return s.fn(ctx, p.chans[s.input], outs)
-		})
-	}
-
-	for _, m := range p.multiplexers {
-		m := m
-		g.Go(func() error {
-			ins := make([]chan string, len(m.inputs))
-			for i, id := range m.inputs {
-				ins[i] = p.chans[id]
-			}
-			return m.fn(ctx, ins, p.chans[m.output])
-		})
-	}
-
-	return g.Wait()
-}
-
-func (p *pipeline) Send(id string, data string) error {
-	p.mu.RLock()
-	ch, ok := p.chans[id]
-	p.mu.RUnlock()
-
-	if !ok {
-		return errors.New("chan not found")
+		}(w)
 	}
 
 	select {
-	case ch <- data:
-		return nil
-	default:
-		select {
-		case ch <- data:
-			return nil
-		case <-time.After(50 * time.Millisecond):
-			return errors.New("send blocked")
-		}
+	case <-ctx.Done():
+	case err := <-errCh:
+		cancel()
+		wg.Wait()
+		c.closeAll()
+		return err
+	}
+
+	wg.Wait()
+	c.closeAll()
+	return nil
+}
+
+func (c *conveyerImpl) closeAll() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, ch := range c.channels {
+		close(ch)
 	}
 }
 
-func (p *pipeline) Recv(id string) (string, error) {
-	p.mu.RLock()
-	ch, ok := p.chans[id]
-	p.mu.RUnlock()
-
+func (c *conveyerImpl) Send(input string, data string) error {
+	ch, ok := c.get(input)
 	if !ok {
-		return "", errors.New("chan not found")
+		return errors.New(ErrChanNotFound)
+	}
+	ch <- data
+	return nil
+}
+
+func (c *conveyerImpl) Recv(output string) (string, error) {
+	ch, ok := c.get(output)
+	if !ok {
+		return "", errors.New(ErrChanNotFound)
 	}
 
 	val, ok := <-ch
 	if !ok {
-		return "undefined", nil
+		return Undefined, nil
 	}
-
 	return val, nil
 }
