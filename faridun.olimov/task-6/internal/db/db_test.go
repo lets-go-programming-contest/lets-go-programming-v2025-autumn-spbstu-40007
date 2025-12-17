@@ -1,7 +1,7 @@
 package db_test
 
 import (
-	"errors" //nolint:gofumpt
+	"errors"
 	"task-6/internal/db"
 	"testing"
 
