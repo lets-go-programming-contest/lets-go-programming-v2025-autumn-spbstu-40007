@@ -1,5 +1,6 @@
 package main
 
+//nolint:gofmt
 import (
 	"fmt"
 	"log"
