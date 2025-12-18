@@ -1,4 +1,4 @@
-module github.com/aminedraii19/task-6
+module github.com/kenzasanaa/task-6
 
 go 1.22.7
 
