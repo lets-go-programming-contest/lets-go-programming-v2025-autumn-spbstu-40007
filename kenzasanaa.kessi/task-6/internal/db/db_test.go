@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/aminedraii19/task-6/internal/db"
+	"github.com/kenzasanaa/task-6/internal/db"
 )
 
 var (
