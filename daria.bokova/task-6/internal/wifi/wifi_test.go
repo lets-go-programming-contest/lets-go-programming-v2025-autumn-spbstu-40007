@@ -142,6 +142,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
