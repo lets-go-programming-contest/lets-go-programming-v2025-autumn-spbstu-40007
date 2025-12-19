@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var testError = errors.New("test error")
+var errTest = errors.New("test error")
 
 type MockWiFiHandle struct {
 	mock.Mock
@@ -104,7 +104,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
-		mockHandle.On("Interfaces").Return(nil, testError)
+		mockHandle.On("Interfaces").Return(nil, errTest)
 
 		service := New(mockHandle)
 		addrs, err := service.GetAddresses()
@@ -176,7 +176,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
-		mockHandle.On("Interfaces").Return(nil, testError)
+		mockHandle.On("Interfaces").Return(nil, errTest)
 
 		service := New(mockHandle)
 		names, err := service.GetNames()
