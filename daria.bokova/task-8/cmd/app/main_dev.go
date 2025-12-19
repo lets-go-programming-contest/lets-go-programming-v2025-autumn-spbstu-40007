@@ -12,12 +12,8 @@ import (
 var configData string
 
 func main() {
-	parseAndPrint(configData)
-}
-
-func parseAndPrint(data string) {
-	lines := strings.Split(data, "\n")
-	var env, level string
+	lines := strings.Split(configData, "\n")
+	env, level := "", ""
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
