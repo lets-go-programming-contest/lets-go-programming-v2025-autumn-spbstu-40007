@@ -71,6 +71,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -92,6 +93,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -141,6 +143,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -162,6 +165,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
