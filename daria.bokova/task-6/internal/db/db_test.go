@@ -7,6 +7,13 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
+var (
+	errSyntax        = errors.New("syntax error")
+	errConnection    = errors.New("connection failed")
+	errRowsIteration = errors.New("rows iteration failed")
+	errRows          = errors.New("rows error")
+)
+
 func TestDBService_GetNames(t *testing.T) {
 	t.Parallel()
 
@@ -75,7 +82,7 @@ func TestDBService_GetNames(t *testing.T) {
 		defer db.Close()
 
 		mock.ExpectQuery("^SELECT name FROM users$").
-			WillReturnError(errors.New("syntax error"))
+			WillReturnError(errSyntax)
 
 		service := New(db)
 		names, err := service.GetNames()
@@ -128,7 +135,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
-			CloseError(errors.New("rows iteration failed"))
+			CloseError(errRowsIteration)
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
@@ -212,7 +219,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		defer db.Close()
 
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").
-			WillReturnError(errors.New("connection failed"))
+			WillReturnError(errConnection)
 
 		service := New(db)
 		names, err := service.GetUniqueNames()
@@ -261,7 +268,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
-			CloseError(errors.New("rows error"))
+			CloseError(errRows)
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
