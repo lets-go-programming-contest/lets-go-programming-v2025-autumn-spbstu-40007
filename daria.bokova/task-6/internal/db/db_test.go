@@ -33,6 +33,7 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -60,6 +61,7 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -191,6 +193,7 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetUniqueNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
