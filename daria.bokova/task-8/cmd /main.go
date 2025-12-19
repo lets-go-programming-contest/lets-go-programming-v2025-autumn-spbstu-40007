@@ -1,7 +1,7 @@
 package main
 
 import (
-	"task-8/internal/config"
+	"daria.bokova/task-8/cmd/internal/config"
 )
 
 func main() {
