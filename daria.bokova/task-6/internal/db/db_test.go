@@ -8,6 +8,7 @@ import (
 )
 
 func TestDBService_GetNames(t *testing.T) {
+	t.Parallel()
 	t.Run("success - multiple rows", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
@@ -36,6 +37,8 @@ func TestDBService_GetNames(t *testing.T) {
 		}
 	})
 
+	t.Parallel()
+
 	t.Run("success - empty result", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
@@ -52,10 +55,13 @@ func TestDBService_GetNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 0 {
 			t.Errorf("expected empty slice, got %v", names)
 		}
 	})
+
+	t.Parallel()
 
 	t.Run("query error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -73,6 +79,7 @@ func TestDBService_GetNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
@@ -80,6 +87,8 @@ func TestDBService_GetNames(t *testing.T) {
 			t.Errorf("error message mismatch: %v", err)
 		}
 	})
+
+	t.Parallel()
 
 	t.Run("scan error on null value", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -99,10 +108,13 @@ func TestDBService_GetNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error for NULL value, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names for NULL value, got %v", names)
 		}
 	})
+
+	t.Parallel()
 
 	t.Run("rows error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -132,6 +144,7 @@ func TestDBService_GetNames(t *testing.T) {
 }
 
 func TestDBService_GetUniqueNames(t *testing.T) {
+	t.Parallel()
 	t.Run("success - with duplicates", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
@@ -156,6 +169,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		}
 	})
 
+	t.Parallel()
+
 	t.Run("success - single row", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
@@ -176,6 +191,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			t.Errorf("expected [SingleUser], got %v", names)
 		}
 	})
+
+	t.Parallel()
 
 	t.Run("query error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -198,6 +215,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		}
 	})
 
+	t.Parallel()
+
 	t.Run("scan error on null", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
@@ -219,6 +238,8 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			t.Errorf("expected nil names for NULL, got %v", names)
 		}
 	})
+
+	t.Parallel()
 
 	t.Run("rows error for unique", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
@@ -246,6 +267,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 }
 
 func TestDBService_New(t *testing.T) {
+	t.Parallel()
 	db, _, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
