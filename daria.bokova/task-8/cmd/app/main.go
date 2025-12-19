@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"task-8/config"
+	"task-8/config" // Импорт через имя корневого модуля
 )
 
 func main() {
