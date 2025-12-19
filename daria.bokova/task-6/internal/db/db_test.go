@@ -80,32 +80,30 @@ func TestDBService_GetNames(t *testing.T) {
 		}
 	})
 
-	t.Run("scan error - wrong type", func(t *testing.T) {
+	t.Run("scan error on null value", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer db.Close()
 
-		// Возвращаем int вместо string
-		rows := sqlmock.NewRows([]string{"name"}).AddRow(123)
+		// NULL значение вызовет ошибку при сканировании в string
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
 		names, err := service.GetNames()
 
+		// NULL в string должно вызвать ошибку
 		if err == nil {
-			t.Error("expected scan error, got nil")
+			t.Error("expected error for NULL value, got nil")
 		}
 		if names != nil {
-			t.Errorf("expected nil names, got %v", names)
-		}
-		if err.Error() != "rows scanning: sql: Scan error on column index 0, name \"name\": converting driver.Value type int64 (\"123\") to a string: invalid syntax" {
-			t.Logf("scan error (expected): %v", err)
+			t.Errorf("expected nil names for NULL value, got %v", names)
 		}
 	})
 
-	t.Run("rows error after iteration", func(t *testing.T) {
+	t.Run("rows error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatal(err)
@@ -114,7 +112,7 @@ func TestDBService_GetNames(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
-			RowError(0, errors.New("row iteration failed"))
+			CloseError(errors.New("rows iteration failed"))
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
@@ -126,14 +124,14 @@ func TestDBService_GetNames(t *testing.T) {
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
-		if err.Error() != "rows error: row iteration failed" {
+		if err.Error() != "rows error: rows iteration failed" {
 			t.Errorf("error message mismatch: %v", err)
 		}
 	})
 }
 
 func TestDBService_GetUniqueNames(t *testing.T) {
-	t.Run("success - with duplicates in result", func(t *testing.T) {
+	t.Run("success - with duplicates", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatal(err)
@@ -143,7 +141,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
 			AddRow("Bob").
-			AddRow("Alice") // Дубликат в результатах
+			AddRow("Alice")
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
@@ -153,7 +151,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if len(names) != 3 {
-			t.Errorf("expected 3 names (DISTINCT in query, not in results), got %d", len(names))
+			t.Errorf("expected 3 names, got %d", len(names))
 		}
 	})
 
@@ -199,14 +197,13 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		}
 	})
 
-	t.Run("scan error - null value", func(t *testing.T) {
+	t.Run("scan error on null", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer db.Close()
 
-		// NULL значение
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
@@ -214,7 +211,30 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		names, err := service.GetUniqueNames()
 
 		if err == nil {
-			t.Error("expected scan error, got nil")
+			t.Error("expected error for NULL, got nil")
+		}
+		if names != nil {
+			t.Errorf("expected nil names for NULL, got %v", names)
+		}
+	})
+
+	t.Run("rows error for unique", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+
+		rows := sqlmock.NewRows([]string{"name"}).
+			AddRow("Alice").
+			CloseError(errors.New("rows error"))
+		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
+
+		service := New(db)
+		names, err := service.GetUniqueNames()
+
+		if err == nil {
+			t.Error("expected rows error, got nil")
 		}
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
