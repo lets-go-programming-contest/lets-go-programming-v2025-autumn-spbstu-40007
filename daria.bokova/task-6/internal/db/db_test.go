@@ -1,8 +1,7 @@
-// nolint:wsl
-
 package db_test
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
@@ -21,7 +20,11 @@ var (
 func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +37,8 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 	mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetNames()
+	var names []string
+	names, err = service.GetNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -51,7 +55,11 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +69,8 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetNames()
+	var names []string
+	names, err = service.GetNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -74,7 +83,11 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 func TestDBService_GetNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +97,8 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 		WillReturnError(errSyntax)
 
 	service := mydb.New(db)
-	names, err := service.GetNames()
+	var names []string
+	names, err = service.GetNames()
 
 	if err == nil {
 		t.Error("expected error, got nil")
@@ -102,7 +116,11 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +130,8 @@ func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 	mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetNames()
+	var names []string
+	names, err = service.GetNames()
 
 	if err == nil {
 		t.Error("expected error for NULL value, got nil")
@@ -126,7 +145,11 @@ func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 func TestDBService_GetNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +161,8 @@ func TestDBService_GetNames_RowsError(t *testing.T) {
 	mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetNames()
+	var names []string
+	names, err = service.GetNames()
 
 	if err == nil {
 		t.Error("expected rows error, got nil")
@@ -156,7 +180,11 @@ func TestDBService_GetNames_RowsError(t *testing.T) {
 func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +197,8 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 	mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetUniqueNames()
+	var names []string
+	names, err = service.GetUniqueNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -182,7 +211,11 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +225,8 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 	mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetUniqueNames()
+	var names []string
+	names, err = service.GetUniqueNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -205,7 +239,11 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +253,8 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 		WillReturnError(errConnection)
 
 	service := mydb.New(db)
-	names, err := service.GetUniqueNames()
+	var names []string
+	names, err = service.GetUniqueNames()
 
 	if err == nil {
 		t.Error("expected error, got nil")
@@ -229,7 +268,11 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +282,8 @@ func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 	mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetUniqueNames()
+	var names []string
+	names, err = service.GetUniqueNames()
 
 	if err == nil {
 		t.Error("expected error for NULL, got nil")
@@ -253,7 +297,11 @@ func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	db, mock, err := sqlmock.New()
+	var db *sql.DB
+	var mock sqlmock.Sqlmock
+	var err error
+
+	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -265,7 +313,8 @@ func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 	mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
 	service := mydb.New(db)
-	names, err := service.GetUniqueNames()
+	var names []string
+	names, err = service.GetUniqueNames()
 
 	if err == nil {
 		t.Error("expected rows error, got nil")
@@ -279,7 +328,12 @@ func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 func TestDBService_New(t *testing.T) {
 	t.Parallel()
 
-	db, _, err := sqlmock.New()
+	var db *sql.DB
+	var mock interface{}
+	var err error
+
+	db, mock, err = sqlmock.New()
+	_ = mock // явно игнорируем
 	if err != nil {
 		t.Fatal(err)
 	}
