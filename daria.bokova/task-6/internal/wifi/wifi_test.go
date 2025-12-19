@@ -26,10 +26,10 @@ type MockWiFiHandle struct {
 func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	args := m.Called()
 
-	// Получаем интерфейсы
 	interfacesRaw := args.Get(0)
+
 	if interfacesRaw == nil {
-		// Если интерфейсов нет, возвращаем обернутую ошибку
+
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrMockReturned, err)
 		}
@@ -37,20 +37,18 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 		return nil, nil
 	}
 
-	// Приводим тип
 	interfaces, ok := interfacesRaw.([]*mdlayherwifi.Interface)
+
 	if !ok {
-		// Ошибка приведения типа
+
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("%w with error: %w", ErrTypeAssertion, err)
 		}
 
-		// Исправленная строка - используем статическую ошибку
 		return nil, fmt.Errorf("%w: expected []*wifi.Interface, got %T",
 			ErrTypeAssertion, interfacesRaw)
 	}
 
-	// Проверяем ошибку
 	if err := args.Error(1); err != nil {
 		return interfaces, fmt.Errorf("%w: %w", ErrMock, err)
 	}
@@ -76,6 +74,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -97,6 +96,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -146,6 +146,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -167,6 +168,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
