@@ -141,7 +141,6 @@ func TestWiFiService_GetNames(t *testing.T) {
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
-
 		mockHandle.AssertExpectations(t)
 	})
 }
