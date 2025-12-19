@@ -35,6 +35,7 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 	names, err := service.GetNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+		return
 	}
 
 	if len(names) != 3 {
@@ -62,6 +63,7 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	names, err := service.GetNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+		return
 	}
 
 	if len(names) != 0 {
@@ -170,6 +172,7 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 	names, err := service.GetUniqueNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+		return
 	}
 
 	if len(names) != 3 {
@@ -193,6 +196,7 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 	names, err := service.GetUniqueNames()
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
+		return
 	}
 
 	if len(names) != 1 || names[0] != "SingleUser" {
