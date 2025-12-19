@@ -1,7 +1,6 @@
 package db_test
 
 import (
-	"database/sql"
 	"errors"
 	"testing"
 
@@ -20,11 +19,8 @@ var (
 func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,6 +34,7 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -54,11 +51,8 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,6 +63,7 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -81,11 +76,8 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 func TestDBService_GetNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,11 +105,8 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,11 +130,8 @@ func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 func TestDBService_GetNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,11 +161,8 @@ func TestDBService_GetNames_RowsError(t *testing.T) {
 func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -193,6 +176,7 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetUniqueNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -205,11 +189,8 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -220,6 +201,7 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetUniqueNames()
+
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -232,11 +214,8 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,11 +239,8 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -288,11 +264,8 @@ func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, mock, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,12 +291,8 @@ func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 func TestDBService_New(t *testing.T) {
 	t.Parallel()
 
-	var db *sql.DB
-	var mock sqlmock.Sqlmock
-	var err error
+	db, _, err := sqlmock.New()
 
-	db, mock, err = sqlmock.New()
-	_ = mock
 	if err != nil {
 		t.Fatal(err)
 	}
