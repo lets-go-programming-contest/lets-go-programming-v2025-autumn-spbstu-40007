@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"errors"
@@ -6,8 +6,10 @@ import (
 	"net"
 	"testing"
 
-	"github.com/mdlayher/wifi"
+	mdlayherwifi "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
+
+	wifipkg "task-6/internal/wifi"
 )
 
 var errTest = errors.New("test error")
@@ -16,7 +18,7 @@ type MockWiFiHandle struct {
 	mock.Mock
 }
 
-func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
+func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	args := m.Called()
 
 	// Получаем интерфейсы
@@ -31,7 +33,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	}
 
 	// Приводим тип
-	interfaces, ok := interfacesRaw.([]*wifi.Interface)
+	interfaces, ok := interfacesRaw.([]*mdlayherwifi.Interface)
 	if !ok {
 		// Ошибка приведения типа
 		if err := args.Error(1); err != nil {
@@ -57,14 +59,14 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		mockHandle := new(MockWiFiHandle)
 		mac1, _ := net.ParseMAC("00:11:22:33:44:55")
 		mac2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
-		ifaces := []*wifi.Interface{
+		ifaces := []*mdlayherwifi.Interface{
 			{HardwareAddr: mac1},
 			{HardwareAddr: mac2},
 		}
 
 		mockHandle.On("Interfaces").Return(ifaces, nil)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
 
 		if err != nil {
@@ -82,11 +84,11 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
-		ifaces := []*wifi.Interface{}
+		ifaces := []*mdlayherwifi.Interface{}
 
 		mockHandle.On("Interfaces").Return(ifaces, nil)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
 
 		if err != nil {
@@ -106,7 +108,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		mockHandle := new(MockWiFiHandle)
 		mockHandle.On("Interfaces").Return(nil, errTest)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
 
 		if err == nil {
@@ -128,7 +130,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
-		ifaces := []*wifi.Interface{
+		ifaces := []*mdlayherwifi.Interface{
 			{Name: "wlan0"},
 			{Name: "eth0"},
 			{Name: "wlp2s0"},
@@ -136,7 +138,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		mockHandle.On("Interfaces").Return(ifaces, nil)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
 
 		if err != nil {
@@ -154,11 +156,11 @@ func TestWiFiService_GetNames(t *testing.T) {
 		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
-		ifaces := []*wifi.Interface{}
+		ifaces := []*mdlayherwifi.Interface{}
 
 		mockHandle.On("Interfaces").Return(ifaces, nil)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
 
 		if err != nil {
@@ -178,7 +180,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		mockHandle := new(MockWiFiHandle)
 		mockHandle.On("Interfaces").Return(nil, errTest)
 
-		service := New(mockHandle)
+		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
 
 		if err == nil {
@@ -197,7 +199,7 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	mockHandle := new(MockWiFiHandle)
-	service := New(mockHandle)
+	service := wifipkg.New(mockHandle)
 
 	if service.WiFi != mockHandle {
 		t.Errorf("expected WiFi to be %v, got %v", mockHandle, service.WiFi)

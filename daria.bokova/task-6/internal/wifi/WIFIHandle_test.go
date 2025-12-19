@@ -7,11 +7,11 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockWiFiHandle struct {
+type MockWiFiHandle2 struct {
 	mock.Mock
 }
 
-func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
+func (m *MockWiFiHandle2) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
 
 	if args.Get(0) == nil {
