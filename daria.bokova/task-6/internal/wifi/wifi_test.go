@@ -26,6 +26,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("mock returned error: %w", err)
 		}
+
 		return nil, nil
 	}
 
