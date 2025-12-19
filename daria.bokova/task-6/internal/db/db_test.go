@@ -23,7 +23,6 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -54,7 +53,6 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
@@ -78,7 +76,6 @@ func TestDBService_GetNames_QueryError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	mock.ExpectQuery("^SELECT name FROM users$").
@@ -107,7 +104,6 @@ func TestDBService_GetNames_ScanErrorOnNullValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -132,7 +128,6 @@ func TestDBService_GetNames_RowsError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -163,7 +158,6 @@ func TestDBService_GetUniqueNames_SuccessWithDuplicates(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -190,7 +184,6 @@ func TestDBService_GetUniqueNames_SuccessSingleRow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow("SingleUser")
@@ -214,7 +207,6 @@ func TestDBService_GetUniqueNames_QueryError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	mock.ExpectQuery("^SELECT DISTINCT name FROM users$").
@@ -239,7 +231,6 @@ func TestDBService_GetUniqueNames_ScanErrorOnNull(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
@@ -264,7 +255,6 @@ func TestDBService_GetUniqueNames_RowsError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -291,7 +281,6 @@ func TestDBService_New(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer db.Close()
 
 	service := mydb.New(db)
