@@ -27,6 +27,7 @@ func TestDBService_GetNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 3 {
 			t.Errorf("expected 3 names, got %d", len(names))
 		}
@@ -213,6 +214,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error for NULL, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names for NULL, got %v", names)
 		}
@@ -236,6 +238,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected rows error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}

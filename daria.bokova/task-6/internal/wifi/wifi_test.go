@@ -44,6 +44,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 		if len(addrs) != 2 {
 			t.Fatalf("expected 2 addresses, got %d", len(addrs))
 		}
+
 		mockHandle.AssertExpectations(t)
 	})
 
@@ -121,6 +122,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		if len(names) != 0 {
 			t.Fatalf("expected empty slice, got %v", names)
 		}
+
 		mockHandle.AssertExpectations(t)
 	})
 
@@ -137,6 +139,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
+
 		mockHandle.AssertExpectations(t)
 	})
 }
