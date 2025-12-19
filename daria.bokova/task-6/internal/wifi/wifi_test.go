@@ -27,7 +27,6 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	args := m.Called()
 
 	interfacesRaw := args.Get(0)
-
 	if interfacesRaw == nil {
 
 		if err := args.Error(1); err != nil {
@@ -38,7 +37,6 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	}
 
 	interfaces, ok := interfacesRaw.([]*mdlayherwifi.Interface)
-
 	if !ok {
 
 		if err := args.Error(1); err != nil {

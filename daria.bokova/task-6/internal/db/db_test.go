@@ -35,7 +35,6 @@ func TestDBService_GetNames_SuccessMultipleRows(t *testing.T) {
 
 	service := mydb.New(db)
 	names, err := service.GetNames()
-
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -53,7 +52,6 @@ func TestDBService_GetNames_SuccessEmptyResult(t *testing.T) {
 	t.Parallel()
 
 	db, mock, err := sqlmock.New()
-
 	if err != nil {
 		t.Fatal(err)
 	}
