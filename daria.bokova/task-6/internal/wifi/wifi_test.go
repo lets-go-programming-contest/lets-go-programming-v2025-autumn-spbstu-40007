@@ -12,7 +12,12 @@ import (
 	wifipkg "task-6/internal/wifi"
 )
 
-var errTest = errors.New("test error")
+var (
+	errTest          = errors.New("test error")
+	ErrTypeAssertion = errors.New("type assertion failed")
+	ErrMockReturned  = errors.New("mock returned error")
+	ErrMock          = errors.New("mock error")
+)
 
 type MockWiFiHandle struct {
 	mock.Mock
@@ -26,7 +31,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	if interfacesRaw == nil {
 		// Если интерфейсов нет, возвращаем обернутую ошибку
 		if err := args.Error(1); err != nil {
-			return nil, fmt.Errorf("mock returned error: %w", err)
+			return nil, fmt.Errorf("%w: %w", ErrMockReturned, err)
 		}
 
 		return nil, nil
@@ -37,14 +42,17 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 	if !ok {
 		// Ошибка приведения типа
 		if err := args.Error(1); err != nil {
-			return nil, fmt.Errorf("type assertion failed with error: %w", err)
+			return nil, fmt.Errorf("%w with error: %w", ErrTypeAssertion, err)
 		}
-		return nil, fmt.Errorf("type assertion failed: expected []*wifi.Interface, got %T", interfacesRaw)
+
+		// Исправленная строка - используем статическую ошибку
+		return nil, fmt.Errorf("%w: expected []*wifi.Interface, got %T",
+			ErrTypeAssertion, interfacesRaw)
 	}
 
 	// Проверяем ошибку
 	if err := args.Error(1); err != nil {
-		return interfaces, fmt.Errorf("mock error: %w", err)
+		return interfaces, fmt.Errorf("%w: %w", ErrMock, err)
 	}
 
 	return interfaces, nil
