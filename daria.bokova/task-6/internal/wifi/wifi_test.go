@@ -28,7 +28,6 @@ func (m *MockWiFiHandle) Interfaces() ([]*mdlayherwifi.Interface, error) {
 
 	interfacesRaw := args.Get(0)
 	if interfacesRaw == nil {
-
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrMockReturned, err)
 		}
@@ -71,6 +70,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -92,6 +92,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		addrs, err := service.GetAddresses()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -162,6 +163,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 
 		service := wifipkg.New(mockHandle)
 		names, err := service.GetNames()
+
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
