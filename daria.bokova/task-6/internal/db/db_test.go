@@ -1,10 +1,12 @@
-package db
+package db_test
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+
+	mydb "task-6/internal/db"
 )
 
 var (
@@ -20,11 +22,11 @@ func TestDBService_GetNames(t *testing.T) {
 	t.Run("success - multiple rows", func(t *testing.T) {
 		t.Parallel()
 
-		db, mock, err := sqlmock.New()
+		dbConn, mock, err := sqlmock.New()
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer db.Close()
+		defer dbConn.Close()
 
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alice").
@@ -32,7 +34,7 @@ func TestDBService_GetNames(t *testing.T) {
 			AddRow("Charlie")
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(dbConn)
 		names, err := service.GetNames()
 
 		if err != nil {
@@ -60,7 +62,7 @@ func TestDBService_GetNames(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"})
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetNames()
 
 		if err != nil {
@@ -84,7 +86,7 @@ func TestDBService_GetNames(t *testing.T) {
 		mock.ExpectQuery("^SELECT name FROM users$").
 			WillReturnError(errSyntax)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetNames()
 
 		if err == nil {
@@ -112,7 +114,7 @@ func TestDBService_GetNames(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetNames()
 
 		if err == nil {
@@ -138,7 +140,7 @@ func TestDBService_GetNames(t *testing.T) {
 			CloseError(errRowsIteration)
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetNames()
 
 		if err == nil {
@@ -173,7 +175,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			AddRow("Alice")
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetUniqueNames()
 
 		if err != nil {
@@ -197,7 +199,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).AddRow("SingleUser")
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetUniqueNames()
 
 		if err != nil {
@@ -221,7 +223,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").
 			WillReturnError(errConnection)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetUniqueNames()
 
 		if err == nil {
@@ -245,7 +247,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetUniqueNames()
 
 		if err == nil {
@@ -271,7 +273,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 			CloseError(errRows)
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").WillReturnRows(rows)
 
-		service := New(db)
+		service := mydb.New(db)
 		names, err := service.GetUniqueNames()
 
 		if err == nil {
@@ -293,7 +295,7 @@ func TestDBService_New(t *testing.T) {
 	}
 	defer db.Close()
 
-	service := New(db)
+	service := mydb.New(db)
 	if service.DB != db {
 		t.Errorf("expected DB to be %v, got %v", db, service.DB)
 	}
