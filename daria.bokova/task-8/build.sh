@@ -1,10 +1,18 @@
 #!/bin/bash
 
-# Создаем папку bin
-mkdir -p bin
+# Создаем папку bin на уровень выше (как ожидает CI/CD)
+mkdir -p ../../bin
 
-# Собираем с тегом dev
-go build -tags dev -o bin/service ./cmd/app
+# Определяем тег сборки
+if [[ "$1" == "dev" ]]; then
+    echo "Building dev version..."
+    go build -tags dev -o ../../bin/service ./cmd/app
+else
+    echo "Building prod version..."
+    go build -o ../../bin/service ./cmd/app
+fi
 
 # Проверяем
-./bin/service
+echo "Built executable:"
+ls -la ../../bin/service
+../../bin/service
