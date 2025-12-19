@@ -1,78 +1,112 @@
-package wifi_test
+package wifi
 
 import (
-	"errors"
 	"net"
-	"task-6/internal/wifi"
 	"testing"
 
-	mdwifi "github.com/mdlayher/wifi"
+	wifiPkg "github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-var errSystem = errors.New("system error")
+func TestAddressRetrieval(t *testing.T) {
+	t.Run("ShouldReturnMACAddresses", func(t *testing.T) {
+		mock := new(WiFiMock)
+		macAddr, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
+		expectedInterfaces := []*wifiPkg.Interface{
+			{HardwareAddr: macAddr},
+		}
 
-func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Parallel()
+		mock.On("GetInterfaces").Return(expectedInterfaces, nil)
 
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
+		serviceInstance := New(mock)
+		addresses, err := serviceInstance.GetAddresses()
 
-		mockHandle := new(MockWiFiHandle)
-		mac, _ := net.ParseMAC("00:00:5e:00:53:01")
-		mockInterfaces := []*mdwifi.Interface{{HardwareAddr: mac}}
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
 
-		mockHandle.On("Interfaces").Return(mockInterfaces, nil)
+		if len(addresses) != 1 {
+			t.Fatalf("Expected 1 address, got %d", len(addresses))
+		}
 
-		service := wifi.New(mockHandle)
-		addrs, err := service.GetAddresses()
+		if addresses[0].String() != macAddr.String() {
+			t.Errorf("Expected address %v, got %v", macAddr, addresses[0])
+		}
 
-		require.NoError(t, err)
-		assert.Len(t, addrs, 1)
-		assert.Equal(t, mac, addrs[0])
+		mock.AssertExpectations(t)
 	})
 
-	t.Run("error", func(t *testing.T) {
-		t.Parallel()
+	t.Run("ShouldHandleInterfaceErrors", func(t *testing.T) {
+		mock := new(WiFiMock)
+		mock.On("GetInterfaces").Return(nil, assert.AnError)
 
-		mockHandle := new(MockWiFiHandle)
-		mockHandle.On("Interfaces").Return(nil, errSystem)
+		serviceInstance := New(mock)
+		addresses, err := serviceInstance.GetAddresses()
 
-		service := wifi.New(mockHandle)
-		_, err := service.GetAddresses()
+		if err == nil {
+			t.Error("Expected error but got none")
+		}
 
-		require.Error(t, err)
+		if addresses != nil {
+			t.Error("Expected nil addresses on error")
+		}
+
+		mock.AssertExpectations(t)
 	})
 }
 
-func TestWiFiService_GetNames(t *testing.T) {
-	t.Parallel()
+func TestNameRetrieval(t *testing.T) {
+	t.Run("ShouldReturnInterfaceNames", func(t *testing.T) {
+		mock := new(WiFiMock)
+		expectedNames := []*wifiPkg.Interface{
+			{Name: "eth0"},
+			{Name: "wlan0"},
+		}
 
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
+		mock.On("GetInterfaces").Return(expectedNames, nil)
 
-		mockHandle := new(MockWiFiHandle)
-		mockInterfaces := []*mdwifi.Interface{{Name: "wlan0"}}
+		serviceInstance := New(mock)
+		names, err := serviceInstance.GetNames()
 
-		mockHandle.On("Interfaces").Return(mockInterfaces, nil)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
 
-		service := wifi.New(mockHandle)
-		names, err := service.GetNames()
+		if len(names) != 2 {
+			t.Fatalf("Expected 2 names, got %d", len(names))
+		}
 
-		require.NoError(t, err)
-		assert.Equal(t, []string{"wlan0"}, names)
+		if names[0] != "eth0" || names[1] != "wlan0" {
+			t.Errorf("Expected names [eth0, wlan0], got %v", names)
+		}
+
+		mock.AssertExpectations(t)
 	})
 
-	t.Run("error", func(t *testing.T) {
-		t.Parallel()
+	t.Run("ShouldHandleNameRetrievalErrors", func(t *testing.T) {
+		mock := new(WiFiMock)
+		mock.On("GetInterfaces").Return(nil, assert.AnError)
 
-		mockHandle := new(MockWiFiHandle)
-		mockHandle.On("Interfaces").Return(nil, errSystem)
+		serviceInstance := New(mock)
+		names, err := serviceInstance.GetNames()
 
-		service := wifi.New(mockHandle)
-		_, err := service.GetNames()
+		if err == nil {
+			t.Error("Expected error but got none")
+		}
 
-		require.Error(t, err)
+		if names != nil {
+			t.Error("Expected nil names on error")
+		}
+
+		mock.AssertExpectations(t)
 	})
+}
+
+func TestServiceCreation(t *testing.T) {
+	mock := new(WiFiMock)
+	service := New(mock)
+
+	if service.WiFi != mock {
+		t.Errorf("Service should contain provided WiFi handle")
+	}
 }
