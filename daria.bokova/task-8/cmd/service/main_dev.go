@@ -33,5 +33,5 @@ func main() {
 		}
 	}
 
-	fmt.Printf("%s %s\n", env, level)
+	fmt.Printf("%s %s", env, level)
 }

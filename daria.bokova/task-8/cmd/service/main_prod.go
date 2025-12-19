@@ -20,5 +20,5 @@ type Config struct {
 func main() {
 	var cfg Config
 	yaml.Unmarshal(configData, &cfg)
-	fmt.Printf("%s %s\n", cfg.Environment, cfg.LogLevel)
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
