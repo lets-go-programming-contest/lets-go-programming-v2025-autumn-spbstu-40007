@@ -19,6 +19,11 @@ type Config struct {
 
 func main() {
 	var cfg Config
-	yaml.Unmarshal(configData, &cfg)
+	err := yaml.Unmarshal(configData, &cfg)
+	if err != nil {
+		// Обработка ошибки - просто выходим
+		return
+	}
+
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
