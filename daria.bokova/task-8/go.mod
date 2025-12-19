@@ -1,3 +1,3 @@
-module task-8
+module app
 
-go 1.25.1
+go 1.21
