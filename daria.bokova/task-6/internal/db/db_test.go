@@ -27,9 +27,11 @@ func TestDBService_GetNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 3 {
 			t.Errorf("expected 3 names, got %d", len(names))
 		}
+
 		if names[0] != "Alice" || names[2] != "Charlie" {
 			t.Errorf("names mismatch: %v", names)
 		}
@@ -51,6 +53,7 @@ func TestDBService_GetNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 0 {
 			t.Errorf("expected empty slice, got %v", names)
 		}
@@ -72,9 +75,11 @@ func TestDBService_GetNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
+
 		if err.Error() != "db query: syntax error" {
 			t.Errorf("error message mismatch: %v", err)
 		}
@@ -87,17 +92,16 @@ func TestDBService_GetNames(t *testing.T) {
 		}
 		defer db.Close()
 
-		// NULL значение вызовет ошибку при сканировании в string
 		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("^SELECT name FROM users$").WillReturnRows(rows)
 
 		service := New(db)
 		names, err := service.GetNames()
 
-		// NULL в string должно вызвать ошибку
 		if err == nil {
 			t.Error("expected error for NULL value, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names for NULL value, got %v", names)
 		}
@@ -121,9 +125,11 @@ func TestDBService_GetNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected rows error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
+
 		if err.Error() != "rows error: rows iteration failed" {
 			t.Errorf("error message mismatch: %v", err)
 		}
@@ -150,6 +156,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 3 {
 			t.Errorf("expected 3 names, got %d", len(names))
 		}
@@ -171,6 +178,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
+
 		if len(names) != 1 || names[0] != "SingleUser" {
 			t.Errorf("expected [SingleUser], got %v", names)
 		}
@@ -192,6 +200,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
@@ -213,6 +222,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected error for NULL, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names for NULL, got %v", names)
 		}
@@ -236,6 +246,7 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 		if err == nil {
 			t.Error("expected rows error, got nil")
 		}
+
 		if names != nil {
 			t.Errorf("expected nil names, got %v", names)
 		}
