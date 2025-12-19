@@ -1,3 +1,5 @@
+//nolint:wsl
+
 package db_test
 
 import (
