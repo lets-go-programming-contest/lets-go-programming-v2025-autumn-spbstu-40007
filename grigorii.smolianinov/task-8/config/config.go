@@ -10,5 +10,5 @@ type Config struct {
 var Current Config
 
 func PrintInfo() {
-	fmt.Printf("%s %s\n", Current.Environment, Current.LogLevel)
+	fmt.Printf("%s %s", Current.Environment, Current.LogLevel)
 }
