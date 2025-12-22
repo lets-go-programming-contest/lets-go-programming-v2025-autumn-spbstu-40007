@@ -6,45 +6,42 @@ import (
 	"testing"
 
 	"github.com/mdlayher/wifi"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	localWifi "grigorii.smolianinov/task-6/internal/wifi"
 )
 
-func TestWiFiService(t *testing.T) {
+func TestWiFiService_Coverage(t *testing.T) {
 	mock := &WiFiMock{}
-	service := wifi.New(mock)
+	service := localWifi.New(mock)
 
-	t.Run("GetAddresses Success", func(t *testing.T) {
+	t.Run("GetAddresses", func(t *testing.T) {
 		hw, _ := net.ParseMAC("00:11:22:33:44:55")
 		mock.InterfacesFunc = func() ([]*wifi.Interface, error) {
 			return []*wifi.Interface{{HardwareAddr: hw}}, nil
 		}
 		res, err := service.GetAddresses()
-		assert.NoError(t, err)
-		assert.Equal(t, hw, res[0])
-	})
+		require.NoError(t, err)
+		require.Len(t, res, 1)
 
-	t.Run("GetAddresses Error", func(t *testing.T) {
 		mock.InterfacesFunc = func() ([]*wifi.Interface, error) {
-			return nil, errors.New("wifi error")
+			return nil, errors.New("wifi fail")
 		}
-		_, err := service.GetAddresses()
-		assert.Error(t, err)
+		_, err = service.GetAddresses()
+		require.Error(t, err)
 	})
 
-	t.Run("GetNames Success", func(t *testing.T) {
+	t.Run("GetNames", func(t *testing.T) {
 		mock.InterfacesFunc = func() ([]*wifi.Interface, error) {
 			return []*wifi.Interface{{Name: "wlan0"}}, nil
 		}
 		res, err := service.GetNames()
-		assert.NoError(t, err)
-		assert.Contains(t, res, "wlan0")
-	})
+		require.NoError(t, err)
+		require.Equal(t, "wlan0", res[0])
 
-	t.Run("GetNames Error", func(t *testing.T) {
 		mock.InterfacesFunc = func() ([]*wifi.Interface, error) {
-			return nil, errors.New("wifi error")
+			return nil, errors.New("wifi fail")
 		}
-		_, err := service.GetNames()
-		assert.Error(t, err)
+		_, err = service.GetNames()
+		require.Error(t, err)
 	})
 }
