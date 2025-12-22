@@ -80,6 +80,7 @@ func TestGetNames_ScanError(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+
 // Test GetNames - ошибка в результатах
 func TestGetNames_RowsError(t *testing.T) {
 	db, mock, err := sqlmock.New()

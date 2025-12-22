@@ -4,7 +4,7 @@ go 1.22.7
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/mdlayher/wifi v0.7.1
+	github.com/mdlayher/wifi v0.3.0
 	github.com/stretchr/testify v1.8.4
 )
 
