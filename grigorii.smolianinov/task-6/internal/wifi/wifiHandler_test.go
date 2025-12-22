@@ -1,8 +1,6 @@
 package wifi_test
 
-import (
-	"github.com/mdlayher/wifi"
-)
+import "github.com/mdlayher/wifi"
 
 type WiFiMock struct {
 	InterfacesFunc func() ([]*wifi.Interface, error)
