@@ -11,6 +11,8 @@ import (
 //go:embed prod.yaml
 var rawConfig []byte
 
-func init() {
-	_ = yaml.Unmarshal(rawConfig, &Current)
+func Load() Config {
+	var cfg Config
+	_ = yaml.Unmarshal(rawConfig, &cfg)
+	return cfg
 }

@@ -7,8 +7,6 @@ type Config struct {
 	LogLevel    string `yaml:"log_level"`
 }
 
-var Current Config
-
-func PrintInfo() {
-	fmt.Printf("%s %s", Current.Environment, Current.LogLevel)
+func PrintInfo(cfg Config) {
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
