@@ -4,7 +4,6 @@ import (
 	"github.com/mdlayher/wifi"
 )
 
-// WiFiMock имитирует WiFiHandle для тестов
 type WiFiMock struct {
 	InterfacesFunc func() ([]*wifi.Interface, error)
 }

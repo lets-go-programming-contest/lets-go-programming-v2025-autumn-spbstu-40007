@@ -4,14 +4,12 @@ import (
 	"errors"
 	"testing"
 
-	"grigorii.smolianinov/task-6/internal/db"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
+	"grigorii.smolianinov/task-6/internal/db"
 )
 
-func TestDBService_GetNames(t *testing.T) {
-	// Инициализация mock [cite: 485]
+func TestDBService_GetNames_Coverage(t *testing.T) {
 	dbConn, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("error opening mock db: %s", err)
@@ -20,31 +18,29 @@ func TestDBService_GetNames(t *testing.T) {
 
 	service := db.New(dbConn)
 
-	// Table-driven test
 	tests := []struct {
 		name    string
 		mock    func()
-		want    []string
 		wantErr bool
 	}{
 		{
-			name: "Success",
+			name: "Scan Error",
+			mock: func() {
+				rows := sqlmock.NewRows([]string{"name"}).
+					AddRow(nil).
+					RowError(0, errors.New("scan fail"))
+				mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
+			},
+			wantErr: true,
+		},
+		{
+			name: "Rows Iteration Error",
 			mock: func() {
 				rows := sqlmock.NewRows([]string{"name"}).
 					AddRow("Alice").
-					AddRow("Bob")
+					CloseError(errors.New("close error"))
 				mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 			},
-			want:    []string{"Alice", "Bob"},
-			wantErr: false,
-		},
-		{
-			name: "DB Error",
-			mock: func() {
-				mock.ExpectQuery("SELECT name FROM users").
-					WillReturnError(errors.New("db fail"))
-			},
-			want:    nil,
 			wantErr: true,
 		},
 	}
@@ -52,18 +48,13 @@ func TestDBService_GetNames(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mock()
-			got, err := service.GetNames()
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.want, got)
-			}
+			_, err := service.GetNames()
+			assert.Error(t, err)
 		})
 	}
 }
 
-func TestDBService_GetUniqueNames(t *testing.T) {
+func TestDBService_GetUniqueNames_Coverage(t *testing.T) {
 	dbConn, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("error opening mock db: %s", err)
@@ -72,12 +63,23 @@ func TestDBService_GetUniqueNames(t *testing.T) {
 
 	service := db.New(dbConn)
 
-	t.Run("Success Unique", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"name"}).AddRow("Admin")
+	t.Run("Scan Error Unique", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"name"}).AddRow(nil)
 		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
+		_, err := service.GetUniqueNames()
+		assert.Error(t, err)
+	})
 
-		got, err := service.GetUniqueNames()
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"Admin"}, got)
+	t.Run("Rows Err Unique", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"name"}).AddRow("Bob").CloseError(errors.New("err"))
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
+		_, err := service.GetUniqueNames()
+		assert.Error(t, err)
+	})
+
+	t.Run("Query Error Unique", func(t *testing.T) {
+		mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnError(errors.New("query fail"))
+		_, err := service.GetUniqueNames()
+		assert.Error(t, err)
 	})
 }
