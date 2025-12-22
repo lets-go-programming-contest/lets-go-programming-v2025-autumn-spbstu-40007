@@ -48,7 +48,7 @@ func TestGetNames_Success(t *testing.T) {
 // Test GetNames - ошибка при выполнении запроса
 func TestGetNames_QueryError(t *testing.T) {
 	mockDB := new(MockDatabase)
-	mockDB.On("Query", "SELECT name FROM users").Return(nil, errors.New("database error"))
+	mockDB.On("Query", "SELECT name FROM users", mock.Anything).Return(nil, errors.New("database error"))
 
 	service := DBService{DB: mockDB}
 	names, err := service.GetNames()
@@ -76,7 +76,7 @@ func TestGetNames_ScanError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, names)
-	assert.Contains(t, err.Error(), "rows scanning")
+	assert.Contains(t, err.Error(), "scan error")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
@@ -142,7 +142,7 @@ func TestGetUniqueNames_Success(t *testing.T) {
 // Test GetUniqueNames - ошибка при выполнении запроса
 func TestGetUniqueNames_QueryError(t *testing.T) {
 	mockDB := new(MockDatabase)
-	mockDB.On("Query", "SELECT DISTINCT name FROM users").Return(nil, errors.New("db error"))
+	mockDB.On("Query", "SELECT DISTINCT name FROM users", mock.Anything).Return(nil, errors.New("db error"))
 
 	service := DBService{DB: mockDB}
 	names, err := service.GetUniqueNames()
