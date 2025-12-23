@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	DevConfig  = []byte(`environment: dev\nlog_level: debug`)
-	ProdConfig = []byte(`environment: prod\nlog_level: error`)
+	DevConfig  = []byte("environment: dev\nlog_level: debug")
+	ProdConfig = []byte("environment: prod\nlog_level: error")
 )
 
 type Config struct {
@@ -18,9 +18,8 @@ type Config struct {
 
 func loadConfig(data []byte) (*Config, error) {
 	cfg := &Config{}
-	err := yaml.Unmarshal(data, cfg)
-	if err != nil {
-		
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+
 		return nil, err
 	}
 
