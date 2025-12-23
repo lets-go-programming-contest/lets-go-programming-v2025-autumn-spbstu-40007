@@ -1,6 +1,5 @@
 package wifi_test
 
-//nolint:gofumpt
 import (
 	"errors"
 	"net"
