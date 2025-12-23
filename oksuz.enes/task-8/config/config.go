@@ -1,8 +1,4 @@
 package config
 
-type Config struct {
-	Environment string `yaml:"environment"`
-	LogLevel    string `yaml:"log_level"`
-}
-
-var Cfg Config
+var Environment string
+var LogLevel string

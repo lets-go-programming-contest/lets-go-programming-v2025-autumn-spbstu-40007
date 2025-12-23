@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Println(config.Cfg.Environment, config.Cfg.LogLevel)
+	fmt.Printf("%s %s", config.Environment, config.LogLevel)
 }
