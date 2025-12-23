@@ -17,11 +17,13 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
 		svc := service.New(mockHandle)
 
 		hw, _ := net.ParseMAC("00:11:22:33:44:55")
+
 		mockHandle.On("Interfaces").Return([]*wifi.Interface{
 			{HardwareAddr: hw},
 		}, nil).Once()
@@ -34,6 +36,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
+		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
 		svc := service.New(mockHandle)
@@ -54,6 +57,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
 		svc := service.New(mockHandle)
@@ -70,6 +74,7 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("error", func(t *testing.T) {
+		t.Parallel()
 
 		mockHandle := new(MockWiFiHandle)
 		svc := service.New(mockHandle)
