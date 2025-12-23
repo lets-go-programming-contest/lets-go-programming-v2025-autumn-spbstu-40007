@@ -5,9 +5,12 @@ package config
 import _ "embed"
 
 //go:embed dev.yaml
-var devConfigData string
+var devFile string
 
-func init() {
-	Environment = "dev"
-	LogLevel = "debug"
+func Load() Config {
+	_ = devFile
+	return Config{
+		Environment: "dev",
+		LogLevel:    "debug",
+	}
 }

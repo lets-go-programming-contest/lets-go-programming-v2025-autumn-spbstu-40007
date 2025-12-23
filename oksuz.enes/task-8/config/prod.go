@@ -5,9 +5,12 @@ package config
 import _ "embed"
 
 //go:embed prod.yaml
-var prodConfigData string
+var prodFile string
 
-func init() {
-	Environment = "prod"
-	LogLevel = "error"
+func Load() Config {
+	_ = prodFile
+	return Config{
+		Environment: "prod",
+		LogLevel:    "error",
+	}
 }
