@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/DichSwitch/task-8/config"
 )
@@ -16,3 +15,4 @@ func main() {
 
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
+
