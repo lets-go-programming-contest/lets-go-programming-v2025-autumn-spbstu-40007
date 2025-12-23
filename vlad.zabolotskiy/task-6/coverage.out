@@ -7,10 +7,10 @@ github.com/se1lzor/task-6/internal/db/db.go:30.16,32.3 1 1
 github.com/se1lzor/task-6/internal/db/db.go:33.2,37.18 3 1
 github.com/se1lzor/task-6/internal/db/db.go:37.18,39.39 2 1
 github.com/se1lzor/task-6/internal/db/db.go:39.39,41.4 1 1
-github.com/se1lzor/task-6/internal/db/db.go:42.3,42.23 1 1
-github.com/se1lzor/task-6/internal/db/db.go:45.2,45.35 1 1
-github.com/se1lzor/task-6/internal/db/db.go:45.35,47.3 1 1
-github.com/se1lzor/task-6/internal/db/db.go:49.2,49.17 1 1
+github.com/se1lzor/task-6/internal/db/db.go:43.3,43.23 1 1
+github.com/se1lzor/task-6/internal/db/db.go:46.2,46.35 1 1
+github.com/se1lzor/task-6/internal/db/db.go:46.35,48.3 1 1
+github.com/se1lzor/task-6/internal/db/db.go:50.2,50.17 1 1
 github.com/se1lzor/task-6/internal/wifi/wifi.go:18.39,20.2 1 1
 github.com/se1lzor/task-6/internal/wifi/wifi.go:22.71,24.16 2 1
 github.com/se1lzor/task-6/internal/wifi/wifi.go:24.16,26.3 1 1

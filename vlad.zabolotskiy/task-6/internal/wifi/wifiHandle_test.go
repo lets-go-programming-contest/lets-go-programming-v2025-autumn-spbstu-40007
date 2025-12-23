@@ -1,6 +1,8 @@
 package wifi_test
 
 import (
+	"errors"
+
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,8 +16,13 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	var ifaces []*wifi.Interface
 	if v := args.Get(0); v != nil {
-		ifaces = v.([]*wifi.Interface)
+		var ok bool
+		ifaces, ok = v.([]*wifi.Interface)
+		if !ok {
+			return nil, errors.New("mock: unexpected type for Interfaces() return[0]")
+		}
 	}
 
+	//nolint:wrapcheck
 	return ifaces, args.Error(1)
 }

@@ -39,6 +39,7 @@ func (s Service) fetchNames(query string) ([]string, error) {
 		if err := rows.Scan(&v); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		out = append(out, v)
 	}
 

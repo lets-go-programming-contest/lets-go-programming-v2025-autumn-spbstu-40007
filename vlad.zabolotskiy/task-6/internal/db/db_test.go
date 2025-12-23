@@ -7,7 +7,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/se1lzor/task-6/internal/db" // <-- замени на свой module path
+	"github.com/se1lzor/task-6/internal/db"
 )
 
 var (
@@ -65,7 +65,6 @@ func TestService_GetNames_Table(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -74,15 +73,18 @@ func TestService_GetNames_Table(t *testing.T) {
 			t.Cleanup(func() { _ = conn.Close() })
 
 			svc := db.New(conn)
+
 			tc.setupMock(mock)
 
 			got, err := svc.GetNames()
 			if tc.wantErr {
 				require.Error(t, err)
 				require.Nil(t, got)
+
 				if tc.errIs != nil {
 					require.ErrorIs(t, err, tc.errIs)
 				}
+
 				if tc.errContains != "" {
 					require.Contains(t, err.Error(), tc.errContains)
 				}
@@ -139,7 +141,6 @@ func TestService_GetUniqueNames_Table(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -148,6 +149,7 @@ func TestService_GetUniqueNames_Table(t *testing.T) {
 			t.Cleanup(func() { _ = conn.Close() })
 
 			svc := db.New(conn)
+
 			tc.setupMock(mock)
 
 			got, err := svc.GetUniqueNames()
