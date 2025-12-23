@@ -1,0 +1,13 @@
+run:
+  tests: true
+  timeout: 2m
+
+linters:
+  disable:
+    - gofumpt   
+    - execinquery
+    - exportloopref
+    - gomnd
+    - depguard
+    - forbidigo
+    - tagliatelle
