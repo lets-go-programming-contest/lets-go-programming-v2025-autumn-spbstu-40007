@@ -1,3 +1,3 @@
 module oksuz.enes/task-8
 
-go 1.21
+go 1.22
