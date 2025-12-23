@@ -1,10 +1,11 @@
-package wifi
+package wifi_test
 
 import (
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
 
+// MockWiFiHandle is a mock implementation of WiFiHandle.
 type MockWiFiHandle struct {
 	mock.Mock
 }
@@ -12,21 +13,19 @@ type MockWiFiHandle struct {
 func (_m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	ret := _m.Called()
 
-	var r0 []*wifi.Interface
+	var ifaces []*wifi.Interface
 	if rf, ok := ret.Get(0).(func() []*wifi.Interface); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*wifi.Interface)
-		}
+		ifaces = rf()
+	} else if v, ok := ret.Get(0).([]*wifi.Interface); ok {
+		ifaces = v
 	}
 
-	var r1 error
+	var err error
 	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+		err = rf()
 	} else {
-		r1 = ret.Error(1)
+		err = ret.Error(1)
 	}
 
-	return r0, r1
+	return ifaces, err
 }
