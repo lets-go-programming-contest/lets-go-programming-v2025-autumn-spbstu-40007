@@ -29,7 +29,6 @@ func TestGetNames(t *testing.T) {
 		defer database.Close()
 		mock.
 			ExpectQuery("SELECT name FROM users").
-			WithoutArgs().
 			WillReturnError(sql.ErrNoRows)
 
 		databaseService := db.New(database)
@@ -49,7 +48,6 @@ func TestGetNames(t *testing.T) {
 			AddRow(nil)
 		mock.
 			ExpectQuery("SELECT name FROM users").
-			WithoutArgs().
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
@@ -73,7 +71,6 @@ func TestGetNames(t *testing.T) {
 		rows.RowError(0, fmt.Errorf("some erreur"))
 		mock.
 			ExpectQuery("SELECT name FROM users").
-			WithoutArgs().
 			WillReturnRows(rows)
 
 		databaseService := db.New(database)
@@ -96,7 +93,6 @@ func TestGetNames(t *testing.T) {
 
 		mock.
 			ExpectQuery("SELECT name FROM users").
-			WithoutArgs().
 			WillReturnRows(rows)
 
 		databaseService := db.New(database)
@@ -115,7 +111,6 @@ func TestUniqueNames(t *testing.T) {
 		defer database.Close()
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
-			WithoutArgs().
 			WillReturnError(sql.ErrNoRows)
 
 		databaseService := db.New(database)
@@ -135,7 +130,6 @@ func TestUniqueNames(t *testing.T) {
 			AddRow(nil)
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
-			WithoutArgs().
 			WillReturnRows(rows).
 			WillReturnError(nil)
 
@@ -159,7 +153,6 @@ func TestUniqueNames(t *testing.T) {
 		rows.RowError(0, fmt.Errorf("some erreur"))
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
-			WithoutArgs().
 			WillReturnRows(rows)
 
 		databaseService := db.New(database)
@@ -186,7 +179,6 @@ func TestUniqueNames(t *testing.T) {
 
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
-			WithoutArgs().
 			WillReturnRows(expectedRows)
 
 		databaseService := db.New(database)
