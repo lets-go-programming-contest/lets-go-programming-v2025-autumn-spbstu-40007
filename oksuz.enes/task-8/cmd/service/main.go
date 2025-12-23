@@ -7,5 +7,6 @@ import (
 )
 
 func main() {
-	fmt.Printf("%s %s", config.Environment, config.LogLevel)
+	cfg := config.NewConfig()
+	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
