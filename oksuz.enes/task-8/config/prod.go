@@ -9,6 +9,7 @@ var prodFile string
 
 func Load() Config {
 	_ = prodFile
+
 	return Config{
 		Environment: "prod",
 		LogLevel:    "error",
