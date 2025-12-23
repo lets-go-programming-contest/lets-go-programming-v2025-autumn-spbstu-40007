@@ -1,6 +1,8 @@
-package wifi
+package wifi_test
 
 import (
+	"fmt"
+
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
@@ -11,8 +13,16 @@ type MockWiFiHandle struct {
 
 func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
+
+	val := args.Get(0)
+	if val == nil {
+		return nil, fmt.Errorf("mock error: %w", args.Error(1))
 	}
-	return args.Get(0).([]*wifi.Interface), args.Error(1)
+
+	ifaces, ok := val.([]*wifi.Interface)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type: %T", val)
+	}
+
+	return ifaces, nil
 }
