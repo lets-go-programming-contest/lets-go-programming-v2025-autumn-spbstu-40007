@@ -7,8 +7,15 @@ import (
 )
 
 var (
-	DevConfig  = []byte("environment: dev\nlog_level: debug")
-	ProdConfig = []byte("environment: prod\nlog_level: error")
+	DevConfig = []byte(`
+environment: dev
+log_level: debug
+`)
+
+	ProdConfig = []byte(`
+environment: prod
+log_level: error
+`)
 )
 
 type Config struct {
