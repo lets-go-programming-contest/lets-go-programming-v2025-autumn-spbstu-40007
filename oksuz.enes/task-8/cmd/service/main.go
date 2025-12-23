@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"task-8/config"
+
+	"oksuz.enes/task-8/config"
 )
 
 func main() {
-	fmt.Printf("%s %s\n", config.Environment, config.LogLevel)
+	fmt.Printf("%s %s", config.Environment, config.LogLevel)
 }
