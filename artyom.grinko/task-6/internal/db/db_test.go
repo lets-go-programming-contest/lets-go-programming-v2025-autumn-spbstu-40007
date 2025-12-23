@@ -1,5 +1,6 @@
 package db_test
 
+//nolint:gofumpt
 import (
 	"database/sql"
 	"fmt"
@@ -12,7 +13,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var singersNames = []string{
+var errSomeError = fmt.Errorf("some erreur")
+
+var singersNames = []string{ //nolint:gochecknoglobals
 	"Édith Piaf",
 	"Françoise Hardy",
 	"Mylène Farmer",
@@ -21,11 +24,13 @@ var singersNames = []string{
 }
 
 func TestGetNames(t *testing.T) {
+	t.Parallel()
+
 	t.Run("queryFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		mock.
 			ExpectQuery("SELECT name FROM users").
@@ -34,14 +39,14 @@ func TestGetNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("scanFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"}).
@@ -54,21 +59,21 @@ func TestGetNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("rowsFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
-		rows.RowError(0, fmt.Errorf("some erreur"))
+		rows.RowError(0, errSomeError)
 		mock.
 			ExpectQuery("SELECT name FROM users").
 			WillReturnRows(rows)
@@ -76,14 +81,14 @@ func TestGetNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("querySuccess", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -98,17 +103,20 @@ func TestGetNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetNames()
 		require.Equal(t, names, singersNames)
-		require.Nil(t, err)
+		require.Error(t, err)
 	})
 }
 
 func TestUniqueNames(t *testing.T) {
+	t.Parallel()
+
 	t.Run("queryFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
+
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
 			WillReturnError(sql.ErrNoRows)
@@ -116,14 +124,14 @@ func TestUniqueNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetUniqueNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("scanFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"}).
@@ -136,21 +144,21 @@ func TestUniqueNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetUniqueNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("rowsFailure", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
-		rows.RowError(0, fmt.Errorf("some erreur"))
+		rows.RowError(0, errSomeError)
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
 			WillReturnRows(rows)
@@ -158,14 +166,14 @@ func TestUniqueNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetUniqueNames()
 		require.Empty(t, names)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("querySuccess", func(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Nil(t, err)
+		require.Error(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -184,6 +192,6 @@ func TestUniqueNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetUniqueNames()
 		require.Equal(t, names, functionals.Unique(singersNames))
-		require.Nil(t, err)
+		require.Error(t, err)
 	})
 }
