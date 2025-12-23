@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"testing"
 
-	Mdb "github.com/ami0-0/task-6/internal/db"
 	"github.com/DATA-DOG/go-sqlmock"
+	Mdb "github.com/ami0-0/task-6/internal/db"
 	"github.com/stretchr/testify/require"
 )
 
