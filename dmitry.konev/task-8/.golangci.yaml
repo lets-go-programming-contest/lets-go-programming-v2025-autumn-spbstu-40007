@@ -4,10 +4,8 @@ run:
 
 linters:
   disable:
-    - gofumpt        
-    - execinquery
+    - gofumpt
     - exportloopref
-    - gomnd
     - depguard
     - forbidigo
     - tagliatelle
