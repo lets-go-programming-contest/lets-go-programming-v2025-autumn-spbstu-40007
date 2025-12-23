@@ -9,65 +9,77 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		mockHandle := new(MockWiFiHandle)
-		service := New(mockHandle)
+func TestGetAddresses_SingleInterface(t *testing.T) {
+	mockHandle := new(MockWiFiHandle)
 
-		addr1, _ := net.ParseMAC("00:00:5e:00:53:01")
-		ifaces := []*wifi.Interface{
-			{HardwareAddr: addr1},
-		}
+	mac, _ := net.ParseMAC("11:22:33:44:55:66")
+	interfaces := []*wifi.Interface{
+		{HardwareAddr: mac, Name: "wlan0"},
+	}
 
-		mockHandle.On("Interfaces").Return(ifaces, nil)
+	mockHandle.On("Interfaces").Return(interfaces, nil)
 
-		addrs, err := service.GetAddresses()
-		assert.NoError(t, err)
-		assert.Len(t, addrs, 1)
-		assert.Equal(t, addr1, addrs[0])
-		mockHandle.AssertExpectations(t)
-	})
+	service := New(mockHandle)
+	addrs, err := service.GetAddresses()
 
-	t.Run("error", func(t *testing.T) {
-		mockHandle := new(MockWiFiHandle)
-		service := New(mockHandle)
-
-		mockHandle.On("Interfaces").Return(nil, errors.New("wifi error"))
-
-		addrs, err := service.GetAddresses()
-		assert.Error(t, err)
-		assert.Nil(t, addrs)
-		mockHandle.AssertExpectations(t)
-	})
+	assert.NoError(t, err)
+	assert.Len(t, addrs, 1)
+	assert.Equal(t, mac, addrs[0])
+	mockHandle.AssertExpectations(t)
 }
 
-func TestWiFiService_GetNames(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		mockHandle := new(MockWiFiHandle)
-		service := New(mockHandle)
+func TestGetAddresses_Error(t *testing.T) {
+	mockHandle := new(MockWiFiHandle)
+	mockHandle.On("Interfaces").Return(nil, errors.New("wifi error"))
 
-		ifaces := []*wifi.Interface{
-			{Name: "wlan0"},
-			{Name: "wlan1"},
-		}
+	service := New(mockHandle)
+	addrs, err := service.GetAddresses()
 
-		mockHandle.On("Interfaces").Return(ifaces, nil)
+	assert.Error(t, err)
+	assert.Nil(t, addrs)
+	assert.Contains(t, err.Error(), "getting interfaces")
+	mockHandle.AssertExpectations(t)
+}
 
-		names, err := service.GetNames()
-		assert.NoError(t, err)
-		assert.Equal(t, []string{"wlan0", "wlan1"}, names)
-		mockHandle.AssertExpectations(t)
-	})
+func TestGetNames_SingleInterface(t *testing.T) {
+	mockHandle := new(MockWiFiHandle)
 
-	t.Run("error", func(t *testing.T) {
-		mockHandle := new(MockWiFiHandle)
-		service := New(mockHandle)
+	interfaces := []*wifi.Interface{
+		{Name: "eth0"},
+	}
 
-		mockHandle.On("Interfaces").Return(nil, errors.New("wifi error"))
+	mockHandle.On("Interfaces").Return(interfaces, nil)
 
-		names, err := service.GetNames()
-		assert.Error(t, err)
-		assert.Nil(t, names)
-		mockHandle.AssertExpectations(t)
-	})
+	service := New(mockHandle)
+	names, err := service.GetNames()
+
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"eth0"}, names)
+	mockHandle.AssertExpectations(t)
+}
+
+func TestGetNames_Error(t *testing.T) {
+	mockHandle := new(MockWiFiHandle)
+	mockHandle.On("Interfaces").Return(nil, errors.New("wifi error"))
+
+	service := New(mockHandle)
+	names, err := service.GetNames()
+
+	assert.Error(t, err)
+	assert.Nil(t, names)
+	assert.Contains(t, err.Error(), "getting interfaces")
+	mockHandle.AssertExpectations(t)
+}
+
+func TestWiFiHandleInterface(t *testing.T) {
+	var handle WiFiHandle = new(MockWiFiHandle)
+	assert.NotNil(t, handle)
+}
+
+func TestWiFiServiceStruct(t *testing.T) {
+	mockHandle := new(MockWiFiHandle)
+	service := WiFiService{WiFi: mockHandle}
+
+	assert.NotNil(t, service.WiFi)
+	assert.Equal(t, mockHandle, service.WiFi)
 }
