@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -13,13 +12,14 @@ type Config struct {
 }
 
 func loadConfig(data []byte) (*Config, error) {
-	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	cfg := &Config{}
+	err := yaml.Unmarshal(data, cfg)
+	if err != nil {
 
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+		return nil, err
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 func Load() (*Config, error) {
@@ -27,6 +27,6 @@ func Load() (*Config, error) {
 	if os.Getenv("GO_ENV") == "dev" {
 		cfgData = DevConfig
 	}
-	
+
 	return loadConfig(cfgData)
 }
