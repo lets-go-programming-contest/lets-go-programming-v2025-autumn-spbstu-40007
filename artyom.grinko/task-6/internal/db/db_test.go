@@ -32,6 +32,7 @@ func TestGetNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		mock.
@@ -50,11 +51,13 @@ func TestGetNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"}).
 			AddRow(nil)
+
 		mock.
 			ExpectQuery("SELECT name FROM users").
 			WillReturnRows(rows).
@@ -72,15 +75,18 @@ func TestGetNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"})
+
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
 
 		rows.RowError(0, errSomeError)
+
 		mock.
 			ExpectQuery("SELECT name FROM users").
 			WillReturnRows(rows)
@@ -97,10 +103,12 @@ func TestGetNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"})
+
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
@@ -125,6 +133,7 @@ func TestUniqueNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		mock.
@@ -143,11 +152,13 @@ func TestUniqueNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"}).
 			AddRow(nil)
+
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
 			WillReturnRows(rows).
@@ -165,15 +176,18 @@ func TestUniqueNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"})
+
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
 
 		rows.RowError(0, errSomeError)
+
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
 			WillReturnRows(rows)
@@ -190,15 +204,18 @@ func TestUniqueNames(t *testing.T) {
 		database, mock, err := sqlmock.New()
 
 		require.NoError(t, err)
+
 		defer database.Close()
 
 		rows := mock.
 			NewRows([]string{"name"})
+
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
 
 		expectedRows := sqlmock.NewRows([]string{"name"})
+
 		functionals.Iter(func(name string) {
 			expectedRows.AddRow(name)
 		}, functionals.Unique(singersNames))

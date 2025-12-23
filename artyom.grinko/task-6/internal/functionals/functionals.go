@@ -13,6 +13,7 @@ func Unique[X comparable](xs []X) []X {
 	for _, x := range xs {
 		if !set[x] {
 			set[x] = true
+
 			uniqueXs = append(uniqueXs, x)
 		}
 	}

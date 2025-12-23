@@ -39,6 +39,7 @@ func TestGetAddresses(t *testing.T) {
 
 		wifi := wifiStub{}
 		wifi.On("Interfaces").Return([]*WiFi.Interface{}, errSomeError)
+
 		wifiService := LeWiFi.New(wifi) //nolint:govet
 		addresses, err := wifiService.GetAddresses()
 		require.Empty(t, addresses)
@@ -52,6 +53,7 @@ func TestGetAddresses(t *testing.T) {
 		wifi.On("Interfaces").Return([]*WiFi.Interface{
 			{HardwareAddr: stubAddress},
 		}, nil)
+
 		wifiService := LeWiFi.New(wifi) //nolint:govet
 		addresses, err := wifiService.GetAddresses()
 		require.NotEmpty(t, addresses)
@@ -67,6 +69,7 @@ func TestGetNames(t *testing.T) {
 
 		wifi := wifiStub{}
 		wifi.On("Interfaces").Return([]*WiFi.Interface{}, errSomeError)
+
 		wifiService := LeWiFi.New(wifi) //nolint:govet
 		addresses, err := wifiService.GetNames()
 		require.Empty(t, addresses)
@@ -80,6 +83,7 @@ func TestGetNames(t *testing.T) {
 		wifi.On("Interfaces").Return([]*WiFi.Interface{
 			{HardwareAddr: stubAddress},
 		}, nil)
+
 		wifiService := LeWiFi.New(wifi) //nolint:govet
 		names, err := wifiService.GetNames()
 		require.NotEmpty(t, names)
