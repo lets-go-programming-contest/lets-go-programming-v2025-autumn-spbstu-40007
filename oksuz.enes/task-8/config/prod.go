@@ -2,12 +2,18 @@
 
 package config
 
-import _ "embed"
+import (
+	_ "embed"
+	"log"
+
+	"gopkg.in/yaml.v3"
+)
 
 //go:embed prod.yaml
-var prodConfigData string
+var configData []byte
 
 func init() {
-	Environment = "prod"
-	LogLevel = "error"
+	if err := yaml.Unmarshal(configData, &Cfg); err != nil {
+		log.Fatalf("failed to unmarshal config: %v", err)
+	}
 }
