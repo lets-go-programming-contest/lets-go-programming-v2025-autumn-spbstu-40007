@@ -1,11 +1,14 @@
 package wifi_test
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/mock"
 )
+
+var errUnexpectedType = errors.New("unexpected type")
 
 type MockWiFiHandle struct {
 	mock.Mock
@@ -21,7 +24,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 
 	ifaces, ok := val.([]*wifi.Interface)
 	if !ok {
-		return nil, fmt.Errorf("unexpected type: %T", val)
+		return nil, fmt.Errorf("%w: %T", errUnexpectedType, val)
 	}
 
 	return ifaces, nil

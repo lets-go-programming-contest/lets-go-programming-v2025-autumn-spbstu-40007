@@ -9,6 +9,7 @@ import (
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var errWifiInternal = errors.New("wifi error")
@@ -27,7 +28,7 @@ func TestGetAddresses_SingleInterface(t *testing.T) {
 	service := internalwifi.New(mockHandle)
 	addrs, err := service.GetAddresses()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Len(t, addrs, 1)
 	assert.Equal(t, mac, addrs[0])
 	mockHandle.AssertExpectations(t)
@@ -42,7 +43,7 @@ func TestGetAddresses_Error(t *testing.T) {
 	service := internalwifi.New(mockHandle)
 	addrs, err := service.GetAddresses()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, addrs)
 	mockHandle.AssertExpectations(t)
 }
@@ -60,7 +61,7 @@ func TestGetNames_SingleInterface(t *testing.T) {
 	service := internalwifi.New(mockHandle)
 	names, err := service.GetNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"eth0"}, names)
 	mockHandle.AssertExpectations(t)
 }
@@ -74,7 +75,7 @@ func TestGetNames_Error(t *testing.T) {
 	service := internalwifi.New(mockHandle)
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	mockHandle.AssertExpectations(t)
 }
@@ -83,6 +84,7 @@ func TestWiFiHandleInterface(t *testing.T) {
 	t.Parallel()
 
 	var handle internalwifi.WiFiHandle = new(MockWiFiHandle)
+
 	assert.NotNil(t, handle)
 }
 
