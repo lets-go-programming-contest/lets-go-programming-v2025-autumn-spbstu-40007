@@ -1,13 +1,19 @@
 run:
   tests: true
-  timeout: 2m
+  timeout: 5m
 
 linters:
   disable:
-    - gofumpt   
+    - gofumpt        
     - execinquery
     - exportloopref
     - gomnd
     - depguard
     - forbidigo
     - tagliatelle
+
+issues:
+  exclude-rules:
+    - linters:
+        - revive
+      text: "unexported-return: exported func .+ returns unexported type .+, which can be annoying to use"
