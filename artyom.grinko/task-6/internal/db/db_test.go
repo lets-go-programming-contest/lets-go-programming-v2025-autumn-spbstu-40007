@@ -3,7 +3,7 @@ package db_test
 //nolint:gofumpt
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"testing"
 
 	"task-6/internal/db"
@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var errSomeError = fmt.Errorf("some erreur")
+var errSomeError = errors.New("some erreur")
 
 var singersNames = []string{ //nolint:gochecknoglobals
 	"Édith Piaf",
@@ -30,8 +30,10 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		mock.
 			ExpectQuery("SELECT name FROM users").
 			WillReturnError(sql.ErrNoRows)
@@ -46,8 +48,10 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"}).
 			AddRow(nil)
@@ -66,13 +70,16 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
+
 		rows.RowError(0, errSomeError)
 		mock.
 			ExpectQuery("SELECT name FROM users").
@@ -88,8 +95,10 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
@@ -114,6 +123,7 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
 
@@ -131,8 +141,10 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"}).
 			AddRow(nil)
@@ -151,13 +163,16 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
+
 		rows.RowError(0, errSomeError)
 		mock.
 			ExpectQuery("SELECT DISTINCT name FROM users").
@@ -173,13 +188,16 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
+
 		require.NoError(t, err)
 		defer database.Close()
+
 		rows := mock.
 			NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			rows.AddRow(name)
 		}, singersNames)
+
 		expectedRows := sqlmock.NewRows([]string{"name"})
 		functionals.Iter(func(name string) {
 			expectedRows.AddRow(name)
