@@ -30,7 +30,7 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		mock.
 			ExpectQuery("SELECT name FROM users").
@@ -46,7 +46,7 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"}).
@@ -66,7 +66,7 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -88,7 +88,7 @@ func TestGetNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -103,7 +103,7 @@ func TestGetNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetNames()
 		require.Equal(t, names, singersNames)
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -114,7 +114,7 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 
 		mock.
@@ -131,7 +131,7 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"}).
@@ -151,7 +151,7 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -173,7 +173,7 @@ func TestUniqueNames(t *testing.T) {
 		t.Parallel()
 
 		database, mock, err := sqlmock.New()
-		require.Error(t, err)
+		require.NoError(t, err)
 		defer database.Close()
 		rows := mock.
 			NewRows([]string{"name"})
@@ -192,6 +192,6 @@ func TestUniqueNames(t *testing.T) {
 		databaseService := db.New(database)
 		names, err := databaseService.GetUniqueNames()
 		require.Equal(t, names, functionals.Unique(singersNames))
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }

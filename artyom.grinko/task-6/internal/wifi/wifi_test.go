@@ -53,7 +53,7 @@ func TestGetAddresses(t *testing.T) {
 		wifiService := LeWiFi.New(wifi)
 		addresses, err := wifiService.GetAddresses()
 		require.NotEmpty(t, addresses)
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -79,6 +79,6 @@ func TestGetNames(t *testing.T) {
 		wifiService := LeWiFi.New(wifi)
 		names, err := wifiService.GetNames()
 		require.NotEmpty(t, names)
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 }
