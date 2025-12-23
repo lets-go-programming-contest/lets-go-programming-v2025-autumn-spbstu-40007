@@ -1,6 +1,13 @@
+//go:build !dev
+
 package config
 
-func LoadProdConfig(cfg *Config) {
-	cfg.Environment = "production"
-	cfg.LogLevel = "info"
+import _ "embed"
+
+//go:embed prod.yaml
+var prodConfigData string
+
+func init() {
+	Environment = "prod"
+	LogLevel = "error"
 }
