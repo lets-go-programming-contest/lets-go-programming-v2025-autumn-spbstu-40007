@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-
 )
 
 var (
@@ -65,9 +64,9 @@ func TestGetNames_Success(t *testing.T) {
 	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"Alice", "Bob", "Charlie"}, names)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 func TestGetNames_QueryError(t *testing.T) {
 	t.Parallel()
@@ -102,7 +101,7 @@ func TestGetNames_ScanError(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "scan error")
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestGetNames_RowsError(t *testing.T) {
@@ -124,7 +123,7 @@ func TestGetNames_RowsError(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows error")
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 func TestGetNames_Empty(t *testing.T) {
 	t.Parallel()
@@ -140,9 +139,9 @@ func TestGetNames_Empty(t *testing.T) {
 	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{}, names)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 func TestGetUniqueNames_Success(t *testing.T) {
 	t.Parallel()
@@ -160,9 +159,9 @@ func TestGetUniqueNames_Success(t *testing.T) {
 	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"Alice", "Bob"}, names)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 func TestGetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
@@ -197,7 +196,7 @@ func TestGetUniqueNames_ScanError(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows scanning")
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestGetUniqueNames_RowsError(t *testing.T) {
@@ -219,7 +218,7 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows error")
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestGetUniqueNames_Empty(t *testing.T) {
@@ -236,9 +235,9 @@ func TestGetUniqueNames_Empty(t *testing.T) {
 	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{}, names)
-	assert.NoError(t, mock.ExpectationsWereMet())
+	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 type realDB struct {

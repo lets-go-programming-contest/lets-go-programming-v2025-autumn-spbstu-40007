@@ -155,7 +155,7 @@ func TestGetNames_InterfacesError(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := new(MockWiFiHandle)
-	mockWiFi.On("Interfaces").Return(nil, fmt.Errorf("permission denied"))
+	mockWiFi.On("Interfaces").Return(nil, errors.New("permission denied"))
 
 	service := wifiPkg.New(mockWiFi)
 	names, err := service.GetNames()
