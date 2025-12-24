@@ -232,8 +232,7 @@ type ie struct {
 
 // parseIEs parses zero or more ies from a byte slice.
 // Reference:
-//
-//	https://www.safaribooksonline.com/library/view/80211-wireless-networks/0596100523/ch04.html#wireless802dot112-CHP-4-FIG-31
+//   https://www.safaribooksonline.com/library/view/80211-wireless-networks/0596100523/ch04.html#wireless802dot112-CHP-4-FIG-31
 func parseIEs(b []byte) ([]ie, error) {
 	var ies []ie
 	var i int
