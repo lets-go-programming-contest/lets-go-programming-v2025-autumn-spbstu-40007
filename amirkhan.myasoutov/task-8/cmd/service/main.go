@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/ami0-0/config"
 )
@@ -10,9 +10,9 @@ import (
 func main() {
 	params, err := config.Fetch()
 	if err != nil {
-		log.Fatalf("Initialization error: %v", err)
-		return
+		fmt.Fprintf(os.Stderr, "error: %v", err)
+		os.Exit(1)
 	}
 
-	fmt.Println(params)
+	fmt.Print(params.String())
 }
