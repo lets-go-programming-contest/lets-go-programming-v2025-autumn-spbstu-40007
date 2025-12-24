@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	errDatabaseError = errors.New("database error")
-	errScanError     = errors.New("scan error")
-	errRowsError     = errors.New("rows error")
-	errDBError       = errors.New("db error")
+	errDatabaseError      = errors.New("database error")
+	errScanError          = errors.New("scan error")
+	errRowsError          = errors.New("rows error")
+	errDBError            = errors.New("db error")
+	errMockUnexpectedType = errors.New("mock returned unexpected type")
 )
 
 type MockDatabase struct {
@@ -32,13 +33,13 @@ func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
 		if err := ret.Error(1); err != nil {
 			return nil, fmt.Errorf("mock: %w", err)
 		}
-		return nil, nil
+		return nil, errors.New("mock returned nil rows without error")
 	}
 
 	got := ret.Get(0)
 	rows, ok := got.(*sql.Rows)
 	if !ok {
-		return nil, fmt.Errorf("mock returned unexpected type %T", got)
+		return nil, errMockUnexpectedType
 	}
 
 	if err := ret.Error(1); err != nil {
@@ -47,6 +48,7 @@ func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
 
 	return rows, nil
 }
+
 func TestGetNames_Success(t *testing.T) {
 	t.Parallel()
 
@@ -68,6 +70,7 @@ func TestGetNames_Success(t *testing.T) {
 	assert.Equal(t, []string{"Alice", "Bob", "Charlie"}, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
 func TestGetNames_QueryError(t *testing.T) {
 	t.Parallel()
 
@@ -82,6 +85,7 @@ func TestGetNames_QueryError(t *testing.T) {
 	assert.Contains(t, err.Error(), "db query")
 	mockDB.AssertExpectations(t)
 }
+
 func TestGetNames_ScanError(t *testing.T) {
 	t.Parallel()
 
@@ -125,6 +129,7 @@ func TestGetNames_RowsError(t *testing.T) {
 	assert.Contains(t, err.Error(), "rows error")
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
 func TestGetNames_Empty(t *testing.T) {
 	t.Parallel()
 
@@ -143,6 +148,7 @@ func TestGetNames_Empty(t *testing.T) {
 	assert.Equal(t, []string{}, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
 func TestGetUniqueNames_Success(t *testing.T) {
 	t.Parallel()
 
@@ -163,6 +169,7 @@ func TestGetUniqueNames_Success(t *testing.T) {
 	assert.Equal(t, []string{"Alice", "Bob"}, names)
 	require.NoError(t, mock.ExpectationsWereMet())
 }
+
 func TestGetUniqueNames_QueryError(t *testing.T) {
 	t.Parallel()
 
@@ -177,6 +184,7 @@ func TestGetUniqueNames_QueryError(t *testing.T) {
 	assert.Contains(t, err.Error(), "db query")
 	mockDB.AssertExpectations(t)
 }
+
 func TestGetUniqueNames_ScanError(t *testing.T) {
 	t.Parallel()
 

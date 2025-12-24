@@ -29,7 +29,7 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	got := args.Get(0)
 	ifaces, ok := got.([]*wifi.Interface)
 	if !ok {
-		return nil, fmt.Errorf("mock returned unexpected type %T", got)
+		return nil, errMockUnexpectedType
 	}
 	if err := args.Error(1); err != nil {
 		return ifaces, fmt.Errorf("mock: %w", err)
@@ -37,7 +37,11 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	return ifaces, nil
 }
 
-var errWiFi = errors.New("wifi error")
+var (
+	errWiFi               = errors.New("wifi error")
+	errPermissionDenied   = errors.New("permission denied")
+	errMockUnexpectedType = errors.New("mock returned unexpected type")
+)
 
 func TestGetAddresses_Success(t *testing.T) {
 	t.Parallel()
@@ -155,7 +159,7 @@ func TestGetNames_InterfacesError(t *testing.T) {
 	t.Parallel()
 
 	mockWiFi := new(MockWiFiHandle)
-	mockWiFi.On("Interfaces").Return(nil, errors.New("permission denied"))
+	mockWiFi.On("Interfaces").Return(nil, errPermissionDenied)
 
 	service := wifiPkg.New(mockWiFi)
 	names, err := service.GetNames()

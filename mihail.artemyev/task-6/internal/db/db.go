@@ -32,6 +32,7 @@ func (service DBService) queryStrings(query string) ([]string, error) {
 		if err := rows.Scan(&v); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		values = append(values, v)
 	}
 
@@ -39,6 +40,7 @@ func (service DBService) queryStrings(query string) ([]string, error) {
 		if strings.Contains(err.Error(), "scan") {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
+
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
