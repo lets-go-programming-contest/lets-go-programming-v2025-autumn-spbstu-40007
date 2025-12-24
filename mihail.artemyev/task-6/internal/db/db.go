@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type Database interface {
@@ -35,14 +36,13 @@ func (service DBService) GetNames() ([]string, error) {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
 
-		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("rows scanning: %w", err)
-		}
-
 		names = append(names, name)
 	}
 
 	if err := rows.Err(); err != nil {
+		if strings.Contains(err.Error(), "scan") {
+			return nil, fmt.Errorf("rows scanning: %w", err)
+		}
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
@@ -67,14 +67,13 @@ func (service DBService) GetUniqueNames() ([]string, error) {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
 
-		if err := rows.Err(); err != nil {
-			return nil, fmt.Errorf("rows scanning: %w", err)
-		}
-
 		values = append(values, value)
 	}
 
 	if err := rows.Err(); err != nil {
+		if strings.Contains(err.Error(), "scan") {
+			return nil, fmt.Errorf("rows scanning: %w", err)
+		}
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
