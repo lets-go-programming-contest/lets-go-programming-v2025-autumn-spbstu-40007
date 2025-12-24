@@ -1,9 +1,12 @@
-package db
+package db_test
 
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"testing"
+
+	db "task-6/internal/db"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -11,24 +14,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockDatabase для тестирования
+var (
+	errDatabaseError = errors.New("database error")
+	errScanError     = errors.New("scan error")
+	errRowsError     = errors.New("rows error")
+	errDBError       = errors.New("db error")
+)
+
 type MockDatabase struct {
 	mock.Mock
 }
 
 func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
-    ret := m.Called(append([]any{query}, args...)...)
-    if ret.Get(0) == nil {
-        return nil, ret.Error(1)
-    }
-    return ret.Get(0).(*sql.Rows), ret.Error(1)
-}
+	ret := m.Called(append([]any{query}, args...)...)
 
-// Test GetNames - успешное получение имён
+	if ret.Get(0) == nil {
+		if err := ret.Error(1); err != nil {
+			return nil, fmt.Errorf("mock: %w", err)
+		}
+		return nil, nil
+	}
+
+	got := ret.Get(0)
+	rows, ok := got.(*sql.Rows)
+	if !ok {
+		return nil, fmt.Errorf("mock returned unexpected type %T", got)
+	}
+
+	if err := ret.Error(1); err != nil {
+		return rows, fmt.Errorf("mock: %w", err)
+	}
+
+	return rows, nil
+}
 func TestGetNames_Success(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
@@ -37,94 +61,94 @@ func TestGetNames_Success(t *testing.T) {
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"Alice", "Bob", "Charlie"}, names)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
-
-// Test GetNames - ошибка при выполнении запроса
 func TestGetNames_QueryError(t *testing.T) {
-	mockDB := new(MockDatabase)
-	mockDB.On("Query", "SELECT name FROM users", mock.Anything).Return(nil, errors.New("database error"))
+	t.Parallel()
 
-	service := DBService{DB: mockDB}
+	mockDB := new(MockDatabase)
+	mockDB.On("Query", "SELECT name FROM users", mock.Anything).Return(nil, errDatabaseError)
+
+	service := db.DBService{DB: mockDB}
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "db query")
 	mockDB.AssertExpectations(t)
 }
-
-// Test GetNames - ошибка при сканировании строк
 func TestGetNames_ScanError(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("scan error"))
+		RowError(0, errScanError)
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "scan error")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-
-// Test GetNames - ошибка в результатах
 func TestGetNames_RowsError(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("rows error"))
+		RowError(0, errRowsError)
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows error")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
-
-// Test GetNames - пустой результат
 func TestGetNames_Empty(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{}, names)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
-
-// Test GetUniqueNames - успешное получение уникальных имён
 func TestGetUniqueNames_Success(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
@@ -132,81 +156,83 @@ func TestGetUniqueNames_Success(t *testing.T) {
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"Alice", "Bob"}, names)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
-
-// Test GetUniqueNames - ошибка при выполнении запроса
 func TestGetUniqueNames_QueryError(t *testing.T) {
-	mockDB := new(MockDatabase)
-	mockDB.On("Query", "SELECT DISTINCT name FROM users", mock.Anything).Return(nil, errors.New("db error"))
+	t.Parallel()
 
-	service := DBService{DB: mockDB}
+	mockDB := new(MockDatabase)
+	mockDB.On("Query", "SELECT DISTINCT name FROM users", mock.Anything).Return(nil, errDBError)
+
+	service := db.DBService{DB: mockDB}
 	names, err := service.GetUniqueNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "db query")
 	mockDB.AssertExpectations(t)
 }
-
-// Test GetUniqueNames - ошибка при сканировании
 func TestGetUniqueNames_ScanError(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("scan error"))
+		RowError(0, errScanError)
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows scanning")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-// Test GetUniqueNames - ошибка в результатах
 func TestGetUniqueNames_RowsError(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("rows error"))
+		RowError(0, errRowsError)
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows error")
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-// Test GetUniqueNames - пустой результат
 func TestGetUniqueNames_Empty(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"})
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
 	assert.NoError(t, err)
@@ -214,11 +240,14 @@ func TestGetUniqueNames_Empty(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-// Адаптер для работы с *sql.DB
 type realDB struct {
 	db *sql.DB
 }
 
 func (r *realDB) Query(query string, args ...any) (*sql.Rows, error) {
-	return r.db.Query(query, args...)
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return rows, fmt.Errorf("db.Query: %w", err)
+	}
+	return rows, nil
 }

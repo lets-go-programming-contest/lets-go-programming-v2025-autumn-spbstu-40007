@@ -1,26 +1,34 @@
-package db
+package db_test
 
 import (
 	"database/sql"
 	"errors"
 	"testing"
 
+	db "task-6/internal/db"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errSomeRows = errors.New("some rows error")
+	errDBFail   = errors.New("db fail")
+)
 
 func TestRealDB_QueryAdapter(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice")
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	r := &realDB{db}
+	r := &realDB{dbConn}
 	gotRows, err := r.Query("SELECT name FROM users")
 	require.NoError(t, err)
 	defer gotRows.Close()
@@ -30,61 +38,71 @@ func TestRealDB_QueryAdapter(t *testing.T) {
 	require.NoError(t, gotRows.Scan(&name))
 	assert.Equal(t, "Alice", name)
 
+	require.NoError(t, gotRows.Err())
+
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestNewDBService(t *testing.T) {
+	t.Parallel()
+
 	mockDB := new(MockDatabase)
-	svc := New(mockDB)
+	svc := db.New(mockDB)
 	assert.Equal(t, mockDB, svc.DB)
 }
 
 func TestGetNames_FinalRowsError_NotScan(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("some rows error"))
+		RowError(0, errSomeRows)
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows error")
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestGetUniqueNames_FinalRowsError_Scan(t *testing.T) {
-	db, mock, err := sqlmock.New()
+	t.Parallel()
+
+	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
-	defer db.Close()
+	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errors.New("scan error"))
+		RowError(0, errScanError)
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
-	service := New(&realDB{db})
+	service := db.New(&realDB{dbConn})
 	names, err := service.GetUniqueNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "rows scanning")
 	require.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestRealDB_QueryErrorPropagates(t *testing.T) {
-	mockDB := new(MockDatabase)
-	mockDB.On("Query", "SELECT name FROM users").Return((*sql.Rows)(nil), errors.New("db fail"))
+	t.Parallel()
 
-	service := New(mockDB)
+	mockDB := new(MockDatabase)
+	mockDB.On("Query", "SELECT name FROM users").Return((*sql.Rows)(nil), errDBFail)
+
+	service := db.New(mockDB)
 	names, err := service.GetNames()
 
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, names)
 	assert.Contains(t, err.Error(), "db query")
 	mockDB.AssertExpectations(t)
