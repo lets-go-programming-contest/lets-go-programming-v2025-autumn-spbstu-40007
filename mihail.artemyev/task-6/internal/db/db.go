@@ -26,12 +26,16 @@ func (service DBService) GetNames() ([]string, error) {
 	}
 	defer rows.Close()
 
-	var names []string
+	names := make([]string, 0)
 
 	for rows.Next() {
 		var name string
 
 		if err := rows.Scan(&name); err != nil {
+			return nil, fmt.Errorf("rows scanning: %w", err)
+		}
+
+		if err := rows.Err(); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
 
@@ -54,12 +58,16 @@ func (service DBService) GetUniqueNames() ([]string, error) {
 	}
 	defer rows.Close()
 
-	var values []string
+	values := make([]string, 0)
 
 	for rows.Next() {
 		var value string
 
 		if err := rows.Scan(&value); err != nil {
+			return nil, fmt.Errorf("rows scanning: %w", err)
+		}
+
+		if err := rows.Err(); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
 

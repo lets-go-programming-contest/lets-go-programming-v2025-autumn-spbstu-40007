@@ -17,11 +17,11 @@ type MockDatabase struct {
 }
 
 func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
-	ret := m.Called(query, args)
-	if ret.Get(0) == nil {
-		return nil, ret.Error(1)
-	}
-	return ret.Get(0).(*sql.Rows), ret.Error(1)
+    ret := m.Called(append([]any{query}, args...)...)
+    if ret.Get(0) == nil {
+        return nil, ret.Error(1)
+    }
+    return ret.Get(0).(*sql.Rows), ret.Error(1)
 }
 
 // Test GetNames - успешное получение имён
@@ -89,7 +89,7 @@ func TestGetNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(1, errors.New("rows error"))
+		RowError(0, errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT name FROM users").WillReturnRows(rows)
 
@@ -183,7 +183,7 @@ func TestGetUniqueNames_RowsError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(1, errors.New("rows error"))
+		RowError(0, errors.New("rows error"))
 
 	mock.ExpectQuery("SELECT DISTINCT name FROM users").WillReturnRows(rows)
 
