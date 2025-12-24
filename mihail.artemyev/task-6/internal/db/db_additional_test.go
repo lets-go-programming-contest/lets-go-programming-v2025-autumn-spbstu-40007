@@ -22,6 +22,7 @@ func TestRealDB_QueryAdapter(t *testing.T) {
 
 	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -31,9 +32,11 @@ func TestRealDB_QueryAdapter(t *testing.T) {
 	r := &realDB{dbConn}
 	gotRows, err := r.Query("SELECT name FROM users")
 	require.NoError(t, err)
+
 	defer gotRows.Close()
 
 	var name string
+
 	require.True(t, gotRows.Next())
 	require.NoError(t, gotRows.Scan(&name))
 	assert.Equal(t, "Alice", name)
@@ -56,6 +59,7 @@ func TestGetNames_FinalRowsError_NotScan(t *testing.T) {
 
 	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).
@@ -77,6 +81,7 @@ func TestGetUniqueNames_FinalRowsError_Scan(t *testing.T) {
 
 	dbConn, mock, err := sqlmock.New()
 	require.NoError(t, err)
+
 	defer dbConn.Close()
 
 	rows := sqlmock.NewRows([]string{"name"}).

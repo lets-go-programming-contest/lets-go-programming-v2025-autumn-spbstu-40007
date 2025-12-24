@@ -19,7 +19,7 @@ func TestGetNames_RowsErr_AfterIteration(t *testing.T) {
 	rows := sqlmock.
 		NewRows([]string{"name"}).
 		AddRow("Alice").
-		RowError(0, errRowsError)
+		RowError(0, errRowsError) // RowError сработает при Next/Scan и в итоге rows.Err()
 
 	mock.ExpectQuery("SELECT").
 		WillReturnRows(rows)

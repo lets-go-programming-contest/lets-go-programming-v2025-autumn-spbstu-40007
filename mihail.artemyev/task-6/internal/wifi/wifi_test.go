@@ -14,34 +14,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	errWiFi                   = errors.New("wifi error")
+	errPermissionDenied       = errors.New("permission denied")
+	errMockUnexpectedIfaceTyp = errors.New("mock returned unexpected type")
+	errMockNilIfaces          = errors.New("mock returned nil interfaces without error")
+)
+
 type MockWiFiHandle struct {
 	mock.Mock
 }
 
 func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 	args := m.Called()
+
 	if args.Get(0) == nil {
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("mock: %w", err)
 		}
-		return nil, nil
+		return nil, errMockNilIfaces
 	}
+
 	got := args.Get(0)
 	ifaces, ok := got.([]*wifi.Interface)
 	if !ok {
-		return nil, errMockUnexpectedType
+		return nil, errMockUnexpectedIfaceTyp
 	}
+
 	if err := args.Error(1); err != nil {
 		return ifaces, fmt.Errorf("mock: %w", err)
 	}
+
 	return ifaces, nil
 }
-
-var (
-	errWiFi               = errors.New("wifi error")
-	errPermissionDenied   = errors.New("permission denied")
-	errMockUnexpectedType = errors.New("mock returned unexpected type")
-)
 
 func TestGetAddresses_Success(t *testing.T) {
 	t.Parallel()

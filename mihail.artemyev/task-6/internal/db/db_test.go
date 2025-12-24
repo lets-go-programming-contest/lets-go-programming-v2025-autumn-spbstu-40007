@@ -20,6 +20,7 @@ var (
 	errRowsError          = errors.New("rows error")
 	errDBError            = errors.New("db error")
 	errMockUnexpectedType = errors.New("mock returned unexpected type")
+	errMockNilRows        = errors.New("mock returned nil rows without error")
 )
 
 type MockDatabase struct {
@@ -33,7 +34,7 @@ func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
 		if err := ret.Error(1); err != nil {
 			return nil, fmt.Errorf("mock: %w", err)
 		}
-		return nil, errors.New("mock returned nil rows without error")
+		return nil, errMockNilRows
 	}
 
 	got := ret.Get(0)
@@ -257,5 +258,6 @@ func (r *realDB) Query(query string, args ...any) (*sql.Rows, error) {
 	if err != nil {
 		return rows, fmt.Errorf("db.Query: %w", err)
 	}
+
 	return rows, nil
 }
