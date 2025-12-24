@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -23,6 +24,11 @@ func (service DBService) queryStrings(query string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
+
+	if rows == nil {
+		return nil, errors.New("db returned nil rows without error")
+	}
+
 	defer rows.Close()
 
 	values := make([]string, 0)
@@ -40,7 +46,6 @@ func (service DBService) queryStrings(query string) ([]string, error) {
 		if strings.Contains(err.Error(), "scan") {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
-
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
