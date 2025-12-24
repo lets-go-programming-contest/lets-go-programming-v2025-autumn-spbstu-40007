@@ -34,10 +34,12 @@ func (m *MockDatabase) Query(query string, args ...any) (*sql.Rows, error) {
 		if err := ret.Error(1); err != nil {
 			return nil, fmt.Errorf("mock: %w", err)
 		}
+
 		return nil, errMockNilRows
 	}
 
 	got := ret.Get(0)
+
 	rows, ok := got.(*sql.Rows)
 	if !ok {
 		return nil, errMockUnexpectedType

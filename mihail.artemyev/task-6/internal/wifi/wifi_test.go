@@ -32,10 +32,12 @@ func (m *MockWiFiHandle) Interfaces() ([]*wifi.Interface, error) {
 		if err := args.Error(1); err != nil {
 			return nil, fmt.Errorf("mock: %w", err)
 		}
+
 		return nil, errMockNilIfaces
 	}
 
 	got := args.Get(0)
+
 	ifaces, ok := got.([]*wifi.Interface)
 	if !ok {
 		return nil, errMockUnexpectedIfaceTyp
