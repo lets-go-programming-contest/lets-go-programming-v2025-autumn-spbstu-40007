@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 )
+
+var ErrNilRows = errors.New("db returned nil rows without error")
 
 type Database interface {
 	Query(query string, args ...any) (*sql.Rows, error)
@@ -19,43 +20,37 @@ func New(db Database) DBService {
 	return DBService{DB: db}
 }
 
-func (service DBService) queryStrings(query string) ([]string, error) {
-	rows, err := service.DB.Query(query)
+func (s DBService) queryStrings(query string) ([]string, error) {
+	rows, err := s.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("db query: %w", err)
 	}
-
 	if rows == nil {
-		return nil, errors.New("db returned nil rows without error")
+		return nil, ErrNilRows
 	}
-
 	defer rows.Close()
 
-	values := make([]string, 0)
+	var res []string
 
 	for rows.Next() {
 		var v string
 		if err := rows.Scan(&v); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
-
-		values = append(values, v)
+		res = append(res, v)
 	}
 
 	if err := rows.Err(); err != nil {
-		if strings.Contains(err.Error(), "scan") {
-			return nil, fmt.Errorf("rows scanning: %w", err)
-		}
 		return nil, fmt.Errorf("rows error: %w", err)
 	}
 
-	return values, nil
+	return res, nil
 }
 
-func (service DBService) GetNames() ([]string, error) {
-	return service.queryStrings("SELECT name FROM users")
+func (s DBService) GetNames() ([]string, error) {
+	return s.queryStrings("SELECT name FROM users")
 }
 
-func (service DBService) GetUniqueNames() ([]string, error) {
-	return service.queryStrings("SELECT DISTINCT name FROM users")
+func (s DBService) GetUniqueNames() ([]string, error) {
+	return s.queryStrings("SELECT DISTINCT name FROM users")
 }
