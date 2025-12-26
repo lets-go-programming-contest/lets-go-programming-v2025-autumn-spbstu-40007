@@ -1,21 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
-)
-
-var (
-	DevConfig = []byte(`
-environment: dev
-log_level: debug
-`)
-
-	ProdConfig = []byte(`
-environment: prod
-log_level: error
-`)
 )
 
 type Config struct {
@@ -23,20 +12,35 @@ type Config struct {
 	LogLevel    string `yaml:"log_level"`
 }
 
-func loadConfig(data []byte) (*Config, error) {
-	cfg := &Config{}
-	if err := yaml.Unmarshal(data, cfg); err != nil {
+func devConfig() []byte {
+	return []byte(`environment: dev
+log_level: debug
+`)
+}
 
-		return nil, err
+func prodConfig() []byte {
+	return []byte(`environment: prod
+log_level: error
+`)
+}
+
+func loadConfig(data []byte) (*Config, error) {
+	cfg := &Config{
+		Environment: "",
+		LogLevel:    "",
+	}
+
+	if err := yaml.Unmarshal(data, cfg); err != nil {
+		return nil, fmt.Errorf("yaml unmarshal config: %w", err)
 	}
 
 	return cfg, nil
 }
 
 func Load() (*Config, error) {
-	cfgData := ProdConfig
+	cfgData := prodConfig()
 	if os.Getenv("GO_ENV") == "dev" {
-		cfgData = DevConfig
+		cfgData = devConfig()
 	}
 
 	return loadConfig(cfgData)
