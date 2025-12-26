@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-
-	"github.com/DichSwitch/task-8/config"
 )
 
 func main() {
-	cfg, err := config.Load()
+	cfg, err := Load()
 	if err != nil {
 		log.Fatal(err)
 	}
