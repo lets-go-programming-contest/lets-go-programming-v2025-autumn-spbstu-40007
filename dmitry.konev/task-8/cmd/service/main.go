@@ -15,4 +15,3 @@ func main() {
 
 	fmt.Printf("%s %s", cfg.Environment, cfg.LogLevel)
 }
-
