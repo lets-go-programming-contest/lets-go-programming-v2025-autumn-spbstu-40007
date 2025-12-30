@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"golang.org/x/net/html/charset"
 	"gopkg.in/yaml.v3"
 )
 
@@ -67,13 +68,21 @@ func loadConfig(path string) Config {
 }
 
 func loadXML(path string) []Valute {
-	data, err := os.ReadFile(path)
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
 
 	var curs ValCurs
-	if err := xml.Unmarshal(data, &curs); err != nil {
+	if err := decoder.Decode(&curs); err != nil {
 		panic(err)
 	}
 
@@ -81,18 +90,18 @@ func loadXML(path string) []Valute {
 }
 
 func transform(valutes []Valute) []ResultCurrency {
-	var result []ResultCurrency
+	result := make([]ResultCurrency, 0, len(valutes))
 
-	for _, v := range valutes {
-		valueStr := strings.Replace(v.Value, ",", ".", 1)
+	for _, valute := range valutes {
+		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
 		if err != nil {
 			panic(err)
 		}
 
 		result = append(result, ResultCurrency{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
+			NumCode:  valute.NumCode,
+			CharCode: valute.CharCode,
 			Value:    value,
 		})
 	}
@@ -128,6 +137,9 @@ func saveJSON(path string, data []ResultCurrency) {
 func parseFloat(s string) (float64, error) {
 	var f float64
 	_, err := fmt.Sscan(s, &f)
-	
-	return f, err
+	if err != nil {
+		return 0, fmt.Errorf("parse float: %w", err)
+	}
+
+	return f, nil
 }
