@@ -54,13 +54,11 @@ func main() {
 
 func loadConfig(path string) Config {
 	data, err := os.ReadFile(path)
-
 	if err != nil {
 		panic(err)
 	}
 
 	var cfg Config
-
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		panic(err)
 	}
@@ -74,7 +72,6 @@ func loadConfig(path string) Config {
 
 func loadXML(path string) []Valute {
 	file, err := os.Open(path)
-
 	if err != nil {
 		panic(err)
 	}
@@ -89,16 +86,13 @@ func loadXML(path string) []Valute {
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		switch strings.ToLower(charset) {
 		case "windows-1251":
-
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		default:
-
 			return input, nil
 		}
 	}
 
 	var curs ValCurs
-
 	if err := decoder.Decode(&curs); err != nil {
 		panic(err)
 	}
@@ -112,7 +106,6 @@ func transform(valutes []Valute) []ResultCurrency {
 	for _, valute := range valutes {
 		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
-
 		if err != nil {
 			panic(err)
 		}
@@ -125,7 +118,6 @@ func transform(valutes []Valute) []ResultCurrency {
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-
 		return result[i].Value > result[j].Value
 	})
 
@@ -134,19 +126,16 @@ func transform(valutes []Valute) []ResultCurrency {
 
 func saveJSON(path string, data []ResultCurrency) {
 	dir := filepath.Dir(path)
-
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic(err)
 	}
 
 	file, err := os.Create(path)
-
 	if err != nil {
 		panic(err)
 	}
 
 	defer func() {
-
 		if err := file.Close(); err != nil {
 			panic(err)
 		}
@@ -162,9 +151,7 @@ func saveJSON(path string, data []ResultCurrency) {
 
 func parseFloat(s string) (float64, error) {
 	var value float64
-
 	_, err := fmt.Sscan(s, &value)
-
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
