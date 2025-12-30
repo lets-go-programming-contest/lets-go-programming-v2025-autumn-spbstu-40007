@@ -5,12 +5,13 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding/charmap"
 	"gopkg.in/yaml.v3"
 )
 
@@ -79,7 +80,15 @@ func loadXML(path string) []Valute {
 	}()
 
 	decoder := xml.NewDecoder(file)
-	decoder.CharsetReader = charset.NewReaderLabel
+	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
+		switch strings.ToLower(charset) {
+		case "windows-1251":
+			return charmap.Windows1251.NewDecoder().Reader(input), nil
+		default:
+			
+			return input, nil
+		}
+	}
 
 	var curs ValCurs
 	if err := decoder.Decode(&curs); err != nil {
@@ -107,7 +116,6 @@ func transform(valutes []Valute) []ResultCurrency {
 	}
 
 	sort.Slice(result, func(i, j int) bool {
-
 		return result[i].Value > result[j].Value
 	})
 
@@ -116,7 +124,7 @@ func transform(valutes []Valute) []ResultCurrency {
 
 func saveJSON(path string, data []ResultCurrency) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		panic(err)
 	}
 
@@ -124,7 +132,11 @@ func saveJSON(path string, data []ResultCurrency) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
