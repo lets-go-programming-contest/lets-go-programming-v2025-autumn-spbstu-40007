@@ -106,7 +106,6 @@ func transform(valutes []Valute) []ResultCurrency {
 	for _, valute := range valutes {
 		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
-
 		if err != nil {
 			panic(err)
 		}
@@ -153,7 +152,6 @@ func saveJSON(path string, data []ResultCurrency) {
 func parseFloat(s string) (float64, error) {
 	var value float64
 	_, err := fmt.Sscan(s, &value)
-
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
