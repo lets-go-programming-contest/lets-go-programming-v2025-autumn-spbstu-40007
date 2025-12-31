@@ -41,7 +41,6 @@ type ResultCurrency struct {
 func main() {
 	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
-
 	if *configPath == "" {
 		panic("config flag is required")
 	}
@@ -59,8 +58,7 @@ func loadConfig(path string) Config {
 	}
 
 	var cfg Config
-	err = yaml.Unmarshal(data, &cfg)
-	if err != nil {
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		panic(err)
 	}
 
@@ -76,7 +74,11 @@ func loadXML(path string) []Valute {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic(cerr)
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -89,8 +91,7 @@ func loadXML(path string) []Valute {
 	}
 
 	var curs ValCurs
-	err = decoder.Decode(&curs)
-	if err != nil {
+	if err := decoder.Decode(&curs); err != nil {
 		panic(err)
 	}
 
@@ -99,7 +100,6 @@ func loadXML(path string) []Valute {
 
 func transform(valutes []Valute) []ResultCurrency {
 	result := make([]ResultCurrency, 0, len(valutes))
-
 	for _, valute := range valutes {
 		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
@@ -123,8 +123,7 @@ func transform(valutes []Valute) []ResultCurrency {
 
 func saveJSON(path string, data []ResultCurrency) {
 	dir := filepath.Dir(path)
-	err := os.MkdirAll(dir, dirPerm)
-	if err != nil {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic(err)
 	}
 
@@ -132,13 +131,15 @@ func saveJSON(path string, data []ResultCurrency) {
 	if err != nil {
 		panic(err)
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			panic(cerr)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-
-	err = encoder.Encode(data)
-	if err != nil {
+	if err := encoder.Encode(data); err != nil {
 		panic(err)
 	}
 }
@@ -149,6 +150,5 @@ func parseFloat(s string) (float64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
-
 	return value, nil
 }
