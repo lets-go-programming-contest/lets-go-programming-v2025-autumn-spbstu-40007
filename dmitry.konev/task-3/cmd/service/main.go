@@ -15,7 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const dirPerm = 0o755
+const dirPerm = 0755
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -41,6 +41,7 @@ type ResultCurrency struct {
 func main() {
 	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
+
 	if *configPath == "" {
 		panic("config flag is required")
 	}
@@ -58,7 +59,8 @@ func loadConfig(path string) Config {
 	}
 
 	var cfg Config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
 		panic(err)
 	}
 
@@ -74,11 +76,7 @@ func loadXML(path string) []Valute {
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic(cerr)
-		}
-	}()
+	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -91,7 +89,8 @@ func loadXML(path string) []Valute {
 	}
 
 	var curs ValCurs
-	if err := decoder.Decode(&curs); err != nil {
+	err = decoder.Decode(&curs)
+	if err != nil {
 		panic(err)
 	}
 
@@ -100,6 +99,7 @@ func loadXML(path string) []Valute {
 
 func transform(valutes []Valute) []ResultCurrency {
 	result := make([]ResultCurrency, 0, len(valutes))
+
 	for _, valute := range valutes {
 		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
@@ -123,7 +123,8 @@ func transform(valutes []Valute) []ResultCurrency {
 
 func saveJSON(path string, data []ResultCurrency) {
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, dirPerm); err != nil {
+	err := os.MkdirAll(dir, dirPerm)
+	if err != nil {
 		panic(err)
 	}
 
@@ -131,15 +132,13 @@ func saveJSON(path string, data []ResultCurrency) {
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic(cerr)
-		}
-	}()
+	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(data); err != nil {
+
+	err = encoder.Encode(data)
+	if err != nil {
 		panic(err)
 	}
 }
@@ -150,5 +149,6 @@ func parseFloat(s string) (float64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("parse float: %w", err)
 	}
+
 	return value, nil
 }
