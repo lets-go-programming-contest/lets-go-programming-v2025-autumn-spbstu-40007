@@ -44,74 +44,83 @@ func main() {
 	flag.Parse()
 
 	if *configPath == "" {
-		panic("config flag is required")
+		fmt.Fprintln(os.Stderr, "config flag is required")
+		os.Exit(1)
 	}
 
-	config := loadConfig(*configPath)
+	config, err := loadConfig(*configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
+		os.Exit(1)
+	}
 
-	valutes := loadXML(config.InputFile)
+	valutes, err := loadXML(config.InputFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to load XML: %v\n", err)
+		os.Exit(1)
+	}
 
 	result := transform(valutes)
 
-	saveJSON(config.OutputFile, result)
+	if err := saveJSON(config.OutputFile, result); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to save JSON: %v\n", err)
+		os.Exit(1)
+	}
 }
 
-func loadConfig(path string) Config {
+func loadConfig(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return Config{}, fmt.Errorf("read file: %w", err)
 	}
 
 	var cfg Config
 
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		panic(err)
+		return Config{}, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
-		panic("config fields must not be empty")
+		return Config{}, fmt.Errorf("config fields must not be empty")
 	}
 
-	return cfg
+	return cfg, nil
 }
 
-func loadXML(path string) []Valute {
+func loadXML(path string) ([]Valute, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("open file: %w", err)
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
+	defer file.Close()
 
 	decoder := xml.NewDecoder(file)
-
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if strings.EqualFold(charset, "windows-1251") {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
-
 		return input, nil
 	}
 
 	var curs ValCurs
 
 	if err := decoder.Decode(&curs); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
-	return curs.Valutes
+	return curs.Valutes, nil
 }
 
 func transform(valutes []Valute) []ResultCurrency {
 	result := make([]ResultCurrency, 0, len(valutes))
 
 	for _, valute := range valutes {
-		value, err := parseFloat(valute.Value)
-		if err != nil {
-			panic(err)
+		if valute.CharCode == "" || valute.Value == "" {
+			continue
 		}
+
+		value := parseFloat(valute.Value)
 
 		result = append(result, ResultCurrency{
 			NumCode:  valute.NumCode,
@@ -127,34 +136,34 @@ func transform(valutes []Valute) []ResultCurrency {
 	return result
 }
 
-func saveJSON(path string, data []ResultCurrency) {
+func saveJSON(path string, data []ResultCurrency) error {
 	dir := filepath.Dir(path)
 
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
-		panic(err)
+		return fmt.Errorf("mkdir all: %w", err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
-	defer func() {
-		_ = file.Close()
-	}()
+	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 
 	if err := encoder.Encode(data); err != nil {
-		panic(err)
+		return fmt.Errorf("encode json: %w", err)
 	}
+
+	return nil
 }
 
-func parseFloat(s string) (float64, error) {
+func parseFloat(s string) float64 {
 	value, err := strconv.ParseFloat(strings.ReplaceAll(s, ",", "."), 64)
 	if err != nil {
-		return 0, fmt.Errorf("parse float: %w", err)
+		return 0
 	}
-	return value, nil
+	return value
 }
