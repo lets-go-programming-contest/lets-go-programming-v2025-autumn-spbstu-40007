@@ -11,12 +11,14 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"errors"
 
 	"golang.org/x/text/encoding/charmap"
 	"gopkg.in/yaml.v3"
 )
 
 const dirPerm = 0o755
+var errEmptyConfigFields = errors.New("config fields must not be empty")
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -84,7 +86,7 @@ func loadConfig(path string) (Config, error) {
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
-		return Config{}, fmt.Errorf("config fields must not be empty")
+		return Config{}, errEmptyConfigFields
 	}
 
 	return cfg, nil
@@ -122,17 +124,17 @@ func loadXML(path string) ([]Valute, error) {
 func transform(valutes []Valute) ([]ResultCurrency, error) {
 	result := make([]ResultCurrency, 0, len(valutes))
 
-	for _, v := range valutes {
-		value, err := parseFloat(v.Value)
-		if err != nil {
-			return nil, err
-		}
+	for _, valute := range valutes {
+	value, err := parseFloat(valute.Value)
+	if err != nil {
+		return nil, err
+	}
 
-		result = append(result, ResultCurrency{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    value,
-		})
+	result = append(result, ResultCurrency{
+		NumCode:  valute.NumCode,
+		CharCode: valute.CharCode,
+		Value:    value,
+	})
 	}
 
 	sort.Slice(result, func(i, j int) bool {
