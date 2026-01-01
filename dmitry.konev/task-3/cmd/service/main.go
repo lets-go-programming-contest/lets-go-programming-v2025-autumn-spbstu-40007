@@ -110,24 +110,21 @@ func loadXML(path string) ([]Valute, error) {
 }
 
 func transform(valutes []Valute) []ResultCurrency {
-	result := make([]ResultCurrency, 0, len(valutes))
+    result := make([]ResultCurrency, 0, len(valutes))
 
-	for _, v := range valutes {
-		if v.CharCode == "" {
-			continue
-		}
-		result = append(result, ResultCurrency{
-			NumCode:  v.NumCode,
-			CharCode: v.CharCode,
-			Value:    parseFloat(v.Value),
-		})
-	}
+    for _, v := range valutes {
+        result = append(result, ResultCurrency{
+            NumCode:  v.NumCode,
+            CharCode: v.CharCode,
+            Value:    parseFloat(v.Value),
+        })
+    }
 
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Value > result[j].Value
-	})
+    sort.Slice(result, func(i, j int) bool {
+        return result[i].Value > result[j].Value
+    })
 
-	return result
+    return result
 }
 
 func saveJSON(path string, data []ResultCurrency) error {
