@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 
 	"golang.org/x/text/encoding/charmap"
 	"gopkg.in/yaml.v3"
@@ -44,7 +44,6 @@ func main() {
 	if *configPath == "" {
 		panic("config flag is required")
 	}
-
 	config := loadConfig(*configPath)
 	valutes := loadXML(config.InputFile)
 	result := transform(valutes)
@@ -56,16 +55,13 @@ func loadConfig(path string) Config {
 	if err != nil {
 		panic(err)
 	}
-
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		panic(err)
 	}
-
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
 		panic("config fields must not be empty")
 	}
-
 	return cfg
 }
 
@@ -74,11 +70,7 @@ func loadXML(path string) []Valute {
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic(cerr)
-		}
-	}()
+	defer func() { _ = file.Close() }()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
@@ -87,7 +79,6 @@ func loadXML(path string) []Valute {
 		}
 		return input, nil
 	}
-
 	var curs ValCurs
 	if err := decoder.Decode(&curs); err != nil {
 		panic(err)
@@ -102,16 +93,9 @@ func transform(valutes []Valute) []ResultCurrency {
 		if err != nil {
 			panic(err)
 		}
-		result = append(result, ResultCurrency{
-			NumCode:  valute.NumCode,
-			CharCode: valute.CharCode,
-			Value:    value,
-		})
+		result = append(result, ResultCurrency{valute.NumCode, valute.CharCode, value})
 	}
-
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Value > result[j].Value
-	})
+	sort.Slice(result, func(i, j int) bool { return result[i].Value > result[j].Value })
 	return result
 }
 
@@ -120,16 +104,11 @@ func saveJSON(path string, data []ResultCurrency) {
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		panic(err)
 	}
-
 	file, err := os.Create(path)
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			panic(cerr)
-		}
-	}()
+	defer func() { _ = file.Close() }()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
@@ -139,6 +118,5 @@ func saveJSON(path string, data []ResultCurrency) {
 }
 
 func parseFloat(s string) (float64, error) {
-	s = strings.ReplaceAll(s, ",", ".")
-	return strconv.ParseFloat(s, 64)
+	return strconv.ParseFloat(strings.ReplaceAll(s, ",", "."), 64)
 }
