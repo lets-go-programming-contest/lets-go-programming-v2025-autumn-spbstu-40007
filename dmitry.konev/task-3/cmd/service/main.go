@@ -15,7 +15,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const dirPerm = 0755
+const dirPerm = 0o755
 
 type Config struct {
 	InputFile  string `yaml:"input-file"`
@@ -41,6 +41,7 @@ type ResultCurrency struct {
 func main() {
 	configPath := flag.String("config", "", "path to config file")
 	flag.Parse()
+
 	if *configPath == "" {
 		panic("config flag is required")
 	}
@@ -74,6 +75,7 @@ func loadXML(path string) []Valute {
 	if err != nil {
 		panic(err)
 	}
+	
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
 			panic(cerr)
@@ -100,6 +102,7 @@ func loadXML(path string) []Valute {
 
 func transform(valutes []Valute) []ResultCurrency {
 	result := make([]ResultCurrency, 0, len(valutes))
+
 	for _, valute := range valutes {
 		valueStr := strings.Replace(valute.Value, ",", ".", 1)
 		value, err := parseFloat(valueStr)
@@ -131,6 +134,7 @@ func saveJSON(path string, data []ResultCurrency) {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
 			panic(cerr)
