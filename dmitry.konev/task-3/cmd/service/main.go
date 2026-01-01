@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
