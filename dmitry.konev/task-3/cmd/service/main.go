@@ -116,11 +116,14 @@ func transform(valutes []Valute) []ResultCurrency {
 	result := make([]ResultCurrency, 0, len(valutes))
 
 	for _, valute := range valutes {
-		if valute.CharCode == "" || valute.Value == "" {
+		if valute.CharCode == "" {
 			continue
 		}
 
-		value := parseFloat(valute.Value)
+		value, err := parseFloat(valute.Value)
+		if err != nil {
+			value = 0
+		}
 
 		result = append(result, ResultCurrency{
 			NumCode:  valute.NumCode,
@@ -160,10 +163,13 @@ func saveJSON(path string, data []ResultCurrency) error {
 	return nil
 }
 
-func parseFloat(s string) float64 {
+func parseFloat(s string) (float64, error) {
+	if s == "" {
+		return 0, nil
+	}
 	value, err := strconv.ParseFloat(strings.ReplaceAll(s, ",", "."), 64)
 	if err != nil {
-		return 0
+		return 0, fmt.Errorf("parse float: %w", err)
 	}
-	return value
+	return value, nil
 }
