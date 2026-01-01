@@ -60,7 +60,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	result := transform(valutes)
+	result, err := transform(valutes)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "transform data:", err)
+		os.Exit(1)
+	}
 
 	if err := saveJSON(cfg.OutputFile, result); err != nil {
 		fmt.Fprintln(os.Stderr, "save JSON:", err)
@@ -71,12 +75,12 @@ func main() {
 func loadConfig(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("read config file: %w", err)
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("unmarshal yaml: %w", err)
 	}
 
 	if cfg.InputFile == "" || cfg.OutputFile == "" {
@@ -89,69 +93,92 @@ func loadConfig(path string) (Config, error) {
 func loadXML(path string) ([]Valute, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open xml file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			fmt.Fprintln(os.Stderr, "close xml file:", cerr)
+		}
+	}()
 
 	decoder := xml.NewDecoder(file)
 	decoder.CharsetReader = func(charset string, input io.Reader) (io.Reader, error) {
 		if strings.EqualFold(charset, "windows-1251") {
 			return charmap.Windows1251.NewDecoder().Reader(input), nil
 		}
+
 		return input, nil
 	}
 
 	var curs ValCurs
 	if err := decoder.Decode(&curs); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decode xml: %w", err)
 	}
 
 	return curs.Valutes, nil
 }
 
-func transform(valutes []Valute) []ResultCurrency {
-    result := make([]ResultCurrency, 0, len(valutes))
+func transform(valutes []Valute) ([]ResultCurrency, error) {
+	result := make([]ResultCurrency, 0, len(valutes))
 
-    for _, v := range valutes {
-        result = append(result, ResultCurrency{
-            NumCode:  v.NumCode,
-            CharCode: v.CharCode,
-            Value:    parseFloat(v.Value),
-        })
-    }
+	for _, v := range valutes {
+		value, err := parseFloat(v.Value)
+		if err != nil {
+			return nil, err
+		}
 
-    sort.Slice(result, func(i, j int) bool {
-        return result[i].Value > result[j].Value
-    })
+		result = append(result, ResultCurrency{
+			NumCode:  v.NumCode,
+			CharCode: v.CharCode,
+			Value:    value,
+		})
+	}
 
-    return result
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Value > result[j].Value
+	})
+
+	return result, nil
 }
 
 func saveJSON(path string, data []ResultCurrency) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, dirPerm); err != nil {
-		return err
+		return fmt.Errorf("create output dir: %w", err)
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("create output file: %w", err)
 	}
-	defer file.Close()
+
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			fmt.Fprintln(os.Stderr, "close output file:", cerr)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
-	return encoder.Encode(data)
+
+	if err := encoder.Encode(data); err != nil {
+		return fmt.Errorf("encode json: %w", err)
+	}
+
+	return nil
 }
 
-func parseFloat(s string) float64 {
-	s = strings.ReplaceAll(s, ",", ".")
-	if s == "" {
-		return 0
+func parseFloat(s string) (float64, error) {
+	normalized := strings.ReplaceAll(s, ",", ".")
+	if normalized == "" {
+		return 0, nil
 	}
-	value, err := strconv.ParseFloat(s, 64)
+
+	value, err := strconv.ParseFloat(normalized, 64)
 	if err != nil {
-		return 0
+		return 0, fmt.Errorf("parse float %q: %w", normalized, err)
 	}
-	return value
+
+	return value, nil
 }
