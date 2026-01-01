@@ -75,6 +75,7 @@ func loadXML(path string) []Valute {
 	if err != nil {
 		panic(err)
 	}
+
 	defer func() {
 		if cerr := file.Close(); cerr != nil {
 			panic(cerr)
