@@ -19,7 +19,6 @@ func takeTemperature(employees int) {
 		if err3 != nil {
 			fmt.Println("Invalid operation or value")
 			return
-			
 		}
 
 		tempInt, err := strconv.Atoi(value)
@@ -33,6 +32,7 @@ func takeTemperature(employees int) {
 		case ">=":
 			minTemp = max(minTemp, tempInt)
 		}
+
 		if minTemp > maxTemp {
 			fmt.Println(-1)
 		} else {
@@ -50,7 +50,6 @@ func main() {
 	if err1 != nil {
 		fmt.Println("Invalid departments")
 		return
-		
 	}
 
 	for range departments {
@@ -58,7 +57,6 @@ func main() {
 		if err2 != nil {
 			fmt.Println("Invalid employees")
 			return
-			
 		}
 
 		takeTemperature(employees)
