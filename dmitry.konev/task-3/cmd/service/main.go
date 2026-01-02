@@ -18,6 +18,7 @@ import (
 )
 
 const dirPerm = 0o755
+
 var errEmptyConfigFields = errors.New("config fields must not be empty")
 
 type Config struct {
@@ -135,7 +136,7 @@ func transform(valutes []Valute) ([]ResultCurrency, error) {
 		CharCode: valute.CharCode,
 		Value:    value,
 	})
-	}
+}
 
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Value > result[j].Value
