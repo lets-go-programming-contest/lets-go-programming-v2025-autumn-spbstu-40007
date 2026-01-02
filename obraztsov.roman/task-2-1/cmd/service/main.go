@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	
 )
 
 func takeTemperature(employees int) {
@@ -11,7 +10,6 @@ func takeTemperature(employees int) {
 	maxTemp := 30
 
 	for range employees {
-
 		var (
 			operation string
 			value     string
@@ -21,6 +19,7 @@ func takeTemperature(employees int) {
 		if err3 != nil {
 			fmt.Println("Invalid operation or value")
 			return
+			
 		}
 
 		tempInt, err := strconv.Atoi(value)
@@ -39,12 +38,10 @@ func takeTemperature(employees int) {
 		} else {
 			fmt.Println(minTemp)
 		}
-
 	}
 }
 
 func main() {
-
 	var (
 		departments, employees int
 	)
@@ -53,6 +50,7 @@ func main() {
 	if err1 != nil {
 		fmt.Println("Invalid departments")
 		return
+		
 	}
 
 	for range departments {
@@ -60,9 +58,9 @@ func main() {
 		if err2 != nil {
 			fmt.Println("Invalid employees")
 			return
+			
 		}
 
 		takeTemperature(employees)
 	}
-
 }
