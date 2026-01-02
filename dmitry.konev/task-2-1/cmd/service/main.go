@@ -34,7 +34,6 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 
 		operator := parts[0]
 		value, err := strconv.Atoi(parts[1])
-
 		if err != nil {
 			fmt.Println(-1)
 
@@ -72,7 +71,6 @@ func main() {
 	}
 
 	numDepartments, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-
 	if err != nil {
 		return
 	}
@@ -83,7 +81,6 @@ func main() {
 		}
 
 		numEmployees, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-
 		if err != nil {
 			return
 		}
