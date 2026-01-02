@@ -126,17 +126,17 @@ func transform(valutes []Valute) ([]ResultCurrency, error) {
 	result := make([]ResultCurrency, 0, len(valutes))
 
 	for _, valute := range valutes {
-	value, err := parseFloat(valute.Value)
-	if err != nil {
-		return nil, err
-	}
+		value, err := parseFloat(valute.Value)
+		if err != nil {
+			return nil, err
+		}
 
-	result = append(result, ResultCurrency{
-		NumCode:  valute.NumCode,
-		CharCode: valute.CharCode,
-		Value:    value,
-	})
-}
+		result = append(result, ResultCurrency{
+			NumCode:  valute.NumCode,
+			CharCode: valute.CharCode,
+			Value:    value,
+		})
+	}
 
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].Value > result[j].Value
