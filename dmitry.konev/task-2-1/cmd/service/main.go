@@ -9,30 +9,35 @@ import (
 )
 
 const (
-	minTemp = 15
-	maxTemp = 30
+	minTemp       = 15
+	maxTemp       = 30
+	expectedParts = 2
 )
 
 func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 	currentMin := minTemp
 	currentMax := maxTemp
 
-	for i := 0; i < numEmployees; i++ {
+	for range numEmployees {
 		if !scanner.Scan() {
 			return
 		}
 
 		line := strings.TrimSpace(scanner.Text())
 		parts := strings.Split(line, " ")
-		if len(parts) != 2 {
+
+		if len(parts) != expectedParts {
 			fmt.Println(-1)
+
 			continue
 		}
 
 		operator := parts[0]
 		value, err := strconv.Atoi(parts[1])
+
 		if err != nil {
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -47,6 +52,7 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 			}
 		default:
 			fmt.Println(-1)
+
 			continue
 		}
 
@@ -66,17 +72,19 @@ func main() {
 	}
 
 	numDepartments, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-	if err != nil || numDepartments < 1 || numDepartments > 1000 {
+
+	if err != nil {
 		return
 	}
 
-	for d := 0; d < numDepartments; d++ {
+	for range numDepartments {
 		if !scanner.Scan() {
 			return
 		}
 
 		numEmployees, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
-		if err != nil || numEmployees < 1 || numEmployees > 1000 {
+
+		if err != nil {
 			return
 		}
 
