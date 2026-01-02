@@ -18,7 +18,7 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 	currentMin := minTemp
 	currentMax := maxTemp
 
-	for i := 0; i < numEmployees; i++ {
+	for range make([]struct{}, numEmployees) {
 		if !scanner.Scan() {
 			return
 		}
@@ -76,7 +76,7 @@ func main() {
 		return
 	}
 
-	for d := 0; d < numDepartments; d++ {
+	for range make([]struct{}, numDepartments) {
 		if !scanner.Scan() {
 			return
 		}
