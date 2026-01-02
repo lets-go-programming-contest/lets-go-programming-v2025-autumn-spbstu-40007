@@ -18,7 +18,7 @@ func processDepartment(scanner *bufio.Scanner, numEmployees int) {
 	currentMin := minTemp
 	currentMax := maxTemp
 
-	for range numEmployees {
+	for i := 0; i < numEmployees; i++ {
 		if !scanner.Scan() {
 			return
 		}
@@ -70,17 +70,19 @@ func main() {
 		return
 	}
 
-	numDepartments, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+	numDepartmentsStr := strings.TrimSpace(scanner.Text())
+	numDepartments, err := strconv.Atoi(numDepartmentsStr)
 	if err != nil {
 		return
 	}
 
-	for range numDepartments {
+	for d := 0; d < numDepartments; d++ {
 		if !scanner.Scan() {
 			return
 		}
 
-		numEmployees, err := strconv.Atoi(strings.TrimSpace(scanner.Text()))
+		numEmployeesStr := strings.TrimSpace(scanner.Text())
+		numEmployees, err := strconv.Atoi(numEmployeesStr)
 		if err != nil {
 			return
 		}
