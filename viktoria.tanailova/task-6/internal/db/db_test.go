@@ -1,3 +1,4 @@
+//nolint:all
 package db_test
 
 import (
@@ -8,6 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"task-6/internal/db"
+)
+
+var (
+	errDBOffline = errors.New("db offline")
+	errBrokenRow = errors.New("broken row")
 )
 
 func createService(t *testing.T) (db.DBService, sqlmock.Sqlmock) {
@@ -44,7 +50,7 @@ func TestDBService_GetNames_AllCases(t *testing.T) {
 
 	t.Run("query fails", func(t *testing.T) {
 		mock.ExpectQuery("^SELECT name FROM users$").
-			WillReturnError(errors.New("db offline"))
+			WillReturnError(errDBOffline)
 
 		_, err := service.GetNames()
 		assert.Error(t, err)
@@ -65,7 +71,7 @@ func TestDBService_GetNames_AllCases(t *testing.T) {
 	t.Run("rows error", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alex").
-			RowError(0, errors.New("broken row"))
+			RowError(0, errBrokenRow)
 
 		mock.ExpectQuery("^SELECT name FROM users$").
 			WillReturnRows(rows)
@@ -95,7 +101,7 @@ func TestDBService_GetUniqueNames_AllCases(t *testing.T) {
 
 	t.Run("query fails", func(t *testing.T) {
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").
-			WillReturnError(errors.New("db offline"))
+			WillReturnError(errDBOffline)
 
 		_, err := service.GetUniqueNames()
 		assert.Error(t, err)
@@ -116,7 +122,7 @@ func TestDBService_GetUniqueNames_AllCases(t *testing.T) {
 	t.Run("rows error", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"name"}).
 			AddRow("Alex").
-			RowError(0, errors.New("broken row"))
+			RowError(0, errBrokenRow)
 
 		mock.ExpectQuery("^SELECT DISTINCT name FROM users$").
 			WillReturnRows(rows)

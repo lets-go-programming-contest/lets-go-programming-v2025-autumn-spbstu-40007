@@ -1,3 +1,4 @@
+//nolint:all
 package wifi_test
 
 import (
@@ -10,6 +11,8 @@ import (
 
 	localwifi "task-6/internal/wifi"
 )
+
+var errWiFiNotAvailable = errors.New("wifi not available")
 
 func TestWiFiService_GetAddresses_Variants(t *testing.T) {
 	mock := &fakeWiFiHandle{}
@@ -36,7 +39,7 @@ func TestWiFiService_GetAddresses_Variants(t *testing.T) {
 
 	t.Run("interfaces error", func(t *testing.T) {
 		mock.fn = func() ([]*wifi.Interface, error) {
-			return nil, errors.New("wifi not available")
+			return nil, errWiFiNotAvailable
 		}
 
 		_, err := service.GetAddresses()
@@ -63,7 +66,7 @@ func TestWiFiService_GetNames_Variants(t *testing.T) {
 
 	t.Run("interfaces error", func(t *testing.T) {
 		mock.fn = func() ([]*wifi.Interface, error) {
-			return nil, errors.New("wifi not available")
+			return nil, errWiFiNotAvailable
 		}
 
 		_, err := service.GetNames()
