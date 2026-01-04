@@ -14,5 +14,6 @@ var devData []byte
 func load() Config {
 	var cfg Config
 	_ = yaml.Unmarshal(devData, &cfg)
+
 	return cfg
 }
