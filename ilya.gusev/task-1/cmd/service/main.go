@@ -9,9 +9,7 @@ import (
 )
 
 func main() {
-
 	sc := bufio.NewScanner(os.Stdin)
-
 	if !sc.Scan() {
 		return
 	}
@@ -19,25 +17,26 @@ func main() {
 	input1 := strings.TrimSpace(sc.Text())
 	a, err := strconv.Atoi(input1)
 	if err != nil {
-		fmt.Println("Error: first value is not a number")
+		fmt.Println("Invalid first operand")
 		return
 	}
 
 	if !sc.Scan() {
 		return
 	}
+
 	input2 := strings.TrimSpace(sc.Text())
 	b, err := strconv.Atoi(input2)
 	if err != nil {
-		fmt.Println("Error: second value is not a number")
+		fmt.Println("Invalid second operand")
 		return
 	}
 
 	if !sc.Scan() {
 		return
 	}
-	op := strings.TrimSpace(sc.Text())
 
+	op := strings.TrimSpace(sc.Text())
 	if op == "+" {
 		fmt.Println(a + b)
 	} else if op == "-" {
@@ -46,11 +45,11 @@ func main() {
 		fmt.Println(a * b)
 	} else if op == "/" {
 		if b == 0 {
-			fmt.Println("Error: cannot divide by zero")
+			fmt.Println("Division by zero")
 		} else {
 			fmt.Println(a / b)
 		}
 	} else {
-		fmt.Println("Unknown command")
+		fmt.Println("Invalid operation")
 	}
 }
