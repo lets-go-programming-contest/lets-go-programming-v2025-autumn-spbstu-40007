@@ -28,7 +28,7 @@ type conveyerImpl struct {
 
 type handlerInfo struct {
 	handlerType string
-	fn          any
+	fn          interface{}
 	inputs      []string
 	outputs     []string
 }
@@ -135,7 +135,8 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 
 	for _, info := range c.handlers {
 		c.wg.Add(1)
-		go func(info handlerInfo) {
+		info := info
+		go func() {
 			defer c.wg.Done()
 
 			handlerCtx, handlerCancel := context.WithCancel(ctx)
@@ -175,7 +176,7 @@ func (c *conveyerImpl) Run(ctx context.Context) error {
 				}
 				cancel()
 			}
-		}(info)
+		}()
 	}
 
 	go func() {

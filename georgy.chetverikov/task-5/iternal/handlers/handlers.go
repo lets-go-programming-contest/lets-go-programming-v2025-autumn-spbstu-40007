@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"sync/atomic"
 )
 
@@ -72,19 +73,22 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		return nil
 	}
 
-	errChan := make(chan error, len(inputs))
-	done := make(chan struct{})
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, 1)
 
 	for _, input := range inputs {
-		go func(in chan string) {
+		wg.Add(1)
+		input := input
+		go func() {
+			defer wg.Done()
 			for {
 				select {
 				case <-ctx.Done():
-					errChan <- ctx.Err()
 					return
-				case <-done:
-					return
-				case data, ok := <-in:
+				case data, ok := <-input:
 					if !ok {
 						return
 					}
@@ -95,23 +99,24 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 					select {
 					case <-ctx.Done():
-						errChan <- ctx.Err()
-						return
-					case <-done:
 						return
 					case output <- data:
 					}
 				}
 			}
-		}(input)
+		}()
 	}
+
+	go func() {
+		wg.Wait()
+		close(errChan)
+	}()
 
 	select {
 	case <-ctx.Done():
-		close(done)
+		wg.Wait()
 		return ctx.Err()
 	case err := <-errChan:
-		close(done)
 		return err
 	}
 }
