@@ -34,4 +34,3 @@ func SeparatorFunc(
 		}
 	}
 }
-
