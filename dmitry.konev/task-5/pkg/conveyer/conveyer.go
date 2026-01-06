@@ -10,17 +10,17 @@ var ErrChanNotFound = errors.New("chan not found")
 
 type Conveyer interface {
 	RegisterDecorator(
-		fn func(context.Context, chan string, chan string) error,
+		handlerFuncParam func(context.Context, chan string, chan string) error,
 		input string,
 		output string,
 	)
 	RegisterMultiplexer(
-		fn func(context.Context, []chan string, chan string) error,
+		handlerFuncParam func(context.Context, []chan string, chan string) error,
 		inputs []string,
 		output string,
 	)
 	RegisterSeparator(
-		fn func(context.Context, chan string, []chan string) error,
+		handlerFuncParam func(context.Context, chan string, []chan string) error,
 		input string,
 		outputs []string,
 	)
@@ -40,8 +40,10 @@ type conveyer struct {
 
 func New(size int) Conveyer {
 	return &conveyer{
-		size:  size,
-		chans: make(map[string]chan string),
+		size:     size,
+		mu:       sync.RWMutex{},
+		chans:    make(map[string]chan string),
+		handlers: nil,
 	}
 }
 
@@ -49,58 +51,64 @@ func (c *conveyer) getOrCreate(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if ch, ok := c.chans[name]; ok {
-		return ch
+	if channel, ok := c.chans[name]; ok {
+
+		return channel
 	}
 
-	ch := make(chan string, c.size)
-	c.chans[name] = ch
-	return ch
+	channel := make(chan string, c.size)
+	c.chans[name] = channel
+
+	return channel
 }
 
 func (c *conveyer) RegisterDecorator(
-	fn func(context.Context, chan string, chan string) error,
+	handlerFuncParam func(context.Context, chan string, chan string) error,
 	input string,
 	output string,
 ) {
-	in := c.getOrCreate(input)
-	out := c.getOrCreate(output)
+	inputChan := c.getOrCreate(input)
+	outputChan := c.getOrCreate(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, in, out)
+
+		return handlerFuncParam(ctx, inputChan, outputChan)
 	})
 }
 
 func (c *conveyer) RegisterMultiplexer(
-	fn func(context.Context, []chan string, chan string) error,
+	handlerFuncParam func(context.Context, []chan string, chan string) error,
 	inputs []string,
 	output string,
 ) {
-	ins := make([]chan string, 0, len(inputs))
-	for _, name := range inputs {
-		ins = append(ins, c.getOrCreate(name))
+	inputChans := make([]chan string, 0, len(inputs))
+	for _, inputName := range inputs {
+		inputChans = append(inputChans, c.getOrCreate(inputName))
 	}
-	out := c.getOrCreate(output)
+
+	outputChan := c.getOrCreate(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, ins, out)
+
+		return handlerFuncParam(ctx, inputChans, outputChan)
 	})
 }
 
 func (c *conveyer) RegisterSeparator(
-	fn func(context.Context, chan string, []chan string) error,
+	handlerFuncParam func(context.Context, chan string, []chan string) error,
 	input string,
 	outputs []string,
 ) {
-	in := c.getOrCreate(input)
+	inputChan := c.getOrCreate(input)
 
-	outs := make([]chan string, 0, len(outputs))
-	for _, name := range outputs {
-		outs = append(outs, c.getOrCreate(name))
+	outputChans := make([]chan string, 0, len(outputs))
+	for _, outputName := range outputs {
+		outputChans = append(outputChans, c.getOrCreate(outputName))
 	}
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
-		return fn(ctx, in, outs)
+
+		return handlerFuncParam(ctx, inputChan, outputChans)
 	})
 }
 
@@ -108,33 +116,39 @@ func (c *conveyer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	var wg sync.WaitGroup
+	waitGroup := sync.WaitGroup{}
 	errCh := make(chan error, 1)
 
-	for _, h := range c.handlers {
-		wg.Add(1)
-		go func(h handlerRunner) {
-			defer wg.Done()
-			if err := h(ctx); err != nil {
+	for _, handlerFunc := range c.handlers {
+		handler := handlerFunc
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+
+			if err := handler(ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
 				}
 				cancel()
 			}
-		}(h)
+		}()
 	}
 
 	select {
 	case <-ctx.Done():
+
 	case err := <-errCh:
-		wg.Wait()
+		waitGroup.Wait()
+
 		c.closeAll()
+
 		return err
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 	c.closeAll()
+
 	return nil
 }
 
@@ -142,35 +156,39 @@ func (c *conveyer) closeAll() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for _, ch := range c.chans {
-		close(ch)
+	for _, channel := range c.chans {
+		close(channel)
 	}
 }
 
 func (c *conveyer) Send(input string, data string) error {
 	c.mu.RLock()
-	ch, ok := c.chans[input]
+	inputChan, ok := c.chans[input]
 	c.mu.RUnlock()
 
 	if !ok {
+
 		return ErrChanNotFound
 	}
 
-	ch <- data
+	inputChan <- data
+
 	return nil
 }
 
 func (c *conveyer) Recv(output string) (string, error) {
 	c.mu.RLock()
-	ch, ok := c.chans[output]
+	outputChan, ok := c.chans[output]
 	c.mu.RUnlock()
 
 	if !ok {
+
 		return "", ErrChanNotFound
 	}
 
-	val, ok := <-ch
+	val, ok := <-outputChan
 	if !ok {
+
 		return "undefined", nil
 	}
 

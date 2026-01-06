@@ -4,10 +4,10 @@ import "context"
 
 func SeparatorFunc(
 	ctx context.Context,
-	input chan string,
-	outputs []chan string,
+	inputChan chan string,
+	outputChans []chan string,
 ) error {
-	if len(outputs) == 0 {
+	if len(outputChans) == 0 {
 		return nil
 	}
 
@@ -18,18 +18,18 @@ func SeparatorFunc(
 		case <-ctx.Done():
 			return nil
 
-		case val, ok := <-input:
+		case val, ok := <-inputChan:
 			if !ok {
 				return nil
 			}
 
-			out := outputs[index%len(outputs)]
+			targetChan := outputChans[index%len(outputChans)]
 			index++
 
 			select {
 			case <-ctx.Done():
 				return nil
-			case out <- val:
+			case targetChan <- val:
 			}
 		}
 	}
