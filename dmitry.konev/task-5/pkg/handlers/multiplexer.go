@@ -3,51 +3,43 @@ package handlers
 import (
 	"context"
 	"strings"
+	"sync"
 )
 
 func MultiplexerFunc(
 	ctx context.Context,
-	inputChans []chan string,
-	outputChan chan string,
+	inputs []chan string,
+	output chan string,
 ) error {
-	openChans := len(inputChans)
-	doneCh := make(chan struct{}, len(inputChans))
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(inputs))
 
-	for _, inputChan := range inputChans {
-		go func(in chan string) {
+	for _, inputCh := range inputs {
+		channel := inputCh
+
+		go func() {
+			defer waitGroup.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
 
-				case val, ok := <-in:
+				case value, ok := <-channel:
 					if !ok {
-						doneCh <- struct{}{}
 						return
 					}
 
-					if strings.Contains(val, "no multiplexer") {
+					if strings.Contains(value, "no multiplexer") {
 						continue
 					}
 
-					select {
-					case <-ctx.Done():
-						return
-					case outputChan <- val:
-					}
+					output <- value
 				}
 			}
-		}(inputChan)
+		}()
 	}
 
-	for openChans > 0 {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-doneCh:
-			openChans--
-		}
-	}
-
+	waitGroup.Wait()
 	return nil
 }

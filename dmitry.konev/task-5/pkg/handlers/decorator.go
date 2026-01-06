@@ -10,32 +10,28 @@ var ErrCantBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(
 	ctx context.Context,
-	inputChan chan string,
-	outputChan chan string,
+	input chan string,
+	output chan string,
 ) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 
-		case val, ok := <-inputChan:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			if strings.Contains(val, "no decorator") {
+			if strings.Contains(value, "no decorator") {
 				return ErrCantBeDecorated
 			}
 
-			if !strings.HasPrefix(val, "decorated: ") {
-				val = "decorated: " + val
+			if !strings.HasPrefix(value, "decorated: ") {
+				value = "decorated: " + value
 			}
 
-			select {
-			case <-ctx.Done():
-				return nil
-			case outputChan <- val:
-			}
+			output <- value
 		}
 	}
 }

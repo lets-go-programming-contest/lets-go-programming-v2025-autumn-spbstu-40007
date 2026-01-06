@@ -4,33 +4,24 @@ import "context"
 
 func SeparatorFunc(
 	ctx context.Context,
-	inputChan chan string,
-	outputChans []chan string,
+	input chan string,
+	outputs []chan string,
 ) error {
-	if len(outputChans) == 0 {
-		return nil
-	}
-
 	index := 0
+	count := len(outputs)
 
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			return ctx.Err()
 
-		case val, ok := <-inputChan:
+		case value, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			targetChan := outputChans[index%len(outputChans)]
+			outputs[index%count] <- value
 			index++
-
-			select {
-			case <-ctx.Done():
-				return nil
-			case targetChan <- val:
-			}
 		}
 	}
 }
