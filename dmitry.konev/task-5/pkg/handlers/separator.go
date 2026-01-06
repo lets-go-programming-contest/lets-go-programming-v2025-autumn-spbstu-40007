@@ -2,11 +2,13 @@ package handlers
 
 import "context"
 
-func SeparatorFunc(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, ch := range outputs {
+			close(ch)
+		}
+	}()
+
 	index := 0
 	count := len(outputs)
 
@@ -14,13 +16,17 @@ func SeparatorFunc(
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
-		case value, ok := <-input:
+		case v, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			outputs[index%count] <- value
+			ch := outputs[index%count]
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case ch <- v:
+			}
 			index++
 		}
 	}
