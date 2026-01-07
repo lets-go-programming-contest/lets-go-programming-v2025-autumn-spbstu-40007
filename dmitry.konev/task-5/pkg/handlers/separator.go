@@ -16,7 +16,6 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-
 		case val, ok := <-input:
 			if !ok {
 				return nil

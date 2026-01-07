@@ -7,6 +7,7 @@ import (
 )
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	defer close(output)
 	var wg sync.WaitGroup
 	wg.Add(len(inputs))
 
@@ -20,7 +21,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				select {
 				case <-ctx.Done():
 					return
-
 				case val, ok := <-ch:
 					if !ok {
 						return
@@ -37,6 +37,5 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	wg.Wait()
-	close(output) 
 	return nil
 }
