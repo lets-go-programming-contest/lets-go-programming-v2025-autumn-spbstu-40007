@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"task-8/config"
+
+	"github.com/se1lzor/task-8/config"
 )
 
 func main() {
