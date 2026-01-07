@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/falsefeelings/task-6/iternal/db"
+	"github.com/georgy.chetverikov/task-6/iternal/db"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
