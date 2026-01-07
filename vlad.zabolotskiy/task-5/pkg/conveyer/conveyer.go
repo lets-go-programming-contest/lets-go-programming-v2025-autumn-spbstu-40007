@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	errAlreadyRunning = errors.New("already running")
-	errChanNotFound   = errors.New("chan not found")
+	ErrAlreadyRunning = errors.New("already running")
+	ErrChanNotFound   = errors.New("chan not found")
 )
 
 type Conveyer struct {
@@ -97,7 +97,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-		return errAlreadyRunning
+		return ErrAlreadyRunning
 	}
 
 	c.isRunning = true
@@ -112,8 +112,10 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range c.handlers {
 		wg.Add(1)
+
 		go func(h func(context.Context) error) {
 			defer wg.Done()
+
 			if err := h(ctx); err != nil {
 				select {
 				case errorChan <- err:
@@ -137,11 +139,13 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
+
 	case err, ok := <-errorChan:
 		if ok {
 			cancel()
 			return err
 		}
+
 		return nil
 	}
 }
@@ -152,10 +156,11 @@ func (c *Conveyer) Send(input string, data string) error {
 	c.mutex.RUnlock()
 
 	if !exists {
-		return fmt.Errorf("%w", errChanNotFound)
+		return fmt.Errorf("%w", ErrChanNotFound)
 	}
 
 	channel <- data
+
 	return nil
 }
 
@@ -165,7 +170,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	c.mutex.RUnlock()
 
 	if !exists {
-		return "", fmt.Errorf("%w", errChanNotFound)
+		return "", fmt.Errorf("%w", ErrChanNotFound)
 	}
 
 	data, ok := <-channel
