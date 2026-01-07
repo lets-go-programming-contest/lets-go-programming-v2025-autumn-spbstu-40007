@@ -106,6 +106,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	errorChannel := make(chan error, len(c.handlers))
 
 	var waitGroup sync.WaitGroup
+
 	waitGroup.Add(len(c.handlers))
 
 	for _, handler := range c.handlers {

@@ -6,15 +6,9 @@ import (
 	"strings"
 )
 
-var (
-	ErrCantBeDecorated = errors.New("can't be decorated")
-)
+var ErrCantBeDecorated = errors.New("can't be decorated")
 
-func PrefixDecoratorFunc(
-	ctx context.Context,
-	input chan string,
-	output chan string,
-) error {
+func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -42,11 +36,7 @@ func PrefixDecoratorFunc(
 	}
 }
 
-func SeparatorFunc(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error {
+func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
 	counter := 0
 
 	for {
@@ -71,11 +61,7 @@ func SeparatorFunc(
 	}
 }
 
-func MultiplexerFunc(
-	ctx context.Context,
-	inputs []chan string,
-	output chan string,
-) error {
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	activeInputs := make([]chan string, len(inputs))
 	copy(activeInputs, inputs)
 
