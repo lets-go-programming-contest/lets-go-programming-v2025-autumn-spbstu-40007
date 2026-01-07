@@ -9,5 +9,5 @@ import (
 func main() {
 	c := conf.Current()
 
-	fmt.Println(c.Env, c.Log)
+	fmt.Print(c.Env, " ", c.Log)
 }
