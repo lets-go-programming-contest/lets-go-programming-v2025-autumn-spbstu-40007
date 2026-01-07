@@ -15,11 +15,12 @@ var (
 )
 
 type Conveyer struct {
-	size      int
-	channels  map[string]chan string
-	handlers  []func(ctx context.Context) error
-	mutex     sync.RWMutex
-	isRunning bool
+	size       int
+	channels   map[string]chan string
+	handlers   []func(ctx context.Context) error
+	mutex      sync.RWMutex
+	isRunning  bool
+	cancelFunc context.CancelFunc
 }
 
 func New(size int) *Conveyer {
@@ -98,37 +99,37 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-
 		return errAlreadyRunning
 	}
 
 	c.isRunning = true
+
+	ctx, cancel := context.WithCancel(ctx)
+	c.cancelFunc = cancel
+
 	c.mutex.Unlock()
 
 	errorGroup, ctxWithCancel := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-
 		errorGroup.Go(func() error {
 			return handlerCopy(ctxWithCancel)
 		})
 	}
 
 	resultChan := make(chan error, 1)
-
 	go func() {
 		resultChan <- errorGroup.Wait()
 		close(resultChan)
-
-		// НЕ закрываем каналы здесь - они закрываются в обработчиках
 	}()
 
 	select {
 	case <-ctx.Done():
+		cancel()
 		return fmt.Errorf("context canceled: %w", ctx.Err())
-
 	case err := <-resultChan:
+		cancel()
 		return err
 	}
 }
@@ -143,7 +144,6 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-
 	return nil
 }
 

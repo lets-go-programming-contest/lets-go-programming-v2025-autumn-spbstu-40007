@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 )
 
@@ -15,7 +14,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context error: %w", ctx.Err())
+			return nil
 
 		case data, ok := <-input:
 			if !ok {
@@ -32,7 +31,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
+				return nil
 			case output <- data:
 			}
 		}
@@ -51,7 +50,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("context error: %w", ctx.Err())
+			return nil
 
 		case data, ok := <-input:
 			if !ok {
@@ -62,7 +61,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
+				return nil
 			case outputs[index] <- data:
 				counter++
 			}
@@ -73,22 +72,19 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
-	activeInputs := make([]chan string, len(inputs))
-	copy(activeInputs, inputs)
+	for {
+		allClosed := true
 
-	for len(activeInputs) > 0 {
-		for index := 0; index < len(activeInputs); index++ {
+		for _, inputChan := range inputs {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("context error: %w", ctx.Err())
-
-			case data, ok := <-activeInputs[index]:
+				return nil
+			case data, ok := <-inputChan:
 				if !ok {
-					activeInputs = append(activeInputs[:index], activeInputs[index+1:]...)
-					index--
-
 					continue
 				}
+
+				allClosed = false
 
 				if strings.Contains(data, "no multiplexer") {
 					continue
@@ -96,13 +92,24 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 				select {
 				case <-ctx.Done():
-					return fmt.Errorf("context error: %w", ctx.Err())
+					return nil
 				case output <- data:
 				}
 			default:
+				select {
+				case <-ctx.Done():
+					return nil
+				case _, ok := <-inputChan:
+					if ok {
+						allClosed = false
+					}
+				default:
+				}
 			}
 		}
-	}
 
-	return nil
+		if allClosed {
+			return nil
+		}
+	}
 }
