@@ -1,2 +1,2 @@
-enviroment: "prod"
+environment: "prod" 
 log_level: "error"

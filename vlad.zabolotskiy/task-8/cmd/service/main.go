@@ -8,5 +8,5 @@ import (
 
 func main() {
 	conf := config.Get()
-	fmt.Printf("%s %s\n", conf.Environment, conf.LogLevel)
+	fmt.Printf("%s %s", conf.Environment, conf.LogLevel)
 }
