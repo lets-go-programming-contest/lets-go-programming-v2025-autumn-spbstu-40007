@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrChanNotFound = errors.New("chan not found")
+	ErrUndefined    = errors.New("undefined")
 )
 
 type decoratorFunc func(context.Context, chan string, chan string) error
@@ -40,7 +41,6 @@ func New(size int) *conveyor {
 	return &conveyor{
 		size:     size,
 		channels: make(map[string]chan string),
-		handlers: make([]handler, 0),
 	}
 }
 
@@ -48,12 +48,11 @@ func (c *conveyor) getOrCreate(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	ch, ok := c.channels[name]
-	if ok {
+	if ch, ok := c.channels[name]; ok {
 		return ch
 	}
 
-	ch = make(chan string, c.size)
+	ch := make(chan string, c.size)
 	c.channels[name] = ch
 	return ch
 }
@@ -67,37 +66,42 @@ func (c *conveyor) get(name string) (chan string, bool) {
 }
 
 func (c *conveyor) RegisterDecorator(fn decoratorFunc, input, output string) {
-	inCh := c.getOrCreate(input)
-	outCh := c.getOrCreate(output)
+	in := c.getOrCreate(input)
+	out := c.getOrCreate(output)
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
-			return fn(ctx, inCh, outCh)
+			return fn(ctx, in, out)
 		},
 	})
 }
 
 func (c *conveyor) RegisterMultiplexer(fn multiplexerFunc, inputs []string, output string) {
-	inChs := make([]chan string, len(inputs))
+	inChans := make([]chan string, len(inputs))
 	for i, name := range inputs {
-		inChs[i] = c.getOrCreate(name)
+		inChans[i] = c.getOrCreate(name)
 	}
-	outCh := c.getOrCreate(output)
+
+	out := c.getOrCreate(output)
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
-			return fn(ctx, inChs, outCh)
+			return fn(ctx, inChans, out)
 		},
 	})
 }
 
 func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []string) {
-	inCh := c.getOrCreate(input)
-	outChs := make([]chan string, len(outputs))
+	in := c.getOrCreate(input)
+
+	outChans := make([]chan string, len(outputs))
 	for i, name := range outputs {
-		outChs[i] = c.getOrCreate(name)
+		outChans[i] = c.getOrCreate(name)
 	}
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
-			return fn(ctx, inCh, outChs)
+			return fn(ctx, in, outChans)
 		},
 	})
 }
@@ -106,36 +110,23 @@ func (c *conveyor) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for _, h := range c.handlers {
-		h := h
+		handlerCopy := h
 		group.Go(func() error {
-			return h.run(ctx)
+			return handlerCopy.run(ctx)
 		})
 	}
 
-	err := group.Wait()
-
-	c.mu.Lock()
-	for _, ch := range c.channels {
-		close(ch)
-	}
-	c.mu.Unlock()
-
-	return err
+	return group.Wait()
 }
 
-func (c *conveyor) Send(input string, data string) error {
+func (c *conveyor) Send(input, data string) error {
 	ch, ok := c.get(input)
 	if !ok {
 		return ErrChanNotFound
 	}
 
-	select {
-	case ch <- data:
-		return nil
-	default:
-		ch <- data
-		return nil
-	}
+	ch <- data
+	return nil
 }
 
 func (c *conveyor) Recv(output string) (string, error) {
@@ -144,10 +135,10 @@ func (c *conveyor) Recv(output string) (string, error) {
 		return "", ErrChanNotFound
 	}
 
-	v, ok := <-ch
+	val, ok := <-ch
 	if !ok {
-		return "undefined", nil
+		return "", ErrUndefined
 	}
 
-	return v, nil
+	return val, nil
 }

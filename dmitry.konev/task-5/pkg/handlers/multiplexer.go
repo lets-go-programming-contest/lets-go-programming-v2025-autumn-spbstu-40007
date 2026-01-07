@@ -7,33 +7,30 @@ import (
 )
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	defer close(output)
-
 	var wg sync.WaitGroup
 	wg.Add(len(inputs))
 
-	for _, ch := range inputs {
-		ch := ch
+	for _, in := range inputs {
+		ch := in
+
 		go func() {
 			defer wg.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case v, ok := <-ch:
+
+				case val, ok := <-ch:
 					if !ok {
 						return
 					}
 
-					if strings.Contains(v, "no multiplexer") {
+					if strings.Contains(val, "no multiplexer") {
 						continue
 					}
 
-					select {
-					case <-ctx.Done():
-						return
-					case output <- v:
-					}
+					output <- val
 				}
 			}
 		}()
