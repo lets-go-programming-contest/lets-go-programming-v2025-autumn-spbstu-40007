@@ -2,22 +2,31 @@ package handlers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 )
 
-func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
+var (
+	ErrCantBeDecorated = errors.New("can't be decorated")
+)
+
+func PrefixDecoratorFunc(
+	ctx context.Context,
+	input chan string,
+	output chan string,
+) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
 			if strings.Contains(data, "no decorator") {
-				return fmt.Errorf("can't be decorated")
+				return ErrCantBeDecorated
 			}
 
 			if !strings.HasPrefix(data, "decorated: ") {
@@ -33,42 +42,53 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	}
 }
 
-func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+func SeparatorFunc(
+	ctx context.Context,
+	input chan string,
+	outputs []chan string,
+) error {
 	counter := 0
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+
 		case data, ok := <-input:
 			if !ok {
 				return nil
 			}
 
-			idx := counter % len(outputs)
+			index := counter % len(outputs)
+
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[idx] <- data:
+			case outputs[index] <- data:
 				counter++
 			}
 		}
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	// Создаем каналы для отслеживания активных входов
-	activeInputs := inputs
+func MultiplexerFunc(
+	ctx context.Context,
+	inputs []chan string,
+	output chan string,
+) error {
+	activeInputs := make([]chan string, len(inputs))
+	copy(activeInputs, inputs)
 
 	for len(activeInputs) > 0 {
-		for i := 0; i < len(activeInputs); i++ {
+		for index := 0; index < len(activeInputs); index++ {
 			select {
 			case <-ctx.Done():
 				return nil
-			case data, ok := <-activeInputs[i]:
+
+			case data, ok := <-activeInputs[index]:
 				if !ok {
-					// Удаляем закрытый канал
-					activeInputs = append(activeInputs[:i], activeInputs[i+1:]...)
-					i--
+					activeInputs = append(activeInputs[:index], activeInputs[index+1:]...)
+					index--
 					continue
 				}
 
@@ -83,11 +103,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 				}
 			default:
 			}
-		}
-
-		// Если все каналы закрыты
-		if len(activeInputs) == 0 {
-			return nil
 		}
 	}
 
