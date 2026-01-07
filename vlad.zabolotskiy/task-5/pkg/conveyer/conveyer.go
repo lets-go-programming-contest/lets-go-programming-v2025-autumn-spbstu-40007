@@ -98,24 +98,27 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
+
 		return errAlreadyRunning
 	}
 
 	c.isRunning = true
 	c.mutex.Unlock()
 
-	g, ctx := errgroup.WithContext(ctx)
+	errorGroup, ctxWithCancel := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-		g.Go(func() error {
-			return handlerCopy(ctx)
+
+		errorGroup.Go(func() error {
+			return handlerCopy(ctxWithCancel)
 		})
 	}
 
 	resultChan := make(chan error, 1)
+
 	go func() {
-		resultChan <- g.Wait()
+		resultChan <- errorGroup.Wait()
 		close(resultChan)
 
 		c.mutex.Lock()
@@ -127,7 +130,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return fmt.Errorf("context canceled: %w", ctx.Err())
+
 	case err := <-resultChan:
 		return err
 	}
