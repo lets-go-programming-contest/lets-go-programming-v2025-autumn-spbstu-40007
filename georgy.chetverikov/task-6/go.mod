@@ -1,4 +1,4 @@
-module github.com/falsefeelings/task-6
+module github.com/georgy.chetverikov/task-6
 
 go 1.22.7
 
