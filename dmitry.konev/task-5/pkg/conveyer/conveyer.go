@@ -60,7 +60,6 @@ func (c *conveyor) getOrCreate(name string) chan string {
 func (c *conveyor) get(name string) (chan string, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	ch, ok := c.channels[name]
 	return ch, ok
 }
@@ -68,7 +67,6 @@ func (c *conveyor) get(name string) (chan string, bool) {
 func (c *conveyor) RegisterDecorator(fn decoratorFunc, input, output string) {
 	in := c.getOrCreate(input)
 	out := c.getOrCreate(output)
-
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, in, out)
@@ -81,9 +79,7 @@ func (c *conveyor) RegisterMultiplexer(fn multiplexerFunc, inputs []string, outp
 	for i, name := range inputs {
 		inChans[i] = c.getOrCreate(name)
 	}
-
 	out := c.getOrCreate(output)
-
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, inChans, out)
@@ -93,12 +89,10 @@ func (c *conveyor) RegisterMultiplexer(fn multiplexerFunc, inputs []string, outp
 
 func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []string) {
 	in := c.getOrCreate(input)
-
 	outChans := make([]chan string, len(outputs))
 	for i, name := range outputs {
 		outChans[i] = c.getOrCreate(name)
 	}
-
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, in, outChans)
@@ -110,9 +104,9 @@ func (c *conveyor) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	for _, h := range c.handlers {
-		handlerCopy := h
+		hCopy := h
 		group.Go(func() error {
-			return handlerCopy.run(ctx)
+			return hCopy.run(ctx)
 		})
 	}
 
@@ -125,8 +119,12 @@ func (c *conveyor) Send(input, data string) error {
 		return ErrChanNotFound
 	}
 
-	ch <- data
-	return nil
+	select {
+	case ch <- data:
+		return nil
+	default:
+		return errors.New("channel blocked")
+	}
 }
 
 func (c *conveyor) Recv(output string) (string, error) {
@@ -135,10 +133,13 @@ func (c *conveyor) Recv(output string) (string, error) {
 		return "", ErrChanNotFound
 	}
 
-	val, ok := <-ch
-	if !ok {
-		return "", ErrUndefined
+	select {
+	case val, ok := <-ch:
+		if !ok {
+			return "", ErrUndefined
+		}
+		return val, nil
+	default:
+		return "", errors.New("no data available")
 	}
-
-	return val, nil
 }

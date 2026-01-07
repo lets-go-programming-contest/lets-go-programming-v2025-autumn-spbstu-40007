@@ -20,8 +20,11 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 			if !ok {
 				return nil
 			}
-
-			outputs[index%count] <- val
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case outputs[index%count] <- val:
+			}
 			index++
 		}
 	}
