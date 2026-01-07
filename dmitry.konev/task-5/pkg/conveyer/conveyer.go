@@ -4,143 +4,160 @@ import (
 	"context"
 	"errors"
 	"sync"
-
-	"golang.org/x/sync/errgroup"
 )
 
-var (
-	ErrChanNotFound = errors.New("chan not found")
-	ErrUndefined    = errors.New("undefined")
-)
+var ErrChanNotFound = errors.New("chan not found")
 
-type decoratorFunc func(context.Context, chan string, chan string) error
-type multiplexerFunc func(context.Context, []chan string, chan string) error
-type separatorFunc func(context.Context, chan string, []chan string) error
+type Conveyer interface {
+	RegisterDecorator(
+		fn func(ctx context.Context, input chan string, output chan string) error,
+		input string,
+		output string,
+	)
 
-type handler struct {
-	run func(context.Context) error
-}
+	RegisterMultiplexer(
+		fn func(ctx context.Context, inputs []chan string, output chan string) error,
+		inputs []string,
+		output string,
+	)
 
-type Conveyor interface {
-	RegisterDecorator(fn decoratorFunc, input string, output string)
-	RegisterMultiplexer(fn multiplexerFunc, inputs []string, output string)
-	RegisterSeparator(fn separatorFunc, input string, outputs []string)
+	RegisterSeparator(
+		fn func(ctx context.Context, input chan string, outputs []chan string) error,
+		input string,
+		outputs []string,
+	)
+
 	Run(ctx context.Context) error
 	Send(input string, data string) error
 	Recv(output string) (string, error)
 }
 
-type conveyor struct {
-	size     int
-	channels map[string]chan string
-	handlers []handler
-	mu       sync.Mutex
+type conveyorImpl struct {
+	chans   map[string]chan string
+	size    int
+	workers []func(ctx context.Context) error
 }
 
-func New(size int) *conveyor {
-	return &conveyor{
-		size:     size,
-		channels: make(map[string]chan string),
+func New(size int) *conveyorImpl {
+	return &conveyorImpl{
+		chans:   make(map[string]chan string),
+		size:    size,
+		workers: make([]func(ctx context.Context) error, 0),
 	}
 }
 
-func (c *conveyor) getOrCreate(name string) chan string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if ch, ok := c.channels[name]; ok {
+func (c *conveyorImpl) getOrCreateChan(name string) chan string {
+	if ch, ok := c.chans[name]; ok {
 		return ch
 	}
 
 	ch := make(chan string, c.size)
-	c.channels[name] = ch
+	c.chans[name] = ch
 	return ch
 }
 
-func (c *conveyor) get(name string) (chan string, bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	ch, ok := c.channels[name]
-	return ch, ok
-}
+func (c *conveyorImpl) RegisterDecorator(
+	fn func(ctx context.Context, input chan string, output chan string) error,
+	input string,
+	output string,
+) {
+	inputCh := c.getOrCreateChan(input)
+	outputCh := c.getOrCreateChan(output)
 
-func (c *conveyor) RegisterDecorator(fn decoratorFunc, input, output string) {
-	in := c.getOrCreate(input)
-	out := c.getOrCreate(output)
-
-	c.handlers = append(c.handlers, handler{
-		run: func(ctx context.Context) error {
-			return fn(ctx, in, out)
-		},
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, inputCh, outputCh)
 	})
 }
 
-func (c *conveyor) RegisterMultiplexer(fn multiplexerFunc, inputs []string, output string) {
-	inChans := make([]chan string, len(inputs))
+func (c *conveyorImpl) RegisterMultiplexer(
+	fn func(ctx context.Context, inputs []chan string, output chan string) error,
+	inputs []string,
+	output string,
+) {
+	inputChans := make([]chan string, len(inputs))
 	for i, name := range inputs {
-		inChans[i] = c.getOrCreate(name)
+		inputChans[i] = c.getOrCreateChan(name)
 	}
-	out := c.getOrCreate(output)
 
-	c.handlers = append(c.handlers, handler{
-		run: func(ctx context.Context) error {
-			return fn(ctx, inChans, out)
-		},
+	outputCh := c.getOrCreateChan(output)
+
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, inputChans, outputCh)
 	})
 }
 
-func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []string) {
-	in := c.getOrCreate(input)
-	outChans := make([]chan string, len(outputs))
+func (c *conveyorImpl) RegisterSeparator(
+	fn func(ctx context.Context, input chan string, outputs []chan string) error,
+	input string,
+	outputs []string,
+) {
+	inputCh := c.getOrCreateChan(input)
+
+	outputChans := make([]chan string, len(outputs))
 	for i, name := range outputs {
-		outChans[i] = c.getOrCreate(name)
+		outputChans[i] = c.getOrCreateChan(name)
 	}
 
-	c.handlers = append(c.handlers, handler{
-		run: func(ctx context.Context) error {
-			return fn(ctx, in, outChans)
-		},
+	c.workers = append(c.workers, func(ctx context.Context) error {
+		return fn(ctx, inputCh, outputChans)
 	})
 }
 
-func (c *conveyor) Run(ctx context.Context) error {
-	group, ctx := errgroup.WithContext(ctx)
+func (c *conveyorImpl) Run(ctx context.Context) error {
+	var wg sync.WaitGroup
+	errorCh := make(chan error, len(c.workers))
 
-	for _, h := range c.handlers {
-		hCopy := h
-		group.Go(func() error {
-			return hCopy.run(ctx)
-		})
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	for _, runWorker := range c.workers {
+		workerFn := runWorker
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			if err := workerFn(runCtx); err != nil && !errors.Is(err, context.Canceled) {
+				select {
+				case errorCh <- err:
+					cancel()
+				default:
+				}
+			}
+		}()
 	}
 
-	err := group.Wait()
+	select {
+	case <-runCtx.Done():
+		wg.Wait()
+		return nil
 
-	c.mu.Lock()
-	for _, ch := range c.channels {
-		close(ch)
+	case err := <-errorCh:
+		wg.Wait()
+		return err
 	}
-	c.mu.Unlock()
-
-	return err
 }
 
-func (c *conveyor) Send(input, data string) error {
-	ch, ok := c.get(input)
+func (c *conveyorImpl) Send(input string, data string) error {
+	ch, ok := c.chans[input]
 	if !ok {
 		return ErrChanNotFound
 	}
+
 	ch <- data
 	return nil
 }
 
-func (c *conveyor) Recv(output string) (string, error) {
-	ch, ok := c.get(output)
+func (c *conveyorImpl) Recv(output string) (string, error) {
+	ch, ok := c.chans[output]
 	if !ok {
 		return "", ErrChanNotFound
 	}
-	val, ok := <-ch
+
+	value, ok := <-ch
 	if !ok {
-		return "", ErrUndefined
+		return "", nil
 	}
-	return val, nil
+
+	return value, nil
 }
