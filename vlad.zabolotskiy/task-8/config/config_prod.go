@@ -13,6 +13,13 @@ var prodConfig []byte
 
 func getConfig() Config {
 	var cfg Config
-	yaml.Unmarshal(prodConfig, &cfg)
+
+	if err := yaml.Unmarshal(prodConfig, &cfg); err != nil {
+		return Config{
+			Environment: "prod",
+			LogLevel:    "error",
+		}
+	}
+
 	return cfg
 }

@@ -13,6 +13,13 @@ var devConfig []byte
 
 func getConfig() Config {
 	var cfg Config
-	yaml.Unmarshal(devConfig, &cfg)
+
+	if err := yaml.Unmarshal(devConfig, &cfg); err != nil {
+		return Config{
+			Environment: "dev",
+			LogLevel:    "debug",
+		}
+	}
+
 	return cfg
 }
