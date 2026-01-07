@@ -14,7 +14,7 @@ func main() {
 		return
 	}
 
-	for i := range officeCount {
+	for range officeCount {
 		var workersCount int
 
 		_, err = fmt.Scanln(&workersCount)
@@ -27,7 +27,7 @@ func main() {
 		lowerBound := 15
 		upperBound := 30
 
-		for j := range workersCount {
+		for range workersCount {
 			var operator string
 			var temp int
 
