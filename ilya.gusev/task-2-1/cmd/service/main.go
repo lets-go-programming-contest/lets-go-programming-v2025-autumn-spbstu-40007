@@ -29,6 +29,7 @@ func main() {
 
 		for range workersCount {
 			var operator string
+
 			var temp int
 
 			_, err = fmt.Scanln(&operator, &temp)
@@ -44,14 +45,12 @@ func main() {
 				return
 			}
 
-			if operator == ">=" {
-				if temp > lowerBound {
-					lowerBound = temp
-				}
-			} else {
-				if temp < upperBound {
-					upperBound = temp
-				}
+			if operator == ">=" && temp > lowerBound {
+				lowerBound = temp
+			}
+
+			if operator == "<=" && temp < upperBound {
+				upperBound = temp
 			}
 
 			if lowerBound > upperBound {
