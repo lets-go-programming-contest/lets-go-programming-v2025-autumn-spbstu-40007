@@ -121,11 +121,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		resultChan <- errorGroup.Wait()
 		close(resultChan)
 
-		c.mutex.Lock()
-		for _, channel := range c.channels {
-			close(channel)
-		}
-		c.mutex.Unlock()
+		// НЕ закрываем каналы здесь - они закрываются в обработчиках
 	}()
 
 	select {

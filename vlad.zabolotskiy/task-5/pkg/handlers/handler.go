@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context error: %w", ctx.Err())
 
 		case data, ok := <-input:
 			if !ok {
@@ -31,7 +32,7 @@ func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan str
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context error: %w", ctx.Err())
 			case output <- data:
 			}
 		}
@@ -50,7 +51,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return fmt.Errorf("context error: %w", ctx.Err())
 
 		case data, ok := <-input:
 			if !ok {
@@ -61,7 +62,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context error: %w", ctx.Err())
 			case outputs[index] <- data:
 				counter++
 			}
@@ -79,7 +80,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 		for index := 0; index < len(activeInputs); index++ {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return fmt.Errorf("context error: %w", ctx.Err())
 
 			case data, ok := <-activeInputs[index]:
 				if !ok {
@@ -95,7 +96,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 
 				select {
 				case <-ctx.Done():
-					return ctx.Err()
+					return fmt.Errorf("context error: %w", ctx.Err())
 				case output <- data:
 				}
 			default:
