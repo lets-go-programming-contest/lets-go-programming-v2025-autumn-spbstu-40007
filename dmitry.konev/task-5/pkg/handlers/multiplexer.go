@@ -37,5 +37,6 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	}
 
 	wg.Wait()
+	close(output) 
 	return nil
 }

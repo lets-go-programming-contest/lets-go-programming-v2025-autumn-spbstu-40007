@@ -3,6 +3,12 @@ package handlers
 import "context"
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
+	defer func() {
+		for _, out := range outputs {
+			close(out)
+		}
+	}()
+
 	index := 0
 	count := len(outputs)
 
