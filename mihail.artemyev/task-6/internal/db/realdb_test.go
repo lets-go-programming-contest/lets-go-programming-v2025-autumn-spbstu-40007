@@ -14,5 +14,6 @@ func (r *realDB) Query(query string, args ...any) (*sql.Rows, error) {
 	if err != nil {
 		return nil, fmt.Errorf("db.Query: %w", err)
 	}
+
 	return rows, nil
 }
