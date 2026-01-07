@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -96,34 +98,25 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-
 		return errAlreadyRunning
 	}
 
 	c.isRunning = true
 	c.mutex.Unlock()
 
-	errorChannel := make(chan error, len(c.handlers))
-
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(len(c.handlers))
+	g, ctx := errgroup.WithContext(ctx)
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-
-		go func() {
-			defer waitGroup.Done()
-
-			if err := handlerCopy(ctx); err != nil {
-				errorChannel <- err
-			}
-		}()
+		g.Go(func() error {
+			return handlerCopy(ctx)
+		})
 	}
 
+	resultChan := make(chan error, 1)
 	go func() {
-		waitGroup.Wait()
-		close(errorChannel)
+		resultChan <- g.Wait()
+		close(resultChan)
 
 		c.mutex.Lock()
 		for _, channel := range c.channels {
@@ -134,14 +127,9 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("context canceled: %w", ctx.Err())
-
-	case err, ok := <-errorChannel:
-		if ok && err != nil {
-			return err
-		}
-
-		return nil
+		return ctx.Err()
+	case err := <-resultChan:
+		return err
 	}
 }
 
