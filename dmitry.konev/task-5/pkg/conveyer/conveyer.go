@@ -47,9 +47,11 @@ func New(size int) *conveyor {
 func (c *conveyor) getOrCreate(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
 	if ch, ok := c.channels[name]; ok {
 		return ch
 	}
+
 	ch := make(chan string, c.size)
 	c.channels[name] = ch
 	return ch
@@ -65,6 +67,7 @@ func (c *conveyor) get(name string) (chan string, bool) {
 func (c *conveyor) RegisterDecorator(fn decoratorFunc, input, output string) {
 	in := c.getOrCreate(input)
 	out := c.getOrCreate(output)
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, in, out)
@@ -78,6 +81,7 @@ func (c *conveyor) RegisterMultiplexer(fn multiplexerFunc, inputs []string, outp
 		inChans[i] = c.getOrCreate(name)
 	}
 	out := c.getOrCreate(output)
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, inChans, out)
@@ -91,6 +95,7 @@ func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []s
 	for i, name := range outputs {
 		outChans[i] = c.getOrCreate(name)
 	}
+
 	c.handlers = append(c.handlers, handler{
 		run: func(ctx context.Context) error {
 			return fn(ctx, in, outChans)
@@ -100,13 +105,23 @@ func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []s
 
 func (c *conveyor) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
+
 	for _, h := range c.handlers {
 		hCopy := h
 		group.Go(func() error {
 			return hCopy.run(ctx)
 		})
 	}
-	return group.Wait()
+
+	err := group.Wait()
+
+	c.mu.Lock()
+	for _, ch := range c.channels {
+		close(ch)
+	}
+	c.mu.Unlock()
+
+	return err
 }
 
 func (c *conveyor) Send(input, data string) error {

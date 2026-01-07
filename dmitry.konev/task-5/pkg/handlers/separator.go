@@ -3,21 +3,19 @@ package handlers
 import "context"
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-	defer func() {
-		for _, ch := range outputs {
-			close(ch)
-		}
-	}()
-
-	i := 0
+	index := 0
 	count := len(outputs)
-	for val := range input {
+
+	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case outputs[i%count] <- val:
-			i++
+		case val, ok := <-input:
+			if !ok {
+				return nil
+			}
+			outputs[index%count] <- val
+			index++
 		}
 	}
-	return nil
 }
