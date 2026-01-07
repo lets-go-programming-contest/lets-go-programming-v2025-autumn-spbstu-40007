@@ -47,11 +47,9 @@ func New(size int) *conveyor {
 func (c *conveyor) getOrCreate(name string) chan string {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
 	if ch, ok := c.channels[name]; ok {
 		return ch
 	}
-
 	ch := make(chan string, c.size)
 	c.channels[name] = ch
 	return ch
@@ -102,14 +100,12 @@ func (c *conveyor) RegisterSeparator(fn separatorFunc, input string, outputs []s
 
 func (c *conveyor) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
-
 	for _, h := range c.handlers {
 		hCopy := h
 		group.Go(func() error {
 			return hCopy.run(ctx)
 		})
 	}
-
 	return group.Wait()
 }
 
@@ -118,13 +114,8 @@ func (c *conveyor) Send(input, data string) error {
 	if !ok {
 		return ErrChanNotFound
 	}
-
-	select {
-	case ch <- data:
-		return nil
-	default:
-		return errors.New("channel blocked")
-	}
+	ch <- data
+	return nil
 }
 
 func (c *conveyor) Recv(output string) (string, error) {
@@ -132,14 +123,9 @@ func (c *conveyor) Recv(output string) (string, error) {
 	if !ok {
 		return "", ErrChanNotFound
 	}
-
-	select {
-	case val, ok := <-ch:
-		if !ok {
-			return "", ErrUndefined
-		}
-		return val, nil
-	default:
-		return "", errors.New("no data available")
+	val, ok := <-ch
+	if !ok {
+		return "", ErrUndefined
 	}
+	return val, nil
 }

@@ -11,26 +11,18 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	var wg sync.WaitGroup
 	wg.Add(len(inputs))
 
-	for _, in := range inputs {
-		ch := in
+	for _, ch := range inputs {
+		chCopy := ch
 		go func() {
 			defer wg.Done()
-			for {
+			for val := range chCopy {
+				if strings.Contains(val, "no multiplexer") {
+					continue
+				}
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-ch:
-					if !ok {
-						return
-					}
-					if strings.Contains(val, "no multiplexer") {
-						continue
-					}
-					select {
-					case <-ctx.Done():
-						return
-					case output <- val:
-					}
+				case output <- val:
 				}
 			}
 		}()
