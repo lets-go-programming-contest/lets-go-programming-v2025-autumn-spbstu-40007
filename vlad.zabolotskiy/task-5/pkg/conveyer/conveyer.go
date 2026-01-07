@@ -13,11 +13,12 @@ var (
 )
 
 type Conveyer struct {
-	size      int
-	channels  map[string]chan string
-	handlers  []func(ctx context.Context) error
-	mutex     sync.RWMutex
-	isRunning bool
+	size       int
+	channels   map[string]chan string
+	handlers   []func(ctx context.Context) error
+	mutex      sync.RWMutex
+	isRunning  bool
+	cancelFunc context.CancelFunc
 }
 
 func New(size int) *Conveyer {
@@ -96,51 +97,51 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-
 		return errAlreadyRunning
 	}
 
 	c.isRunning = true
+
+	ctx, cancel := context.WithCancel(ctx)
+	c.cancelFunc = cancel
+
 	c.mutex.Unlock()
 
-	errorChannel := make(chan error, len(c.handlers))
-
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(len(c.handlers))
+	errorChan := make(chan error, len(c.handlers))
+	var wg sync.WaitGroup
 
 	for _, handler := range c.handlers {
-		handlerCopy := handler
-
-		go func() {
-			defer waitGroup.Done()
-
-			if err := handlerCopy(ctx); err != nil {
-				errorChannel <- err
+		wg.Add(1)
+		go func(h func(context.Context) error) {
+			defer wg.Done()
+			if err := h(ctx); err != nil {
+				select {
+				case errorChan <- err:
+				default:
+				}
 			}
-		}()
+		}(handler)
 	}
 
 	go func() {
-		waitGroup.Wait()
-		close(errorChannel)
+		wg.Wait()
+		close(errorChan)
 
 		c.mutex.Lock()
-		for _, channel := range c.channels {
-			close(channel)
+		for _, ch := range c.channels {
+			close(ch)
 		}
 		c.mutex.Unlock()
 	}()
 
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("context canceled: %w", ctx.Err())
-
-	case err, ok := <-errorChannel:
-		if ok && err != nil {
+		return ctx.Err()
+	case err, ok := <-errorChan:
+		if ok {
+			cancel()
 			return err
 		}
-
 		return nil
 	}
 }
@@ -155,7 +156,6 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-
 	return nil
 }
 
