@@ -116,8 +116,17 @@ func (c *conveyor) Run(ctx context.Context) error {
 		})
 	}
 
-	return group.Wait()
+	err := group.Wait()
+
+	c.mu.Lock()
+	for _, ch := range c.channels {
+		close(ch)
+	}
+	c.mu.Unlock()
+
+	return err
 }
+
 
 func (c *conveyor) Send(input, data string) error {
 	ch, ok := c.get(input)
