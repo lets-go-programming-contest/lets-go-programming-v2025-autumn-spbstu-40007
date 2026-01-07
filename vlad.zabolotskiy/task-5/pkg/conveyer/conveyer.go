@@ -8,17 +8,16 @@ import (
 )
 
 var (
-	ErrAlreadyRunning = errors.New("already running")
-	ErrChanNotFound   = errors.New("chan not found")
+	errAlreadyRunning = errors.New("already running")
+	errChanNotFound   = errors.New("chan not found")
 )
 
 type Conveyer struct {
-	size       int
-	channels   map[string]chan string
-	handlers   []func(ctx context.Context) error
-	mutex      sync.RWMutex
-	isRunning  bool
-	cancelFunc context.CancelFunc
+	size      int
+	channels  map[string]chan string
+	handlers  []func(ctx context.Context) error
+	mutex     sync.RWMutex
+	isRunning bool
 }
 
 func New(size int) *Conveyer {
@@ -97,52 +96,48 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-		return ErrAlreadyRunning
+
+		return errAlreadyRunning
 	}
 
 	c.isRunning = true
-
-	ctx, cancel := context.WithCancel(ctx)
-	c.cancelFunc = cancel
-
 	c.mutex.Unlock()
 
-	errorChan := make(chan error, len(c.handlers))
-	var wg sync.WaitGroup
+	errorChannel := make(chan error, len(c.handlers))
+
+	var waitGroup sync.WaitGroup
+
+	waitGroup.Add(len(c.handlers))
 
 	for _, handler := range c.handlers {
-		wg.Add(1)
+		handlerCopy := handler
 
-		go func(h func(context.Context) error) {
-			defer wg.Done()
+		go func() {
+			defer waitGroup.Done()
 
-			if err := h(ctx); err != nil {
-				select {
-				case errorChan <- err:
-				default:
-				}
+			if err := handlerCopy(ctx); err != nil {
+				errorChannel <- err
 			}
-		}(handler)
+		}()
 	}
 
 	go func() {
-		wg.Wait()
-		close(errorChan)
+		waitGroup.Wait()
+		close(errorChannel)
 
 		c.mutex.Lock()
-		for _, ch := range c.channels {
-			close(ch)
+		for _, channel := range c.channels {
+			close(channel)
 		}
 		c.mutex.Unlock()
 	}()
 
 	select {
 	case <-ctx.Done():
-		return ctx.Err()
+		return fmt.Errorf("context canceled: %w", ctx.Err())
 
-	case err, ok := <-errorChan:
-		if ok {
-			cancel()
+	case err, ok := <-errorChannel:
+		if ok && err != nil {
 			return err
 		}
 
@@ -156,7 +151,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	c.mutex.RUnlock()
 
 	if !exists {
-		return fmt.Errorf("%w", ErrChanNotFound)
+		return fmt.Errorf("%w", errChanNotFound)
 	}
 
 	channel <- data
@@ -170,7 +165,7 @@ func (c *Conveyer) Recv(output string) (string, error) {
 	c.mutex.RUnlock()
 
 	if !exists {
-		return "", fmt.Errorf("%w", ErrChanNotFound)
+		return "", fmt.Errorf("%w", errChanNotFound)
 	}
 
 	data, ok := <-channel
