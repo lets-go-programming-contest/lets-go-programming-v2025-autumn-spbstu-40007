@@ -3,17 +3,12 @@ package handlers
 import (
 	"context"
 	"strings"
-	"sync"
 )
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	var wg sync.WaitGroup
-	wg.Add(len(inputs))
-
 	for _, in := range inputs {
 		ch := in
 		go func() {
-			defer wg.Done()
 			for {
 				select {
 				case <-ctx.Done():
@@ -25,12 +20,16 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					if strings.Contains(val, "no multiplexer") {
 						continue
 					}
-					output <- val
+					select {
+					case <-ctx.Done():
+						return
+					case output <- val:
+					}
 				}
 			}
 		}()
 	}
 
-	wg.Wait()
-	return nil
+	<-ctx.Done()
+	return ctx.Err()
 }

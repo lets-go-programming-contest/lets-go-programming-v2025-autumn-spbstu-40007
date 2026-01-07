@@ -23,7 +23,12 @@ func PrefixDecoratorFunc(ctx context.Context, input, output chan string) error {
 			if !strings.HasPrefix(val, "decorated: ") {
 				val = "decorated: " + val
 			}
-			output <- val
+			select {
+			case <-ctx.Done():
+    			return ctx.Err()
+			case output <- val:
+			}
+
 		}
 	}
 }
