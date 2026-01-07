@@ -22,9 +22,11 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
-		size:     size,
-		channels: make(map[string]chan string),
-		handlers: []func(ctx context.Context) error{},
+		size:      size,
+		channels:  make(map[string]chan string),
+		handlers:  []func(ctx context.Context) error{},
+		mutex:     sync.RWMutex{},
+		isRunning: false,
 	}
 }
 
@@ -64,6 +66,7 @@ func (c *Conveyer) RegisterMultiplexer(
 	for index, name := range inputs {
 		inputChannels[index] = c.getChannel(name)
 	}
+
 	outputChannel := c.getChannel(output)
 
 	c.handlers = append(c.handlers, func(ctx context.Context) error {
@@ -78,6 +81,7 @@ func (c *Conveyer) RegisterSeparator(
 ) {
 	inputChannel := c.getChannel(input)
 	outputChannels := make([]chan string, len(outputs))
+
 	for index, name := range outputs {
 		outputChannels[index] = c.getChannel(name)
 	}
@@ -89,23 +93,27 @@ func (c *Conveyer) RegisterSeparator(
 
 func (c *Conveyer) Run(ctx context.Context) error {
 	c.mutex.Lock()
+
 	if c.isRunning {
 		c.mutex.Unlock()
+
 		return errAlreadyRunning
 	}
+
 	c.isRunning = true
 	c.mutex.Unlock()
 
 	errorChannel := make(chan error, len(c.handlers))
 
 	var waitGroup sync.WaitGroup
+	waitGroup.Add(len(c.handlers))
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-		waitGroup.Add(1)
 
 		go func() {
 			defer waitGroup.Done()
+
 			if err := handlerCopy(ctx); err != nil {
 				errorChannel <- err
 			}
@@ -126,10 +134,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context canceled: %w", ctx.Err())
+
 	case err, ok := <-errorChannel:
 		if ok && err != nil {
 			return err
 		}
+
 		return nil
 	}
 }
@@ -144,6 +154,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
+
 	return nil
 }
 

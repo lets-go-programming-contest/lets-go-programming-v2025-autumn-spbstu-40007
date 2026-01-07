@@ -89,6 +89,7 @@ func MultiplexerFunc(
 				if !ok {
 					activeInputs = append(activeInputs[:index], activeInputs[index+1:]...)
 					index--
+
 					continue
 				}
 
