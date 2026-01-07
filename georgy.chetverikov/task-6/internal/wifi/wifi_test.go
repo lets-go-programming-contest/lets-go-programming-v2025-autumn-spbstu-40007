@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	service "github.com/georgy.chetverikov/task-6/iternal/wifi"
+	service "github.com/georgy.chetverikov/task-6/internal/wifi"
 
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
