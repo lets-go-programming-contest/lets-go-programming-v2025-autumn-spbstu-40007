@@ -1,23 +1,18 @@
 package config
 
-import (
-	"fmt"
-
-	"gopkg.in/yaml.v3"
-)
+import "gopkg.in/yaml.v3"
 
 type Configuration struct {
-	Environment string `yaml:"environment"`
-	LogLevel    string `yaml:"log_level"`
+    Environment string `yaml:"environment"`
+    LogLevel    string `yaml:"log_level"`
 }
 
-func ParseConfiguration(rawData []byte) (*Configuration, error) {
-	configuration := &Configuration{}
+func Load() (Configuration, error) {
+    var configuration Configuration
 
-	parseError := yaml.Unmarshal(rawData, configuration)
-	if parseError != nil {
-		return nil, fmt.Errorf("failed to parse configuration: %w", parseError)
-	}
+    if err := yaml.Unmarshal(configBytes, &configuration); err != nil {
+        return Configuration{}, err
+    }
 
-	return configuration, nil
+    return configuration, nil
 }

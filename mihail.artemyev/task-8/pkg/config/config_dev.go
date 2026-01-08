@@ -1,9 +1,8 @@
+//go:build dev
+
 package config
 
 import _ "embed"
 
-var devConfigBytes []byte
-
-func init() {
-	EmbeddedConfig = devConfigBytes
-}
+//go:embed dev.yaml
+var configBytes []byte
