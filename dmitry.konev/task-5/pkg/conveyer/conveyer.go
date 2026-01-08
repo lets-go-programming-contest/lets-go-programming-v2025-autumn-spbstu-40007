@@ -119,7 +119,7 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 
 	for i := range c.workers {
 		workGroup.Add(1)
-		worker := c.workers[i] 
+		worker := c.workers[i]
 
 		go func(w func(ctx context.Context) error) {
 			defer workGroup.Done()
