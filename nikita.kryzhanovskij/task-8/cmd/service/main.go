@@ -11,14 +11,23 @@ func main() {
 	configData := config.GetConfig()
 
 	lines := strings.Split(configData, "\n")
-	var environment string
+	var env, level string
 
 	for _, line := range lines {
-		if strings.HasPrefix(line, "environment:") {
-			environment = strings.TrimSpace(strings.Split(line, ":")[1])
+		parts := strings.Split(line, ":")
+		if len(parts) < 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		val := strings.TrimSpace(parts[1])
+
+		if key == "environment" {
+			env = val
+		} else if key == "log_level" {
+			level = val
 		}
 	}
 
-	fmt.Printf("Loaded config from: pkg/config\n")
-	fmt.Printf("Current Environment: %s\n", environment)
+	fmt.Printf("%s %s\n", env, level)
 }
