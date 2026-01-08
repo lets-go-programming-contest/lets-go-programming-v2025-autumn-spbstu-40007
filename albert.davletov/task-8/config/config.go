@@ -20,5 +20,6 @@ func ParseYAML(data []byte) *Config {
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		log.Fatalf("error parsing YAML: %v", err)
 	}
+
 	return &cfg
 }
