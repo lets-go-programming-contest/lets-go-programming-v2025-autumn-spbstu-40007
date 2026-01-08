@@ -21,6 +21,7 @@ type Conveyer struct {
 	mutex      sync.RWMutex
 	isRunning  bool
 	cancelFunc context.CancelFunc
+	wg         sync.WaitGroup
 }
 
 func New(size int) *Conveyer {
@@ -121,15 +122,25 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	resultChan := make(chan error, 1)
 	go func() {
 		resultChan <- errorGroup.Wait()
-		close(resultChan)
 	}()
 
 	select {
 	case <-ctx.Done():
 		cancel()
+		<-resultChan
+
+		c.mutex.Lock()
+		c.isRunning = false
+		c.cancelFunc = nil
+		c.mutex.Unlock()
+
 		return fmt.Errorf("context canceled: %w", ctx.Err())
 	case err := <-resultChan:
-		cancel()
+		c.mutex.Lock()
+		c.isRunning = false
+		c.cancelFunc = nil
+		c.mutex.Unlock()
+
 		return err
 	}
 }
@@ -143,8 +154,12 @@ func (c *Conveyer) Send(input string, data string) error {
 		return fmt.Errorf("%w", errChanNotFound)
 	}
 
-	channel <- data
-	return nil
+	select {
+	case channel <- data:
+		return nil
+	default:
+		return fmt.Errorf("channel %s is full or closed", input)
+	}
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
@@ -158,8 +173,25 @@ func (c *Conveyer) Recv(output string) (string, error) {
 
 	data, ok := <-channel
 	if !ok {
-		return "undefined", nil
+		return "", fmt.Errorf("channel %s is closed", output)
 	}
 
 	return data, nil
+}
+
+func (c *Conveyer) Close() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.cancelFunc != nil {
+		c.cancelFunc()
+		c.cancelFunc = nil
+	}
+
+	for name, ch := range c.channels {
+		close(ch)
+		delete(c.channels, name)
+	}
+
+	c.isRunning = false
 }
