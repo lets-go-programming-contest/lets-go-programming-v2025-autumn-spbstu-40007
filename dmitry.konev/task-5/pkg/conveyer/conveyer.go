@@ -11,19 +11,16 @@ var ErrChanNotFound = errors.New("chan not found")
 type Conveyor interface {
 	RegisterDecorator(
 		fn func(ctx context.Context, input chan string, output chan string) error,
-		handler func(ctx context.Context, input chan string, output chan string),
 		input string,
 		output string,
 	)
 	RegisterMultiplexer(
 		fn func(ctx context.Context, inputs []chan string, output chan string) error,
-		handler func(ctx context.Context, inputs []chan string, output chan string),
 		inputs []string,
 		output string,
 	)
 	RegisterSeparator(
 		fn func(ctx context.Context, input chan string, outputs []chan string) error,
-		handler func(ctx context.Context, input chan string, outputs []chan string),
 		input string,
 		outputs []string,
 	)
@@ -57,7 +54,6 @@ func (c *conveyorImpl) getOrCreateChan(name string) chan string {
 
 func (c *conveyorImpl) RegisterDecorator(
 	fn func(ctx context.Context, input chan string, output chan string) error,
-	_ func(ctx context.Context, input chan string, output chan string),
 	input string,
 	output string,
 ) {
@@ -71,7 +67,6 @@ func (c *conveyorImpl) RegisterDecorator(
 
 func (c *conveyorImpl) RegisterMultiplexer(
 	fn func(ctx context.Context, inputs []chan string, output chan string) error,
-	_ func(ctx context.Context, inputs []chan string, output chan string),
 	inputs []string,
 	output string,
 ) {
@@ -88,7 +83,6 @@ func (c *conveyorImpl) RegisterMultiplexer(
 
 func (c *conveyorImpl) RegisterSeparator(
 	fn func(ctx context.Context, input chan string, outputs []chan string) error,
-	_ func(ctx context.Context, input chan string, outputs []chan string),
 	input string,
 	outputs []string,
 ) {
