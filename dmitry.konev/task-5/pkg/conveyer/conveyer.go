@@ -119,23 +119,23 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	}()
 
 	for _, worker := range c.workers {
-	workersGroup.Add(1)
-	w := worker
+		workersGroup.Add(1)
+		w := worker
 
-	go func() {
-		defer workersGroup.Done()
+		go func() {
+			defer workersGroup.Done()
 
-		if err := w(ctx); err != nil {
-			if !errors.Is(err, context.Canceled) {
-				select {
-				case errCh <- err:
-					cancel()
-				default:
+			if err := w(ctx); err != nil {
+				if !errors.Is(err, context.Canceled) {
+					select {
+					case errCh <- err:
+						cancel()
+					default:
+					}
 				}
 			}
-		}
-	}()
-}
+		}()
+	}
 
 	select {
 	case <-ctx.Done():
