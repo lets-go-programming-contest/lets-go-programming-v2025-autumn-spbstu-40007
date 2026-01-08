@@ -12,8 +12,8 @@ import (
 )
 
 func TestWiFiService_GetAddresses(t *testing.T) {
-	t.Parallel()
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		mockWiFi := new(MockWiFiHandle)
 
 		service := mywifi.New(mockWiFi)
@@ -53,7 +53,7 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 		addresses, err := service.GetAddresses()
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "getting interfaces")
 		assert.Contains(t, err.Error(), expectedErr.Error())
 		assert.Nil(t, addresses)

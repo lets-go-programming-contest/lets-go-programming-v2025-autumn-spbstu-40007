@@ -19,8 +19,8 @@ var (
 )
 
 func TestDB_GetNames(t *testing.T) {
-	t.Parallel()
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		conn, mock, err := sqlmock.New()
 		require.NoError(t, err)
 		defer conn.Close()
