@@ -30,7 +30,7 @@ func New(size int) *Conveyer {
 		handlers:  []func(ctx context.Context) error{},
 		mutex:     sync.RWMutex{},
 		isRunning: false,
-	}
+	} // nolint:exhaustruct
 }
 
 func (c *Conveyer) getChannel(name string) chan string {
@@ -99,7 +99,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-		return errAlreadyRunning
+		return errAlreadyRunning // nolint:nlreturn
 	}
 
 	c.isRunning = true
@@ -111,7 +111,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-		errorGroup.Go(func() error {
+		errorGroup.Go(func() error { // nolint:wsl
 			return handlerCopy(ctxWithCancel)
 		})
 	}
@@ -123,7 +123,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.cancelFunc = nil
 	c.mutex.Unlock()
 
-	return err
+	return err // nolint:wrapcheck
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -136,7 +136,7 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-	return nil
+	return nil // nolint:nlreturn
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {

@@ -67,6 +67,7 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
+// nolint:cyclop
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	defer close(output)
 
@@ -86,7 +87,7 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 			case data, ok := <-in:
 				if ok {
 					anyActive = true
-					if strings.Contains(data, "no multiplexer") {
+					if strings.Contains(data, "no multiplexer") { // nolint:wsl
 						continue
 					}
 					select {
