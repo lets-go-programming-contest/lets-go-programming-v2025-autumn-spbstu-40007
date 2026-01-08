@@ -1,4 +1,4 @@
-package wifi
+package wifi_test
 
 import (
 	"net"
@@ -7,13 +7,16 @@ import (
 	"github.com/mdlayher/wifi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	mywifi "task-6/internal/wifi"
 )
 
 func TestWiFiService_GetAddresses(t *testing.T) {
+	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		mockWiFi := new(MockWiFiHandle)
 
-		service := New(mockWiFi)
+		service := mywifi.New(mockWiFi)
 
 		hwAddr1, _ := net.ParseMAC("00:11:22:33:44:55")
 		hwAddr2, _ := net.ParseMAC("aa:bb:cc:dd:ee:ff")
@@ -41,8 +44,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 	})
 
 	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
 		mockWiFi := new(MockWiFiHandle)
-		service := New(mockWiFi)
+		service := mywifi.New(mockWiFi)
 
 		expectedErr := assert.AnError
 		mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, expectedErr)
@@ -60,8 +64,9 @@ func TestWiFiService_GetAddresses(t *testing.T) {
 
 func TestWiFiService_GetNames(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 		mockWiFi := new(MockWiFiHandle)
-		service := New(mockWiFi)
+		service := mywifi.New(mockWiFi)
 
 		hwAddr, _ := net.ParseMAC("00:11:22:33:44:55")
 		testInterfaces := []*wifi.Interface{
@@ -91,15 +96,16 @@ func TestWiFiService_GetNames(t *testing.T) {
 	})
 
 	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
 		mockWiFi := new(MockWiFiHandle)
-		service := New(mockWiFi)
+		service := mywifi.New(mockWiFi)
 
 		expectedErr := assert.AnError
 		mockWiFi.On("Interfaces").Return([]*wifi.Interface{}, expectedErr)
 
 		names, err := service.GetNames()
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "getting interfaces")
 		assert.Contains(t, err.Error(), expectedErr.Error())
 		assert.Nil(t, names)
