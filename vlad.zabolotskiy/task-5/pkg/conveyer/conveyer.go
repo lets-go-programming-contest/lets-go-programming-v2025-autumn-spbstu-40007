@@ -126,7 +126,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.cancelFunc = nil
 	c.mutex.Unlock()
 
-	return err
+	return err //nolint:wrapcheck
 }
 
 func (c *Conveyer) Send(input string, data string) error {
