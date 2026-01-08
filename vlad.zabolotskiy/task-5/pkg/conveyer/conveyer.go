@@ -21,7 +21,6 @@ type Conveyer struct {
 	mutex      sync.RWMutex
 	isRunning  bool
 	cancelFunc context.CancelFunc
-	wg         sync.WaitGroup
 }
 
 func New(size int) *Conveyer {
@@ -104,10 +103,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	c.isRunning = true
-
 	ctx, cancel := context.WithCancel(ctx)
 	c.cancelFunc = cancel
-
 	c.mutex.Unlock()
 
 	errorGroup, ctxWithCancel := errgroup.WithContext(ctx)
@@ -119,30 +116,20 @@ func (c *Conveyer) Run(ctx context.Context) error {
 		})
 	}
 
-	resultChan := make(chan error, 1)
-	go func() {
-		resultChan <- errorGroup.Wait()
-	}()
+	err := errorGroup.Wait()
 
-	select {
-	case <-ctx.Done():
-		cancel()
-		<-resultChan
-
-		c.mutex.Lock()
-		c.isRunning = false
-		c.cancelFunc = nil
-		c.mutex.Unlock()
-
-		return fmt.Errorf("context canceled: %w", ctx.Err())
-	case err := <-resultChan:
-		c.mutex.Lock()
-		c.isRunning = false
-		c.cancelFunc = nil
-		c.mutex.Unlock()
-
-		return err
+	c.mutex.Lock()
+	// Закрываем все каналы при завершении
+	for name, ch := range c.channels {
+		close(ch)
+		delete(c.channels, name)
 	}
+	c.isRunning = false
+	c.cancelFunc = nil
+	c.handlers = nil
+	c.mutex.Unlock()
+
+	return err
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -154,12 +141,8 @@ func (c *Conveyer) Send(input string, data string) error {
 		return fmt.Errorf("%w", errChanNotFound)
 	}
 
-	select {
-	case channel <- data:
-		return nil
-	default:
-		return fmt.Errorf("channel %s is full or closed", input)
-	}
+	channel <- data
+	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
@@ -173,25 +156,8 @@ func (c *Conveyer) Recv(output string) (string, error) {
 
 	data, ok := <-channel
 	if !ok {
-		return "", fmt.Errorf("channel %s is closed", output)
+		return "undefined", nil
 	}
 
 	return data, nil
-}
-
-func (c *Conveyer) Close() {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	if c.cancelFunc != nil {
-		c.cancelFunc()
-		c.cancelFunc = nil
-	}
-
-	for name, ch := range c.channels {
-		close(ch)
-		delete(c.channels, name)
-	}
-
-	c.isRunning = false
 }
