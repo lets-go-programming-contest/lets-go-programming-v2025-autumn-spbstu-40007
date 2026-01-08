@@ -7,65 +7,70 @@ import (
 
 type MinHeap []int
 
-func (m MinHeap) Len() int {
-	return len(m)
+func (minHeap MinHeap) Len() int {
+	return len(minHeap)
 }
 
-func (m MinHeap) Less(i, j int) bool {
-	return m[i] < m[j]
+func (minHeap MinHeap) Less(i, j int) bool {
+	return minHeap[i] < minHeap[j]
 }
 
-func (m MinHeap) Swap(i, j int) {
-	m[i], m[j] = m[j], m[i]
+func (minHeap MinHeap) Swap(i, j int) {
+	minHeap[i], minHeap[j] = minHeap[j], minHeap[i]
 }
 
-func (m *MinHeap) Push(val any) {
-	*m = append(*m, val.(int))
+func (minHeap *MinHeap) Push(value interface{}) {
+	intValue, ok := value.(int)
+	if !ok {
+		return
+	}
+	*minHeap = append(*minHeap, intValue)
 }
 
-func (m *MinHeap) Pop() any {
-	prev := *m
-	size := len(prev)
-	result := prev[size-1]
-	*m = prev[0 : size-1]
+func (minHeap *MinHeap) Pop() interface{} {
+	old := *minHeap
+	length := len(old)
+	result := old[length-1]
+	*minHeap = old[0 : length-1]
+
 	return result
 }
 
 func main() {
-	var n int
-	_, err := fmt.Scanln(&n)
-	if err != nil || n < 1 || n > 10000 {
-		fmt.Println("ERROR: invalid number of dishes.")
+	var count int
+
+	_, err := fmt.Scan(&count)
+	if err != nil || count < 1 || count > 10000 {
 		return
 	}
 
-	ratings := make([]int, n)
-	for idx := 0; idx < n; idx++ {
-		_, err = fmt.Scan(&ratings[idx])
-		if err != nil || ratings[idx] < -10000 || ratings[idx] > 10000 {
-			fmt.Println("ERROR: invalid rating of dishes.")
+	numbers := make([]int, count)
+
+	for idx := range count {
+		_, readErr := fmt.Scan(&numbers[idx])
+		if readErr != nil {
 			return
 		}
 	}
 
-	var k int
-	_, err = fmt.Scanln(&k)
-	if err != nil || k < 1 || k > n {
-		fmt.Println("ERROR: invalid number of desired dish")
-		return // ← ЭТО ДОБАВЛЕНО!
+	var position int
+
+	_, err = fmt.Scan(&position)
+	if err != nil || position < 1 || position > count {
+		return
 	}
 
 	minHeap := &MinHeap{}
 	heap.Init(minHeap)
 
-	for idx := 0; idx < k; idx++ {
-		heap.Push(minHeap, ratings[idx])
+	for idx := range position {
+		heap.Push(minHeap, numbers[idx])
 	}
 
-	for idx := k; idx < n; idx++ {
-		if ratings[idx] > (*minHeap)[0] {
+	for idx := position; idx < count; idx++ {
+		if numbers[idx] > (*minHeap)[0] {
 			heap.Pop(minHeap)
-			heap.Push(minHeap, ratings[idx])
+			heap.Push(minHeap, numbers[idx])
 		}
 	}
 
