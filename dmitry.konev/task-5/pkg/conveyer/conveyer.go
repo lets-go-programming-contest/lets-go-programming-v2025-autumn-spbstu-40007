@@ -104,6 +104,7 @@ func (c *conveyorImpl) RegisterSeparator(
 	})
 }
 
+//nolint:goanalysis_metalinter
 func (c *conveyorImpl) Run(ctx context.Context) error {
 	var (
 		workGroup sync.WaitGroup
