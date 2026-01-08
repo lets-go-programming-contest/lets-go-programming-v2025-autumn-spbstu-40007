@@ -7,7 +7,7 @@ import (
 	"task-8/pkg/config"
 )
 
-const splitParts = 2
+const maxParts = 2
 
 func main() {
 	configData := config.GetConfig()
@@ -21,8 +21,8 @@ func main() {
 			continue
 		}
 
-		parts := strings.SplitN(line, ":", splitParts)
-		if len(parts) != splitParts {
+		parts := strings.SplitN(line, ":", maxParts)
+		if len(parts) != maxParts {
 			continue
 		}
 
