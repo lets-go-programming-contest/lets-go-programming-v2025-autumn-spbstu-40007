@@ -1,1 +1,2 @@
-environment: production
+environment: prod
+log_level: error

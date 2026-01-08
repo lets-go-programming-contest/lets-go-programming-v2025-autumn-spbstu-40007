@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strings"
-
 	"task-8/pkg/config"
 )
 
@@ -14,8 +13,13 @@ func main() {
 	var env, level string
 
 	for _, line := range lines {
-		parts := strings.Split(line, ":")
-		if len(parts) < 2 {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
 			continue
 		}
 
@@ -29,5 +33,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("%s %s\n", env, level)
+	if env != "" && level != "" {
+		fmt.Printf("%s %s\n", env, level)
+	}
 }
