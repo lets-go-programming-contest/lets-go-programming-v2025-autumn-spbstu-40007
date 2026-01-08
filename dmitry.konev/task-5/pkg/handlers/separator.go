@@ -2,32 +2,24 @@ package handlers
 
 import "context"
 
-func SeparatorFunc(
-	ctx context.Context,
-	input chan string,
-	outputs []chan string,
-) error {
-	if len(outputs) == 0 {
+func SplitChannel(ctx context.Context, in chan string, outs []chan string) error {
+	if len(outs) == 0 {
 		return nil
 	}
-
-	index := 0
-
+	idx := 0
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-
-		case value, ok := <-input:
+		case val, ok := <-in:
 			if !ok {
 				return nil
 			}
-
 			select {
 			case <-ctx.Done():
 				return nil
-			case outputs[index%len(outputs)] <- value:
-				index++
+			case outs[idx%len(outs)] <- val:
+				idx++
 			}
 		}
 	}
