@@ -6,8 +6,8 @@ import (
 	"os"
 	"sort"
 
-	"task-3/internal/config"
-	"task-3/internal/data"
+	"evgenii.miloradov/task-3/internal/config"
+	"evgenii.miloradov/task-3/internal/data"
 )
 
 func main() {
