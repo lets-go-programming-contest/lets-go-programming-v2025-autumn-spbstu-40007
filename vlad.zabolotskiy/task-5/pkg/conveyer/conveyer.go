@@ -114,7 +114,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	for _, handler := range c.handlers {
 		handlerCopy := handler
 
-		errorGroup.Go(func() error { //nolint:wsl
+		errorGroup.Go(func() error {
 			return handlerCopy(ctxWithCancel)
 		})
 	}
@@ -126,7 +126,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.cancelFunc = nil
 	c.mutex.Unlock()
 
-	return fmt.Errorf("%w", err) //nolint:wrapcheck
+	return err
 }
 
 func (c *Conveyer) Send(input string, data string) error {
