@@ -119,14 +119,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	err := errorGroup.Wait()
 
 	c.mutex.Lock()
-	// Закрываем все каналы при завершении
-	for name, ch := range c.channels {
-		close(ch)
-		delete(c.channels, name)
-	}
 	c.isRunning = false
 	c.cancelFunc = nil
-	c.handlers = nil
 	c.mutex.Unlock()
 
 	return err

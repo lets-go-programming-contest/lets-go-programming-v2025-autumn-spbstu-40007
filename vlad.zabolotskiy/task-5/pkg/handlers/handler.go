@@ -71,6 +71,12 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	defer close(output)
 
 	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+
 		anyActive := false
 
 		for _, in := range inputs {
