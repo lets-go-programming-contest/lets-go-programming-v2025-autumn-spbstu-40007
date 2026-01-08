@@ -70,25 +70,25 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 	}
 }
 
-func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-	if len(inputs) == 0 {
-		return nil
-	}
+func startMultiplexerWorkers(
+	ctx context.Context,
+	inputs []chan string,
+	internal chan<- string,
+	wg *sync.WaitGroup,
+) {
+	wg.Add(len(inputs))
 
-	inputWaitGroup := sync.WaitGroup{}
-	internalDataChannel := make(chan string, len(inputs))
+	for _, inputChan := range inputs {
+		ch := inputChan
 
-	inputWaitGroup.Add(len(inputs))
-	for _, inputChannel := range inputs {
-		specificInput := inputChannel
-		inputWaitGroup.Add(1)
-		go func(inputChan chan string) {
-			defer inputWaitGroup.Done()
+		go func(in <-chan string) {
+			defer wg.Done()
+
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-inputChan:
+				case data, ok := <-in:
 					if !ok {
 						return
 					}
@@ -98,14 +98,26 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 					}
 
 					select {
-					case internalDataChannel <- data:
+					case internal <- data:
 					case <-ctx.Done():
 						return
 					}
 				}
 			}
-		}(specificInput)
+		}(ch)
 	}
+}
+
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
+	if len(inputs) == 0 {
+		return nil
+	}
+
+	var inputWaitGroup sync.WaitGroup
+
+	internalDataChannel := make(chan string, len(inputs))
+
+	startMultiplexerWorkers(ctx, inputs, internalDataChannel, &inputWaitGroup)
 
 	go func() {
 		inputWaitGroup.Wait()

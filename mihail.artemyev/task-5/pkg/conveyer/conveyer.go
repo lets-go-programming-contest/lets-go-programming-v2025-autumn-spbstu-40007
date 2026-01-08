@@ -130,6 +130,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range handlersCopy {
 		specificHandler := handler
+
 		group.Go(func() error {
 			return specificHandler(contextWithCancel)
 		})
@@ -149,7 +150,9 @@ func (c *Conveyer) Send(inputChannelName string, data string) error {
 	channel, exists := func() (chan string, bool) {
 		c.mutex.RLock()
 		defer c.mutex.RUnlock()
+
 		ch, ok := c.channels[inputChannelName]
+
 		return ch, ok
 	}()
 
@@ -166,7 +169,9 @@ func (c *Conveyer) Recv(outputChannelName string) (string, error) {
 	channel, exists := func() (chan string, bool) {
 		c.mutex.RLock()
 		defer c.mutex.RUnlock()
+
 		ch, ok := c.channels[outputChannelName]
+
 		return ch, ok
 	}()
 
