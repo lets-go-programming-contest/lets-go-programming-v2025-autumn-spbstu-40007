@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	conf "task-8/config"
+	config "task-8/config"
 )
 
 func main() {
-	c := conf.Current()
+	c := config.Current()
 
 	fmt.Print(c.Env, " ", c.Log)
 }
