@@ -1,6 +1,7 @@
+//nolint:gofumpt
 package main
 
-import ( //nolint:gofumpt
+import (
 	"fmt"
 	"strings"
 
