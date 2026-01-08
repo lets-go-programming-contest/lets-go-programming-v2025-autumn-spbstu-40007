@@ -7,16 +7,16 @@ import (
 
 type MinHeap []int
 
-func (minHeap MinHeap) Len() int {
-	return len(minHeap)
+func (minHeap *MinHeap) Len() int {
+	return len(*minHeap)
 }
 
-func (minHeap MinHeap) Less(i, j int) bool {
-	return minHeap[i] < minHeap[j]
+func (minHeap *MinHeap) Less(i, j int) bool {
+	return (*minHeap)[i] < (*minHeap)[j]
 }
 
-func (minHeap MinHeap) Swap(i, j int) {
-	minHeap[i], minHeap[j] = minHeap[j], minHeap[i]
+func (minHeap *MinHeap) Swap(i, j int) {
+	(*minHeap)[i], (*minHeap)[j] = (*minHeap)[j], (*minHeap)[i]
 }
 
 func (minHeap *MinHeap) Push(value interface{}) {
@@ -24,6 +24,7 @@ func (minHeap *MinHeap) Push(value interface{}) {
 	if !ok {
 		return
 	}
+
 	*minHeap = append(*minHeap, intValue)
 }
 
