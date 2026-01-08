@@ -17,7 +17,11 @@ func ExecuteProcessing(applicationConfig *configuration.ApplicationConfig) error
 		return fmt.Errorf("reading input file from %q: %w", applicationConfig.InputFilePath, fileReadError)
 	}
 
-	exchangeRateData := &currencydata.ExchangeRateList{}
+	exchangeRateData := &currencydata.ExchangeRateList{
+		ExchangeDate: "",
+		MarketName:   "",
+		CurrencyList: []currencydata.CurrencyExchange{},
+	}
 
 	xmlParsingError := xmlparser.ParseXMLFromBytes(inputFileContent, exchangeRateData)
 	if xmlParsingError != nil {

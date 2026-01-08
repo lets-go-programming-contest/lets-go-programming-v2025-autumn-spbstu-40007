@@ -13,7 +13,11 @@ func EnsureDirectoryExists(filePath string) error {
 
 	directoryCreationError := os.MkdirAll(parentDirectory, DirectoryPermissions)
 	if directoryCreationError != nil {
-		return fmt.Errorf("creating directory %q with permissions %o: %w", parentDirectory, DirectoryPermissions, directoryCreationError)
+		return fmt.Errorf(
+			"creating directory %q: %w",
+			parentDirectory,
+			directoryCreationError,
+		)
 	}
 
 	return nil
