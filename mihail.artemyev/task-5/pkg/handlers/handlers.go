@@ -47,6 +47,12 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 		return nil
 	}
 
+	defer func() {
+		for _, outputChannel := range outputs {
+			close(outputChannel)
+		}
+	}()
+
 	outputIndex := 0
 
 	for {
@@ -73,22 +79,22 @@ func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string
 func startMultiplexerWorkers(
 	ctx context.Context,
 	inputs []chan string,
-	internal chan<- string,
-	wg *sync.WaitGroup,
+	internalDataChannel chan<- string,
+	waitGroup *sync.WaitGroup,
 ) {
-	wg.Add(len(inputs))
+	waitGroup.Add(len(inputs))
 
-	for _, inputChan := range inputs {
-		ch := inputChan
+	for _, inputChannel := range inputs {
+		currentInputChannel := inputChannel
 
-		go func(in <-chan string) {
-			defer wg.Done()
+		go func(inputChan <-chan string) {
+			defer waitGroup.Done()
 
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case data, ok := <-in:
+				case data, ok := <-inputChan:
 					if !ok {
 						return
 					}
@@ -98,13 +104,13 @@ func startMultiplexerWorkers(
 					}
 
 					select {
-					case internal <- data:
+					case internalDataChannel <- data:
 					case <-ctx.Done():
 						return
 					}
 				}
 			}
-		}(ch)
+		}(currentInputChannel)
 	}
 }
 
@@ -112,6 +118,8 @@ func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan stri
 	if len(inputs) == 0 {
 		return nil
 	}
+
+	defer close(output)
 
 	var inputWaitGroup sync.WaitGroup
 

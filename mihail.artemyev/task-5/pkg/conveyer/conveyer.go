@@ -30,19 +30,10 @@ func New(bufferSize int) *Conveyer {
 }
 
 func (c *Conveyer) getOrCreateChannel(channelName string) chan string {
-	c.mutex.RLock()
 	channel, channelExists := c.channels[channelName]
-	c.mutex.RUnlock()
-
 	if !channelExists {
-		c.mutex.Lock()
-		if existingChannel, exists := c.channels[channelName]; exists {
-			channel = existingChannel
-		} else {
-			channel = make(chan string, c.size)
-			c.channels[channelName] = channel
-		}
-		c.mutex.Unlock()
+		channel = make(chan string, c.size)
+		c.channels[channelName] = channel
 	}
 
 	return channel
@@ -137,9 +128,12 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	}
 
 	err := group.Wait()
+
 	c.closeAllChannelsSafely()
 
-	if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
+	if err != nil &&
+		!errors.Is(err, context.Canceled) &&
+		!errors.Is(err, context.DeadlineExceeded) {
 		return fmt.Errorf("conveyer failed: %w", err)
 	}
 
