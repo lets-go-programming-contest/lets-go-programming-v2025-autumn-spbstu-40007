@@ -1,140 +1,122 @@
 package handlers
 
 import (
-    "context"
-    "errors"
-    "fmt"
-    "strings"
-    "sync"
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"sync"
 )
 
-var ErrPrefixDecoratorCantBeDecorated = errors.New("can't be decorated")
+var ErrCantBeDecorated = errors.New("can't be decorated")
 
 func PrefixDecoratorFunc(ctx context.Context, input chan string, output chan string) error {
-    defer close(output)
+	defer close(output)
 
-    const prefix = "decorated: "
+	const prefix = "decorated: "
 
-    for {
-        select {
-        case <-ctx.Done():
-            return nil
-
-        case data, ok := <-input:
-            if !ok {
-                return nil
-            }
-
-            if strings.Contains(data, "no decorator") {
-                return fmt.Errorf("%w", ErrPrefixDecoratorCantBeDecorated)
-            }
-
-            if !strings.HasPrefix(data, prefix) {
-                data = prefix + data
-            }
-
-            select {
-            case <-ctx.Done():
-                return nil
-            case output <- data:
-            }
-        }
-    }
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
+			if strings.Contains(data, "no decorator") {
+				return fmt.Errorf("%w", ErrCantBeDecorated)
+			}
+			result := data
+			if !strings.HasPrefix(data, prefix) {
+				result = prefix + data
+			}
+			select {
+			case output <- result:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
 }
 
 func SeparatorFunc(ctx context.Context, input chan string, outputs []chan string) error {
-    if len(outputs) == 0 {
-        return nil
-    }
+	if len(outputs) == 0 {
+		return nil
+	}
 
+	index := 0
 
-    idx := 0
-
-    for {
-        select {
-        case <-ctx.Done():
-            return nil
-
-        case data, ok := <-input:
-            if !ok {
-                return nil
-            }
-
-            target := outputs[idx%len(outputs)]
-            idx++
-
-            select {
-            case <-ctx.Done():
-                return nil
-            case target <- data:
-            }
-        }
-    }
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-input:
+			if !ok {
+				return nil
+			}
+			target := outputs[index%len(outputs)]
+			index++
+			select {
+			case target <- data:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
 }
 
 func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
-    if len(inputs) == 0 {
-        return nil
-    }
+	if len(inputs) == 0 {
+		return nil
+	}
 
-    type message struct {
-        value string
-        ok    bool
-    }
+	waitGroup := sync.WaitGroup{}
+	dataChannel := make(chan string, len(inputs))
 
-    fanIn := make(chan message)
-    var wg sync.WaitGroup
+	for _, inputChannel := range inputs {
+		inputChan := inputChannel
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case data, ok := <-inputChan:
+					if !ok {
+						return
+					}
+					if strings.Contains(data, "no multiplexer") {
+						continue
+					}
+					select {
+					case dataChannel <- data:
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+		}()
+	}
 
-    wg.Add(len(inputs))
-    for _, in := range inputs {
-        ch := in
+	go func() {
+		waitGroup.Wait()
+		close(dataChannel)
+	}()
 
-        go func(c chan string) {
-            defer wg.Done()
-
-            for {
-                select {
-                case <-ctx.Done():
-                    return
-                case v, ok := <-c:
-                    if !ok {
-                        return
-                    }
-
-                    fanIn <- message{value: v, ok: true}
-                }
-            }
-        }(ch)
-    }
-
-    go func() {
-        wg.Wait()
-        close(fanIn)
-    }()
-
-    for {
-        select {
-        case <-ctx.Done():
-            return nil
-
-        case msg, ok := <-fanIn:
-            if !ok {
-                return nil
-            }
-
-            if !msg.ok {
-                continue
-            }
-
-            if strings.Contains(msg.value, "no multiplexer") {
-                continue
-            }
-
-            select {
-            case <-ctx.Done():
-                return nil
-            case output <- msg.value:
-            }
-        }
-    }
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case data, ok := <-dataChannel:
+			if !ok {
+				return nil
+			}
+			select {
+			case output <- data:
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
 }
