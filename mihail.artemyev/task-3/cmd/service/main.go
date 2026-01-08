@@ -14,6 +14,7 @@ func main() {
 		"./configs/config.yaml",
 		"Path to YAML configuration file containing input and output file paths",
 	)
+
 	flag.Parse()
 
 	applicationConfig, configError := configuration.LoadApplicationConfig(*configurationPath)
