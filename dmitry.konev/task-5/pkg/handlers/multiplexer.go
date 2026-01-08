@@ -6,10 +6,11 @@ import (
 	"sync"
 )
 
-func CombineChannels(ctx context.Context, inputs []chan string, out chan string) error {
+func MultiplexerFunc(ctx context.Context, inputs []chan string, output chan string) error {
 	var wg sync.WaitGroup
+
 	for _, ch := range inputs {
-		c := ch
+		in := ch
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -17,7 +18,7 @@ func CombineChannels(ctx context.Context, inputs []chan string, out chan string)
 				select {
 				case <-ctx.Done():
 					return
-				case val, ok := <-c:
+				case val, ok := <-in:
 					if !ok {
 						return
 					}
@@ -27,12 +28,13 @@ func CombineChannels(ctx context.Context, inputs []chan string, out chan string)
 					select {
 					case <-ctx.Done():
 						return
-					case out <- val:
+					case output <- val:
 					}
 				}
 			}
 		}()
 	}
+
 	wg.Wait()
 	return nil
 }
