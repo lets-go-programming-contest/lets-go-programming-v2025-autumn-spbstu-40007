@@ -2,4 +2,8 @@ package config
 
 import _ "embed"
 
-var EmbeddedConfig []byte
+var prodConfigBytes []byte
+
+func init() {
+	EmbeddedConfig = prodConfigBytes
+}
