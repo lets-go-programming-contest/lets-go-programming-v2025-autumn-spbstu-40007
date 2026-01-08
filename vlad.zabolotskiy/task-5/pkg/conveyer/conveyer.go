@@ -25,12 +25,13 @@ type Conveyer struct {
 
 func New(size int) *Conveyer {
 	return &Conveyer{
-		size:      size,
-		channels:  make(map[string]chan string),
-		handlers:  []func(ctx context.Context) error{},
-		mutex:     sync.RWMutex{},
-		isRunning: false,
-	} // nolint:exhaustruct
+		size:       size,
+		channels:   make(map[string]chan string),
+		handlers:   []func(ctx context.Context) error{},
+		mutex:      sync.RWMutex{},
+		isRunning:  false,
+		cancelFunc: nil,
+	}
 }
 
 func (c *Conveyer) getChannel(name string) chan string {
@@ -99,7 +100,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
-		return errAlreadyRunning // nolint:nlreturn
+		return errAlreadyRunning
 	}
 
 	c.isRunning = true
@@ -111,7 +112,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-		errorGroup.Go(func() error { // nolint:wsl
+		errorGroup.Go(func() error {
 			return handlerCopy(ctxWithCancel)
 		})
 	}
@@ -123,7 +124,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.cancelFunc = nil
 	c.mutex.Unlock()
 
-	return err // nolint:wrapcheck
+	return err
 }
 
 func (c *Conveyer) Send(input string, data string) error {
@@ -136,7 +137,8 @@ func (c *Conveyer) Send(input string, data string) error {
 	}
 
 	channel <- data
-	return nil // nolint:nlreturn
+
+	return nil
 }
 
 func (c *Conveyer) Recv(output string) (string, error) {
