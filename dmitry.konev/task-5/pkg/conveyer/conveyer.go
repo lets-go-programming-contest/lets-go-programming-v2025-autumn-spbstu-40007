@@ -133,7 +133,7 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 			}
 		}(worker)
 	}
-	
+
 	select {
 	case <-ctx.Done():
 		workGroup.Wait()
