@@ -33,6 +33,7 @@ type conveyorImpl struct {
 	chans   map[string]chan string
 	size    int
 	workers []func(ctx context.Context) error
+	mu      sync.RWMutex
 }
 
 func New(size int) *conveyorImpl {
@@ -44,12 +45,24 @@ func New(size int) *conveyorImpl {
 }
 
 func (c *conveyorImpl) getOrCreateChan(name string) chan string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if ch, ok := c.chans[name]; ok {
 		return ch
 	}
+
 	ch := make(chan string, c.size)
 	c.chans[name] = ch
 	return ch
+}
+
+func (c *conveyorImpl) getChan(name string) (chan string, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	ch, ok := c.chans[name]
+	return ch, ok
 }
 
 func (c *conveyorImpl) RegisterDecorator(
@@ -104,9 +117,10 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	for _, w := range c.workers {
 		worker := w
 		wg.Add(1)
+
 		go func() {
 			defer wg.Done()
-			if err := worker(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			if err := worker(ctx); err != nil {
 				select {
 				case errCh <- err:
 				default:
@@ -115,32 +129,38 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 		}()
 	}
 
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
 	select {
-	case err := <-errCh:
+	case <-ctx.Done():
+		return ctx.Err()
+	case err, ok := <-errCh:
+		if !ok {
+			return nil
+		}
 		return err
-	default:
-		return nil
 	}
 }
 
 func (c *conveyorImpl) Send(input string, data string) error {
-	ch, ok := c.chans[input]
+	ch, ok := c.getChan(input)
 	if !ok {
 		return ErrChanNotFound
 	}
+
 	ch <- data
 	return nil
 }
 
 func (c *conveyorImpl) Recv(output string) (string, error) {
-	ch, ok := c.chans[output]
+	ch, ok := c.getChan(output)
 	if !ok {
 		return "", ErrChanNotFound
 	}
-	val, ok := <-ch
-	if !ok {
-		return "", nil
-	}
+
+	val := <-ch
 	return val, nil
 }
