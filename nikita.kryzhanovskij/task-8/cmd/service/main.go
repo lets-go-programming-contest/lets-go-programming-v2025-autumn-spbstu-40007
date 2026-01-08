@@ -3,13 +3,16 @@ package main
 import (
 	"fmt"
 	"strings"
+
 	"task-8/pkg/config"
 )
 
+const splitParts = 2
+
 func main() {
 	configData := config.GetConfig()
-
 	lines := strings.Split(configData, "\n")
+
 	var env, level string
 
 	for _, line := range lines {
@@ -18,8 +21,8 @@ func main() {
 			continue
 		}
 
-		parts := strings.SplitN(line, ":", 2)
-		if len(parts) != 2 {
+		parts := strings.SplitN(line, ":", splitParts)
+		if len(parts) != splitParts {
 			continue
 		}
 
