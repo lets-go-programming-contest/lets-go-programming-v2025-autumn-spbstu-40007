@@ -105,7 +105,7 @@ func (c *conveyorImpl) RegisterSeparator(
 }
 
 func (c *conveyorImpl) Run(ctx context.Context) error {
-	var workersGroup sync.WaitGroup
+	var workGroup sync.WaitGroup
 
 	errCh := make(chan error, len(c.workers))
 
@@ -119,11 +119,11 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 	}()
 
 	for _, worker := range c.workers {
-		workersGroup.Add(1)
+		workGroup.Add(1)
 		w := worker
 
-		go func() {
-			defer workersGroup.Done()
+		go func(w func(ctx context.Context) error) {
+			defer workGroup.Done()
 
 			if err := w(ctx); err != nil {
 				if !errors.Is(err, context.Canceled) {
@@ -134,17 +134,17 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 					}
 				}
 			}
-		}()
+		}(w)
 	}
 
 	select {
 	case <-ctx.Done():
-		workersGroup.Wait()
+		workGroup.Wait()
 
 		return nil
 
 	case err := <-errCh:
-		workersGroup.Wait()
+		workGroup.Wait()
 
 		return err
 	}
