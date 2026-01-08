@@ -77,13 +77,13 @@ func MultiplexerFunc(
 	inputs []chan string,
 	output chan string,
 ) error {
-	var wg sync.WaitGroup
+	var WorkersGroup sync.WaitGroup
 
 	for _, input := range inputs {
-		wg.Add(1)
+		WorkersGroup.Add(1)
 
 		go func(inputch chan string) {
-			defer wg.Done()
+			defer WorkersGroup.Done()
 
 			for {
 				select {
@@ -109,6 +109,7 @@ func MultiplexerFunc(
 		}(input)
 	}
 
-	wg.Wait()
+	WorkersGroup.Wait()
+
 	return nil
 }
