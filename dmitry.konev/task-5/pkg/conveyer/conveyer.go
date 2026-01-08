@@ -106,7 +106,6 @@ func (c *conveyorImpl) RegisterSeparator(
 
 func (c *conveyorImpl) Run(ctx context.Context) error {
 	var (
-		workGroup sync.WaitGroup
 		errMutex  sync.Mutex
 		firstErr  error
 	)
@@ -117,25 +116,15 @@ func (c *conveyorImpl) Run(ctx context.Context) error {
 		}
 	}()
 
-	for i := range c.workers {
-		workGroup.Add(1)
-
-		worker := c.workers[i]
-
-		go func() {
-			defer workGroup.Done()
-
-			if err := worker(ctx); err != nil && !errors.Is(err, context.Canceled) {
-				errMutex.Lock()
-				if firstErr == nil {
-					firstErr = err
-				}
-				errMutex.Unlock()
+	for _, worker := range c.workers {
+		if err := worker(ctx); err != nil && !errors.Is(err, context.Canceled) {
+			errMutex.Lock()
+			if firstErr == nil {
+				firstErr = err
 			}
-		}()
+			errMutex.Unlock()
+		}
 	}
-
-	workGroup.Wait()
 
 	return firstErr
 }
