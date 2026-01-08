@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-const defaultDirPermissions = 0755
+const defaultDirPermissions = 0o755
 
 type ExchangeRate float64
 
