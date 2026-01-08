@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/net/html/charset"
 )
@@ -18,13 +19,13 @@ func (e *ExchangeRate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) erro
 		return fmt.Errorf("decode element: %w", err)
 	}
 
+	valueStr = strings.ReplaceAll(valueStr, ",", ".")
 	var value float64
 	if _, err := fmt.Sscanf(valueStr, "%f", &value); err != nil {
 		return fmt.Errorf("failed to parse exchange rate: %w", err)
 	}
 
 	*e = ExchangeRate(value)
-
 	return nil
 }
 
@@ -48,9 +49,9 @@ type CurrencyData struct {
 }
 
 type CurrencyItem struct {
-	Code     int          `json:"num_code"  xml:"NumCode"`
+	Code     int          `json:"num_code" xml:"NumCode"`
 	CharCode string       `json:"char_code" xml:"CharCode"`
-	Rate     ExchangeRate `json:"value"     xml:"Value"`
+	Rate     ExchangeRate `json:"value" xml:"Value"`
 }
 
 type ValCurs struct {
@@ -63,6 +64,7 @@ func LoadFromXML(filePath string) (*ValCurs, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
+
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			fmt.Fprintf(os.Stderr, "failed to close file: %v\n", closeErr)
@@ -82,6 +84,7 @@ func LoadFromXML(filePath string) (*ValCurs, error) {
 
 func SaveToJSON(filePath string, items []CurrencyItem) error {
 	dir := filepath.Dir(filePath)
+
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
@@ -90,6 +93,7 @@ func SaveToJSON(filePath string, items []CurrencyItem) error {
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
+
 	defer func() {
 		if closeErr := outputFile.Close(); closeErr != nil {
 			fmt.Fprintf(os.Stderr, "failed to close output file: %v\n", closeErr)
