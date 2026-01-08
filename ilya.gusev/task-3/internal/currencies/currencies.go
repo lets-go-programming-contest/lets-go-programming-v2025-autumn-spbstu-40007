@@ -11,6 +11,8 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
+const defaultDirPermissions = 0755
+
 type ExchangeRate float64
 
 func (e *ExchangeRate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -88,8 +90,7 @@ func LoadFromXML(filePath string) (*ValCurs, error) {
 func SaveToJSON(filePath string, items []CurrencyItem) error {
 	dir := filepath.Dir(filePath)
 
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, defaultDirPermissions); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 

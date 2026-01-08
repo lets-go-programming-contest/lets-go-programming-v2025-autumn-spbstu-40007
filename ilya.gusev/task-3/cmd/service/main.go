@@ -10,7 +10,6 @@ import (
 	"task-3/internal/currencies"
 )
 
-
 func main() {
 	configPath := flag.String("config", "", "path to configuration file")
 	flag.Parse()
