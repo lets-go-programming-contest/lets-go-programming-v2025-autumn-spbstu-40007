@@ -5,84 +5,86 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 
 	"golang.org/x/net/html/charset"
 )
 
-const (
-	dirPermissions  = 0o755
-	filePermissions = 0o644
-)
-
 type ExchangeRate float64
 
-func (rate *ExchangeRate) UnmarshalXML(decoder *xml.Decoder, start xml.StartElement) error {
-	var rawValue string
-	if err := decoder.DecodeElement(&rawValue, &start); err != nil {
-		return fmt.Errorf("failed to decode xml element: %w", err)
+func (e *ExchangeRate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var s string
+	if err := d.DecodeElement(&s, &start); err != nil {
+		return err
 	}
 
-	normalizedValue := strings.ReplaceAll(rawValue, ",", ".")
-
-	parsedFloat, err := strconv.ParseFloat(normalizedValue, 64)
-	if err != nil {
+	var value float64
+	if _, err := fmt.Sscanf(s, "%f", &value); err != nil {
 		return fmt.Errorf("failed to parse exchange rate: %w", err)
 	}
 
-	*rate = ExchangeRate(parsedFloat)
-
+	*e = ExchangeRate(value)
 	return nil
 }
 
-type CurrencyItem struct {
-	Code   int          `json:"num_code" xml:"NumCode"`
-	Symbol string       `json:"char_code" xml:"CharCode"`
-	Rate   ExchangeRate `json:"value" xml:"Value"`
+func (e ExchangeRate) MarshalJSON() ([]byte, error) {
+	return json.Marshal(float64(e))
 }
 
 type CurrencyData struct {
-	Items []CurrencyItem `xml:"Valute"`
+	XMLName  xml.Name `xml:"Valute"`
+	ID       string   `xml:"ID,attr"`
+	Code     int      `xml:"NumCode"`
+	CharCode string   `xml:"CharCode"`
+	Nominal  int      `xml:"Nominal"`
+	Name     string   `xml:"Name"`
+	Rate     ExchangeRate
 }
 
-func LoadFromXML(filePath string) (*CurrencyData, error) {
-	fileContent, err := os.ReadFile(filePath)
+type CurrencyItem struct {
+	Code     int          `json:"num_code"  xml:"NumCode"`
+	CharCode string       `json:"char_code" xml:"CharCode"`
+	Rate     ExchangeRate `json:"value"     xml:"Value"`
+}
+
+type ValCurs struct {
+	XMLName xml.Name       `xml:"ValCurs"`
+	Items   []CurrencyItem `xml:"Valute"`
+}
+
+func LoadFromXML(filePath string) (*ValCurs, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read xml file: %w", err)
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
+	defer file.Close()
 
-	xmlDecoder := xml.NewDecoder(strings.NewReader(string(fileContent)))
-	xmlDecoder.CharsetReader = charset.NewReaderLabel
+	decoder := xml.NewDecoder(file)
+	decoder.CharsetReader = charset.NewReaderLabel
 
-	var data CurrencyData
-
-	if err := xmlDecoder.Decode(&data); err != nil {
-		return nil, fmt.Errorf("cannot decode xml data: %w", err)
+	var data ValCurs
+	if err := decoder.Decode(&data); err != nil {
+		return nil, fmt.Errorf("failed to decode XML: %w", err)
 	}
 
 	return &data, nil
 }
 
 func SaveToJSON(filePath string, items []CurrencyItem) error {
-	directory := filepath.Dir(filePath)
-
-	if err := os.MkdirAll(directory, dirPermissions); err != nil {
-		return fmt.Errorf("cannot create output directory: %w", err)
-	}
-
-	outputFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePermissions)
+	outputFile, err := os.Create(filePath)
 	if err != nil {
-		return fmt.Errorf("cannot create output file: %w", err)
+		return fmt.Errorf("failed to create output file: %w", err)
 	}
-	defer outputFile.Close()
+	defer func() {
+		if err := outputFile.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to close output file: %v\n", err)
+		}
+	}()
 
 	encoder := json.NewEncoder(outputFile)
 	encoder.SetIndent("", "  ")
 
 	if err := encoder.Encode(items); err != nil {
-		return fmt.Errorf("cannot encode json data: %w", err)
+		return fmt.Errorf("failed to encode JSON: %w", err)
 	}
 
 	return nil

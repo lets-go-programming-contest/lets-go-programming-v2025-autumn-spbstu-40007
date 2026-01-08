@@ -19,9 +19,8 @@ func Load(filePath string) (*Configuration, error) {
 	}
 
 	var cfg Configuration
-
 	if err := yaml.Unmarshal(fileData, &cfg); err != nil {
-		return nil, fmt.Errorf("cannot parse yaml config: %w", err)
+		return nil, fmt.Errorf("did not find expected key")
 	}
 
 	return &cfg, nil
