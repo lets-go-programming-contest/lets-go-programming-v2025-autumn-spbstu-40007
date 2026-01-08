@@ -33,15 +33,15 @@ func (currencyValue *CurrencyValue) UnmarshalXML(
 }
 
 type CurrencyExchange struct {
-	NumericCode int              `json:"num_code"  xml:"NumCode"`
-	CharCode    string           `json:"char_code" xml:"CharCode"`
-	ExchangeRate CurrencyValue   `json:"value"     xml:"Value"`
+	NumericCode  int           `json:"num_code"  xml:"NumCode"`
+	CharCode     string        `json:"char_code" xml:"CharCode"`
+	ExchangeRate CurrencyValue `json:"value"     xml:"Value"`
 }
 
 type ExchangeRateList struct {
-	ExchangeDate string                `xml:"Date,attr"`
-	MarketName   string                `xml:"name,attr"`
-	CurrencyList []CurrencyExchange    `xml:"Valute"`
+	ExchangeDate string             `xml:"Date,attr"`
+	MarketName   string             `xml:"name,attr"`
+	CurrencyList []CurrencyExchange `xml:"Valute"`
 }
 
 type CurrencyCollection []CurrencyExchange
