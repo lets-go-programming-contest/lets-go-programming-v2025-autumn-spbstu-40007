@@ -1,7 +1,5 @@
 package main
 
-//nolint:gofumpt
-
 import (
 	"flag"
 	"fmt"
