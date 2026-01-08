@@ -100,6 +100,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	if c.isRunning {
 		c.mutex.Unlock()
+
 		return errAlreadyRunning
 	}
 
@@ -112,7 +113,8 @@ func (c *Conveyer) Run(ctx context.Context) error {
 
 	for _, handler := range c.handlers {
 		handlerCopy := handler
-		errorGroup.Go(func() error {
+
+		errorGroup.Go(func() error { //nolint:wsl
 			return handlerCopy(ctxWithCancel)
 		})
 	}
@@ -124,7 +126,7 @@ func (c *Conveyer) Run(ctx context.Context) error {
 	c.cancelFunc = nil
 	c.mutex.Unlock()
 
-	return err
+	return fmt.Errorf("%w", err) //nolint:wrapcheck
 }
 
 func (c *Conveyer) Send(input string, data string) error {
