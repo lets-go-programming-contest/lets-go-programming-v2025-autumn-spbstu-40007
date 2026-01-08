@@ -20,12 +20,15 @@ func (e *ExchangeRate) UnmarshalXML(d *xml.Decoder, start xml.StartElement) erro
 	}
 
 	valueStr = strings.ReplaceAll(valueStr, ",", ".")
+
 	var value float64
+
 	if _, err := fmt.Sscanf(valueStr, "%f", &value); err != nil {
 		return fmt.Errorf("failed to parse exchange rate: %w", err)
 	}
 
 	*e = ExchangeRate(value)
+
 	return nil
 }
 
@@ -49,9 +52,9 @@ type CurrencyData struct {
 }
 
 type CurrencyItem struct {
-	Code     int          `json:"num_code" xml:"NumCode"`
+	Code     int          `json:"num_code"  xml:"NumCode"`
 	CharCode string       `json:"char_code" xml:"CharCode"`
-	Rate     ExchangeRate `json:"value" xml:"Value"`
+	Rate     ExchangeRate `json:"value"     xml:"Value"`
 }
 
 type ValCurs struct {
