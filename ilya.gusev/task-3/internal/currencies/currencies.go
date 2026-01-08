@@ -42,12 +42,12 @@ func (e ExchangeRate) MarshalJSON() ([]byte, error) {
 }
 
 type CurrencyData struct {
-	XMLName  xml.Name     `xml:"Valute"`
-	ID       string       `xml:"ID,attr"`
-	Code     int          `xml:"NumCode"`
-	CharCode string       `xml:"CharCode"`
-	Nominal  int          `xml:"Nominal"`
-	Name     string       `xml:"Name"`
+	XMLName  xml.Name `xml:"Valute"`
+	ID       string   `xml:"ID,attr"`
+	Code     int      `xml:"NumCode"`
+	CharCode string   `xml:"CharCode"`
+	Nominal  int      `xml:"Nominal"`
+	Name     string   `xml:"Name"`
 	Rate     ExchangeRate
 }
 
