@@ -87,7 +87,6 @@ func LoadFromXML(filePath string) (*ValCurs, error) {
 
 func SaveToJSON(filePath string, items []CurrencyItem) error {
 	dir := filepath.Dir(filePath)
-
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
