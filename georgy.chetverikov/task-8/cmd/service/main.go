@@ -10,5 +10,4 @@ func main() {
 	config := config.Load()
 
 	fmt.Printf("%s %s", config.Environment, config.LogLevel)
-
 }
