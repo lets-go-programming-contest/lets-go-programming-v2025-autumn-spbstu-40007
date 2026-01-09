@@ -1,0 +1,15 @@
+mode: set
+task-6/internal/db/db.go:17.33,19.2 1 1
+task-6/internal/db/db.go:21.71,23.16 2 1
+task-6/internal/db/db.go:23.16,25.3 1 1
+task-6/internal/db/db.go:26.2,30.18 3 1
+task-6/internal/db/db.go:30.18,32.39 2 1
+task-6/internal/db/db.go:32.39,34.4 1 0
+task-6/internal/db/db.go:35.3,35.29 1 1
+task-6/internal/db/db.go:38.2,38.35 1 1
+task-6/internal/db/db.go:38.35,39.44 1 1
+task-6/internal/db/db.go:39.44,41.4 1 1
+task-6/internal/db/db.go:42.3,42.48 1 1
+task-6/internal/db/db.go:45.2,45.20 1 1
+task-6/internal/db/db.go:48.55,50.2 1 1
+task-6/internal/db/db.go:52.61,54.2 1 1
