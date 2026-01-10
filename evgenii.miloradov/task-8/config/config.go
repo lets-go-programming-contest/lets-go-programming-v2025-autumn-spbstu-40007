@@ -1,0 +1,13 @@
+//go:build !dev
+// +build !dev
+
+package config
+
+type Config struct {
+	Env string `yaml:"environment"`
+	Log string `yaml:"log_level"`
+}
+
+func Current() Config {
+	return load()
+}
